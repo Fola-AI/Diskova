@@ -192,6 +192,7 @@ export type VendorAdminAction = "verify" | "unverify" | "suspend" | "unsuspend" 
 
 /** Verify / suspend / reinstate (reason required for anything destructive) — audited. */
 export async function vendorAdminAction(session: SessionContext, vendorId: string, action: VendorAdminAction, reasonRaw: string | null, meta: StaffMeta): Promise<void> {
+  z.uuid().parse(vendorId);
   if (action === "approve" || action === "reject") return decideVendor(session, vendorId, action, reasonRaw, meta);
   const admin = getAdminSupabase();
   const { data: v } = await admin.from("vendors").select("id, slug, status, verified").eq("id", vendorId).single();
@@ -269,6 +270,7 @@ const vendorEditSchema = z.object({
 
 /** Staff edit of a listing's core text fields (§11.2 "edit"). Audited before/after. */
 export async function adminEditVendor(session: SessionContext, vendorId: string, raw: unknown, meta: StaffMeta): Promise<void> {
+  z.uuid().parse(vendorId);
   const { reason, ...patch } = vendorEditSchema.parse(raw);
   const admin = getAdminSupabase();
   const { data: before } = await admin.from("vendors").select("slug, name, tagline, description_md, phone, whatsapp, instagram_handle, website_url").eq("id", vendorId).single();

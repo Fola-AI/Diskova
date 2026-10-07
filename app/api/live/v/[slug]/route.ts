@@ -4,6 +4,7 @@ import { getVendorBySlug, listRecentOfficialUpdates } from "@/lib/db/directory";
 import { listVendorFeed } from "@/lib/db/feed";
 import { clientIpFrom } from "@/lib/http/request-meta";
 import { rateLimit } from "@/lib/ratelimit";
+import { slugParam } from "@/lib/validation/routes";
 
 /**
  * Venue live feed JSON. Anonymous visitors poll it (CDN-cached ~10 s); signed-in visitors re-fetch it
@@ -13,7 +14,9 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   const rl = await rateLimit("liveIp", clientIpFrom(request.headers));
   if (!rl.ok) return NextResponse.json({ error: "Too many requests" }, { status: 429 });
 
-  const vendor = await getVendorBySlug((await params).slug);
+  const slug = slugParam.safeParse((await params).slug);
+  if (!slug.success) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  const vendor = await getVendorBySlug(slug.data);
   if (!vendor) return NextResponse.json({ error: "Not found" }, { status: 404 });
   const [feed, official] = await Promise.all([listVendorFeed(vendor.id), listRecentOfficialUpdates(vendor.id)]);
   return NextResponse.json(

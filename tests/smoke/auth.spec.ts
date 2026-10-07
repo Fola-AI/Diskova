@@ -12,7 +12,7 @@ test("home renders the branded shell with security headers", async ({ page }) =>
   const res = await page.goto("/");
   expect(res?.status()).toBe(200);
   expect(res?.headers()["x-frame-options"]).toBe("DENY");
-  expect(res?.headers()["content-security-policy-report-only"]).toContain("default-src 'self'");
+  expect(res?.headers()["content-security-policy"]).toContain("default-src 'self'"); // enforced since L13
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
   await expect(page.getByText("Unverified").or(page.getByText("Community posts are shared"))).toBeVisible();
 });

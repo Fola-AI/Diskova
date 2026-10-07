@@ -19,6 +19,12 @@ export default defineConfig({
   use: {
     baseURL,
     trace: "retain-on-failure",
+    // Most specs aren't about cookie consent: start with "essential only" chosen so the banner
+    // doesn't cover controls. security.spec.ts clears it to test the banner itself.
+    storageState: {
+      cookies: [{ name: "consent", value: "essential", domain: new URL(baseURL).hostname, path: "/", expires: -1, httpOnly: false, secure: false, sameSite: "Lax" }],
+      origins: [],
+    },
   },
   projects: [
     {

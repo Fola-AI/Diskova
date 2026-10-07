@@ -58,10 +58,24 @@
 ## Back office (from Stage L12)
 
 17. Set `CRON_SECRET` in Vercel **Production** (any long random string). Vercel Cron sends it automatically to
-    `/api/cron/digest` (daily 07:00 UTC = 08:00 WAT, declared in `vercel.json`). Without it the route returns 401.
+    `/api/cron/digest` (daily 07:00 UTC = 08:00 WAT) and `/api/cron/backup` (Sundays 03:00 UTC), both declared in
+    `vercel.json`. Without it both routes return 401.
 18. After `supabase db push` on PROD, confirm the private `exports` storage bucket exists (migration 0042) and that
     migration 0044's `realtime.messages` policy is present (Dashboard → Realtime → Policies). The dashboard's live
     activity stream depends on it.
 19. Staff roles: promote moderators/admins from `/admin/users/[id]` as super admin (needs a fresh MFA code). Each
     staff member must enrol TOTP at `/admin/mfa` on first visit.
+
+## Security & privacy (from Stage L13)
+
+20. **Enable PITR** on the PROD Supabase project (Database → Backups). The weekly logical backup in the private
+    `backups` bucket (8 weeks kept) is a second line of defence, not a replacement.
+21. After the first Sunday, check Storage → `backups/weekly/` has a file and the audit log has `system.backup`.
+    The first run is limited by the function timeout (60 s); if the data grows past that, raise `maxDuration` on a Pro plan.
+22. Set `NEXT_PUBLIC_CONTACT_EMAIL` (Production) to the inbox that answers privacy requests, and have
+    `/privacy` and `/terms` reviewed by a lawyer before launch (they're accurate templates, not legal advice).
+23. CSP is enforced. Violations are reported to Sentry (Security reports), so check Sentry after launch for any
+    blocked third-party resource.
+24. Answer open question 4 (Vault secrets for Storage purges) before launch. Without it, deleted users' photos
+    and decided verification documents stay in Storage (rows are anonymised, files aren't deleted).
 

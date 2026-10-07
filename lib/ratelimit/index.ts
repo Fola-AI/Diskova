@@ -12,7 +12,7 @@ assertServerOnly("lib/ratelimit");
  * Sliding-window rate limits (PRD §7.5). Per-user keys are primary; IP limits are generous
  * because of carrier-grade NAT. Emails are hashed before use as keys.
  */
-const LIMITS = {
+export const LIMITS = {
   signupIp: { tokens: 100, window: "1 h" },
   loginEmail: { tokens: 20, window: "15 m" },
   loginIp: { tokens: 300, window: "15 m" },

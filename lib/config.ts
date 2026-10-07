@@ -11,6 +11,9 @@ const DEFAULT_BRAND_NAME = "Diskova";
 /** The brand name. Never hard-code it anywhere else (CLAUDE.md). */
 export const BRAND_NAME: string = process.env.NEXT_PUBLIC_BRAND_NAME?.trim() || DEFAULT_BRAND_NAME;
 
+/** Public contact address for privacy / data requests (privacy policy, terms). */
+export const CONTACT_EMAIL: string = process.env.NEXT_PUBLIC_CONTACT_EMAIL?.trim() || "hello@diskova.io";
+
 /** Season naming (PRD §1.5). */
 export const SEASON_NAME = "December in Nigeria";
 

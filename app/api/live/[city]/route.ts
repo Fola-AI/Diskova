@@ -4,6 +4,7 @@ import { getCityBySlug } from "@/lib/db/directory";
 import { getCityLive } from "@/lib/db/live";
 import { clientIpFrom } from "@/lib/http/request-meta";
 import { rateLimit } from "@/lib/ratelimit";
+import { slugParam } from "@/lib/validation/routes";
 
 /**
  * Tonight view data for anonymous polling (§8.1): CDN-cached 30 s, 120 requests/IP/min (generous for
@@ -12,7 +13,9 @@ import { rateLimit } from "@/lib/ratelimit";
 export async function GET(request: NextRequest, { params }: { params: Promise<{ city: string }> }): Promise<NextResponse> {
   const rl = await rateLimit("liveIp", clientIpFrom(request.headers));
   if (!rl.ok) return NextResponse.json({ error: "Too many requests" }, { status: 429 });
-  const city = await getCityBySlug((await params).city);
+  const slug = slugParam.safeParse((await params).city);
+  if (!slug.success) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  const city = await getCityBySlug(slug.data);
   if (!city) return NextResponse.json({ error: "Not found" }, { status: 404 });
   const live = await getCityLive(city.id);
   return NextResponse.json(

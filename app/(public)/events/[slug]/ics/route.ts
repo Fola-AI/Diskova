@@ -3,10 +3,13 @@ import { NextResponse } from "next/server";
 import { BRAND_NAME, SITE_URL } from "@/lib/config";
 import { getEventBySlug } from "@/lib/db/events";
 import { buildCalendar } from "@/lib/events/ical";
+import { slugParam } from "@/lib/validation/routes";
 
 /** Single-event .ics (§8.6). */
 export async function GET(_request: Request, { params }: { params: Promise<{ slug: string }> }): Promise<NextResponse> {
-  const e = await getEventBySlug((await params).slug);
+  const slug = slugParam.safeParse((await params).slug);
+  if (!slug.success) return new NextResponse("Not found", { status: 404 });
+  const e = await getEventBySlug(slug.data);
   if (!e) return new NextResponse("Not found", { status: 404 });
   const host = new URL(SITE_URL).host;
   const ics = buildCalendar({

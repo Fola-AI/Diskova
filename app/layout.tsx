@@ -1,9 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { Fraunces, Inter } from "next/font/google";
-import { Analytics } from "@vercel/analytics/next";
-import { SpeedInsights } from "@vercel/speed-insights/next";
 import type { ReactNode } from "react";
 
+import { ConsentBanner, ConsentGatedAnalytics } from "@/components/layout/consent";
 import { Providers } from "@/components/providers";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
@@ -56,13 +55,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           <main id="main">{children}</main>
           <SiteFooter />
         </Providers>
-        {/* Vercel serves these scripts only on its own deployments. */}
-        {process.env.VERCEL ? (
-          <>
-            <Analytics />
-            <SpeedInsights />
-          </>
-        ) : null}
+        <ConsentBanner />
+        {/* Analytics load only with consent, and Vercel serves the scripts only on its own deployments. */}
+        <ConsentGatedAnalytics enabled={Boolean(process.env.VERCEL)} />
       </body>
     </html>
   );

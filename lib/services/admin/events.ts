@@ -120,6 +120,7 @@ export async function getEventForEdit(id: string) {
 }
 
 export async function adminEditEvent(session: SessionContext, eventId: string, raw: unknown, meta: StaffMeta): Promise<void> {
+  z.uuid().parse(eventId);
   const { reason, starts_local, ends_local, ...rest } = editSchema.parse(raw);
   const admin = getAdminSupabase();
   const before = await getEventForEdit(eventId);

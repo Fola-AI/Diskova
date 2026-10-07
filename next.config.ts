@@ -42,7 +42,7 @@ const nextConfig: NextConfig = {
         headers: buildSecurityHeaders({
           supabaseUrl,
           sentryDsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
-          enforceCsp: false, // Report-only until Stage L13 (PRD §7.7)
+          enforceCsp: true, // Enforced from Stage L13 (PRD §7.7)
           isDev: process.env.NODE_ENV !== "production",
         }),
       },

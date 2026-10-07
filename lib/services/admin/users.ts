@@ -114,6 +114,7 @@ export async function userAction(session: SessionContext, raw: unknown, meta: St
 /** Super admin only, behind an MFA re-prompt (enforced by the caller with requireRecentMfa). */
 export async function changeRole(session: SessionContext, userId: string, role: UserRole, reasonRaw: string, meta: StaffMeta): Promise<void> {
   if (session.profile.role !== "super_admin") throw new AdminActionError("Only a super admin can change roles.");
+  z.uuid().parse(userId);
   const reason = reasonSchema.parse(reasonRaw);
   if (userId === session.user.id) throw new AdminActionError("You can't change your own role.");
   const admin = getAdminSupabase();

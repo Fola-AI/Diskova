@@ -1,7 +1,7 @@
 # Build Progress
 
 ## Current stage
-Stage L13 — Security hardening and RLS matrix tests
+Stage L14 — SEO, performance, PWA, analytics
 
 ## Launch stages (required before go-live)
 - [x] Stage L1: Project scaffold, tooling, `npm run verify`
@@ -16,7 +16,7 @@ Stage L13 — Security hardening and RLS matrix tests
 - [x] Stage L10: Guides, daytime layer, diaspora toolkit, blog (CMS)
 - [x] Stage L11: Safety information section and private issue reports
 - [x] Stage L12: Super-admin back office
-- [ ] Stage L13: Security hardening and RLS matrix tests
+- [x] Stage L13: Security hardening and RLS matrix tests
 - [ ] Stage L14: SEO, performance, PWA, analytics
 - [ ] Stage L15: Final QA, content loader, LAUNCH.md (production promotion steps for Fola)
 
@@ -543,6 +543,55 @@ Acceptance evidence:
 - **Destructive actions need a reason and are audited:** suspend user, bulk post hide, suspend vendor, settings change and blocklist add all reject empty reasons (ZodError, nothing written) and write `user.*` / `post.bulk_*` / `vendor.*` / `settings.updated` / `blocklist.phrase_added` audit rows. Smoke: bulk hide without a selection or reason shows an error.
 - **Live activity stream:** smoke: a new signup appears on the moderator's dashboard stream without reload; pause shows "Resume". A normal user is refused on the private `admin:activity` channel (`CHANNEL_ERROR`) and can't select `activity_events`.
 
+### Stage L13 — 2026-10-07
+```
+  ✓  21 [smoke] › tests/smoke/directory.spec.ts:96:5 › search finds venues by partial name, with typeahead (1.1s)
+  ✓  22 [smoke] › tests/smoke/directory.spec.ts:105:5 › sitemap lists cities and vendors; OG image renders (359ms)
+  ✓  19 [smoke] › tests/smoke/events.spec.ts:51:5 › 200 events render smoothly in the list and month views (790ms)
+  ✓  25 [smoke] › tests/smoke/events.spec.ts:73:5 › December in Nigeria page shows the countdown before the season (287ms)
+  ✓  26 [smoke] › tests/smoke/events.spec.ts:79:5 › event page: venue card, external ticket link, share, valid .ics (346ms)
+  ✓  24 [smoke] › tests/smoke/moderation.spec.ts:37:5 › moderator (MFA) approves a held post from the queue and it goes live (4.8s)
+  ✓  28 [smoke] › tests/smoke/moderation.spec.ts:49:5 › community guidelines are linked from every page footer (264ms)
+  ✓  29 [smoke] › tests/smoke/safety.spec.ts:10:5 › emergency numbers render per city with verification status (473ms)
+  ✓  27 [smoke] › tests/smoke/events.spec.ts:99:5 › submit an event → admin approves → it is public (8.5s)
+  ✓  30 [smoke] › tests/smoke/safety.spec.ts:24:5 › anonymous private report → exact confirmation → visible only in admin triage (3.8s)
+  ✓  32 [smoke] › tests/smoke/safety.spec.ts:48:5 › honeypot submissions are not stored (447ms)
+  ✓  33 [smoke] › tests/smoke/settings.spec.ts:26:5 › edit profile: username, home city, diaspora, location consent (3.1s)
+  ✓  23 [smoke] › tests/smoke/feed.spec.ts:39:5 › one-tap pulse appears for a signed-in viewer within 2 s (Realtime) and an anonymous viewer within 30 s (17.7s)
+  ✓  34 [smoke] › tests/smoke/settings.spec.ts:46:5 › avatar upload goes through the one-image pipeline (EXIF stripped, WebP) (3.3s)
+  ✓  31 [smoke] › tests/smoke/security.spec.ts:5:5 › CSP is enforced and key pages (incl. the map) raise no violations (8.1s)
+  ✓  37 [smoke] › tests/smoke/security.spec.ts:35:7 › cookie consent (analytics only) › first visit asks; 'Essential only' is remembered; footer reopens the choice (331ms)
+  ✓  38 [smoke] › tests/smoke/security.spec.ts:52:7 › cookie consent (analytics only) › privacy policy covers cookies, processors, retention and rights (136ms)
+  ✓  39 [smoke] › tests/smoke/tonight.spec.ts:41:5 › empty Tonight view invites the first pulse and vendor updates (506ms)
+  ✓  36 [smoke] › tests/smoke/settings.spec.ts:75:5 › delete account anonymises the profile and blocks sign-in (4.1s)
+  ✓  40 [smoke] › tests/smoke/tonight.spec.ts:49:5 › a pulse becomes a live venue: rail, hero count, polling API and crowd badge (4.3s)
+  ✓  42 [smoke] › tests/smoke/tonight.spec.ts:77:5 › heat map renders on toggle (1.8s)
+  ✓  43 [smoke] › tests/smoke/tonight.spec.ts:84:5 › forecast line shows once there are 4+ weeks of data (175ms)
+  ✓  35 [smoke] › tests/smoke/feed.spec.ts:73:5 › 4-photo check-in: every request finishes in under 5 s (16.2s)
+  ✓  41 [smoke] › tests/smoke/vendor.spec.ts:27:5 › fresh account → submitted vendor in under 10 minutes (12.7s)
+  ✓  44 [smoke] › tests/smoke/feed.spec.ts:136:5 › my posts, public profile and leaderboard pages render (5.0s)
+  ✓  45 [smoke] › tests/smoke/vendor.spec.ts:90:5 › admin (with MFA) approves the listing and it goes live (5.2s)
+  ✓  46 [smoke] › tests/smoke/vendor.spec.ts:112:5 › official update in two taps appears on the vendor page labelled Official (2.7s)
+  ✓  47 [smoke] › tests/smoke/vendor.spec.ts:135:5 › claim flow: claimant uploads ID, admin approves, claimant becomes owner (7.6s)
+
+  47 passed (1.2m)
+```
+Vitest in the same run: `Test Files  30 passed (30) Tests  201 passed (201)`
+
+Acceptance evidence:
+- **CSP enforced:** `Content-Security-Policy` (no Report-Only, no `unsafe-eval`, `frame-ancestors 'none'`, `upgrade-insecure-requests`, report-uri → Sentry). Smoke `security.spec.ts` checks 7 key pages plus an opened Mapbox map and finds zero `securitypolicyviolation` events. A manual trace over 16 public pages was also clean.
+- **Rate limits tested:** `tests/rls/l13-security.test.ts` against real Upstash: reportUser 10/h then refused, postUser 6/h override, per-user keys independent, and end-to-end a third pulse on the same venue within 30 min throws `PostError`. `tests/unit/rate-limit-config.test.ts` pins every §7.5 number and checks that IP limits are ≥ 10× the per-user limits.
+- **Service-role isolation:** existing source tests plus a new scan of every built file under `.next/static` for any secret value from `.env.local` and for `sb_secret_` key material: none.
+- **Signed URL expiry:** a verification doc has no public URL; a 2-second signed link returns 200, then fails after expiry.
+- **Audit immutability:** `tests/sql/audit-immutability.sql`: UPDATE / DELETE / TRUNCATE on `private.audit_log` are refused with 42501 for **postgres (owner) and service_role**. The Data API can't reach it either.
+- **Purge jobs:** `tests/sql/purges.sql` runs `private.run_daily_purges()` on fixtures in a rolled-back transaction. Abandoned check-in → removed; a deleted account after 24 h → anonymised, IP/UA cleared, posts emptied; a decided verification request without files → marked purged; one with files is **not** marked purged while the Vault secrets are missing (open question 4); a 71-day snapshot → deleted; the run is audited.
+- **npm audit:** `npm audit --omit=dev` → 0. The dev tree is unchanged in kind (open question 1, now also a moderate in `postcss-selector-parser` via Tailwind 3).
+- **Privacy / terms:** rewritten (see notes); smoke checks the cookie, processor, retention and rights sections.
+- **Cookie consent (analytics only):** smoke: the banner shows on first visit, "Essential only" is remembered (cookie), "Cookie settings" in the footer reopens it, and "Allow analytics" stores consent. Analytics and Speed Insights don't mount without consent.
+- **Sentry scrub:** existing tests plus new wiring checks: `beforeSend` / `beforeSendSpan` / `beforeBreadcrumb` = scrubber, `sendDefaultPii` false, 10 % tracing, logs off, no Replay/profiling anywhere. A realistic event leaks no email, IPv4/IPv6 or key.
+- **RLS matrix:** `tests/rls/l13-rls-matrix.test.ts` + `tests/sql/rls-matrix.sql`: 9 roles (anon, user, vendor owner, moderator/admin/super_admin with and without MFA) × all 26 public relations × select/update/delete, impersonated exactly like PostgREST (role + JWT incl. `aal`) and rolled back. Asserts: RLS + policies on every table, views run as invoker, an exact set of API write grants, anon writes nothing, a user can update only their own profile, **staff without MFA are identical to plain users**, owners touch only their own vendor/prices, and staff with MFA see more but still write nothing directly. Catalog checks: no API access to `private`, admin RPCs or activity partitions.
+- **Weekly backup:** `/api/cron/backup` (Sunday 03:00 UTC) → gzipped NDJSON of every public + private table into the private `backups` bucket, 8-week pruning, audited. Tested end-to-end, including the private bucket and the RPC lock-down.
+
 ## Notes / decisions
 (append here as you go)
 
@@ -700,17 +749,34 @@ Acceptance evidence:
 - **Settings (super_admin):** thresholds, hold rules, posting limits, check-in expiry, season dates, FX, notice, listing-is-free, **maintenance mode (now enforced: pulses, check-ins and official updates are refused while it's on)**, blocklist; read-only feature flags; staff roles list; **async data export** (gzipped JSON of content tables, no emails / IPs / auth data) via `after()` into the private `exports` bucket, with a 24 h signed link emailed to the requester and 10-minute links listed on the page. Agent API keys arrive with P1.
 - **Safety info editor** (`/admin/safety`): create / edit / delete (delete needs a reason), city or national, section, ordering, and a "checked against the official source today" box that stamps `last_verified_at` / `verified_by`.
 - **Daily digest:** `/api/cron/digest`, Vercel cron `0 7 * * *` (08:00 WAT), `Bearer CRON_SECRET` checked in constant time. Counts only, no user content, sent to `EMAIL_ADMIN_TO` (fallback `SUPER_ADMIN_EMAIL`).
-- **Bug fixes found while testing:** (1) empty optional numeric fields were coerced to `0` by `z.union([z.coerce.number(), z.literal("")])`, so the literal now comes first (settings FX and event prices). (2) `moderation_items` has no FK to its post, so hard-deleted posts (abandoned-upload purge, vendor cascade) left queue items open forever: 130 orphans on DEV. `0045` closes items when the post is deleted and cleaned up the existing orphans.
+- **Bug fixes found while testing:** (1) empty optional numeric fields were coerced to `0` by `z.union([z.coerce.number(), z.literal("")])`, so the literal now comes first (settings FX and event prices). (2) `moderation_items` has no FK to its post, so hard-deleted posts (vendor deletion cascade; on DEV, test cleanup) left queue items open forever: 130 orphans on DEV. `0045` closes items when the post is deleted and cleaned up the existing orphans.
 - New rate limit `exportUser` 30/h (PRD doesn't specify). `safeRevalidatePath` accepts a type (`/safety` layout revalidation).
+
+**L13 (2026-10-07) — §7 checklist**
+- 7.1 RLS default-deny on every table ✓ (matrix); `private` not exposed ✓ (L2 Management-API test); staff policies need aal2 ✓ (matrix shows aal1 staff = users).
+- 7.2 Service role only in `lib/admin-db` + scripts ✓ (lint rule, source grep, built-bundle scan).
+- 7.3 Email verification before posting ✓ (L2); TOTP for all staff ✓; auth cookies `SameSite=Lax; Secure` in production ✓. **Custom SMTP still pending on Fola** (open question 5).
+- 7.4 zod: route handlers now validate params/query too (`lib/validation/routes.ts`: slug params, the iCal query, auth callback query), with a static test that any handler reading input calls `.parse`/`.safeParse`. Server Actions are thin wrappers; their services parse with zod (CLAUDE.md pattern). The L12 admin services that took raw ids now `z.uuid().parse` them.
+- 7.5 Rate limits ✓ (every limit is wired except the P5 assistant limits).
+- 7.6 Uploads ✓ (L6). 7.7 Headers ✓ (enforced). 7.8 Sentry scrubbing ✓. 7.9 Audit ✓. 7.10 Abuse controls ✓ (L8).
+- 7.11 Dependencies: production tree clean; dev tooling advisories documented (open question 1).
+- 7.12 Data protection: privacy/terms ✓, location consent ✓, anonymisation on delete ✓, doc purge ✓, **but deleting media files in Storage within 24 h needs the Vault decision (open question 4)**. Until then files stay, and rows are never falsely marked purged.
+- 7.13 Backups ✓ (weekly logical backup; PITR on PROD per SETUP/LAUNCH). 7.14 DEV-only credentials ✓.
+- **CSP decision:** enforced with `'unsafe-inline'` for scripts and no `'unsafe-eval'`. A nonce-based CSP would force every page to render dynamically (Next.js nonces need per-request HTML), which kills the ISR/static caching the PRD's performance targets rely on. The only eval-type violation was zod v4's JIT probe (`new Function("")` in a try/catch); `instrumentation-client.ts` sets zod's global `jitless` before any schema runs, with no zod import there and so no bundle cost.
+- **Backup decision:** Vercel functions have no `pg_dump`, so the weekly backup is a *logical* dump. Service-role-only RPCs `admin_backup_tables()` / `admin_backup_rows()` (`0046`) page every public + private table by primary key into gzipped NDJSON (line 1 = header). `activity_events` (13-month telemetry) and Supabase's `auth.*` are excluded; auth is covered by PROD PITR. Restoring = replaying rows per table. PITR remains the primary recovery path.
+- **Consent decision:** a first-party `consent` cookie (`analytics` | `essential`, 180 days, Lax, Secure on https). Essential = Supabase session cookies. Analytics + Speed Insights mount only with consent and only on Vercel; analytics drops query strings and never reports `/admin`. The banner is hidden in admin. Smoke tests start with "essential" pre-set so the banner doesn't cover controls.
+- **Privacy policy / terms:** rewritten to match what the code does: data collected, legal bases, cookies, processors (Supabase London, Vercel, Sentry EU, Upstash, OpenAI moderation, Mapbox, Resend), retention (24 h uploads, 30-day docs, 70-day snapshots, 13-month logs, 8-week backups), NDPA/UK rights with NDPC/ICO complaint routes, 18+. Contact address comes from `NEXT_PUBLIC_CONTACT_EMAIL` (in `lib/config.ts`, default hello@ the production domain). These are templates and need a lawyer's review (open question 8).
+- SQL test helper `tests/helpers/psql.ts` runs `tests/sql/*.sql` with credentials passed only through `PG*` env vars (never argv), and refuses any database that isn't the DEV project.
 
 ## Open questions for Fola
 (write here when you need me)
 
-1. **[non-blocking] `npm audit` dev-only highs.** The production dependency tree is clean (`npm audit --omit=dev` → 0). The full tree still reports 7 high from GHSA-vfj7-8cjw-p6xm in `braces` ≤ 3.0.3, which has **no patched release**. It arrives only through build tooling: Tailwind 3 (chokidar/micromatch/fast-glob) and `eslint-config-next` (fast-glob). Nothing user-facing ever reaches it. The only "fix" is moving to Tailwind 4, which the PRD rules out (§2 says Tailwind 3). I'm treating §7.11's "zero high/critical" as the shipped (production) tree and re-checking at every stage. Tell me if you'd rather move to Tailwind 4.
+1. **[non-blocking] `npm audit` dev-only highs.** The production dependency tree is clean (`npm audit --omit=dev` → 0). The full tree still reports 7 high from GHSA-vfj7-8cjw-p6xm in `braces` ≤ 3.0.3, which has **no patched release**. It arrives only through build tooling: Tailwind 3 (chokidar/micromatch/fast-glob) and `eslint-config-next` (fast-glob). Nothing user-facing ever reaches it. The only "fix" is moving to Tailwind 4, which the PRD rules out (§2 says Tailwind 3). I'm treating §7.11's "zero high/critical" as the shipped (production) tree and re-checking at every stage. Tell me if you'd rather move to Tailwind 4. *(L13 update: the dev tree also shows a moderate `postcss-selector-parser` < 7.1.6 advisory via Tailwind 3. It's build-time only and parses our own CSS. Same situation, same recommendation.)*
 2. **[non-blocking] `EMAIL_ADMIN_TO` is empty** in `.env.local` (`RESEND_API_KEY` is also empty — known, per CLAUDE.md). Until it's set, admin notification emails will fall back to `SUPER_ADMIN_EMAIL`, and email sending stays a no-op while there's no Resend key.
 3. **[optional] `tailwindcss-animate`** (shadcn's animation plugin for Tailwind 3) isn't in PRD §4, so it isn't installed. Dialogs/sheets will open without enter/exit animations. Approve it if you want those animations.
 4. **[needs your OK — secrets] Storage purges need the service key in Supabase Vault.** PRD §6.7/§7.12/§8.4 require pg_cron to delete expired uploads (24 h), verification documents (30 days after decision) and deleted users' media. Supabase now blocks deleting storage objects with SQL (`protect_objects_delete`), so the job has to call the Storage API, and for that the database needs the service-role key, stored encrypted in **Supabase Vault** as `app_service_role_key` (plus `app_project_url`). That's a new place for a secret, beyond §7, so I haven't stored it. Everything is built: until the secrets exist the purge jobs delete nothing, raise a warning, and never falsely mark documents as purged. **Reply "OK to store in Vault"** and I'll add `npm run db:vault` (it reads the key from `.env.local` and pipes it to psql over stdin, so it never appears in shell history or process args) and run it on DEV. The alternative is a Vercel cron route doing the deletes with the service key it already holds. That's also outside the PRD's "digest + backup only" Vercel crons.
 5. **[heads-up, non-blocking] Signups on DEV only work for Supabase team-member emails** until custom SMTP (Resend) is configured: the built-in sender rejects every other address with `email_address_invalid`, and caps at 2 emails/hour. The app shows a friendly message, and the tests avoid email (CLAUDE.md). When you set up SMTP, please also update the four email templates listed in LAUNCH.md §8, so confirmation links work when opened on a different device.
 6. **[heads-up] MFA recovery:** Supabase TOTP has no backup codes. If an admin loses their phone, a super admin has to remove the factor in the Supabase dashboard (Authentication → Users → user → MFA). I'd suggest enrolling a second authenticator (e.g. a password-manager TOTP) on your super-admin account. I'll mention this in LAUNCH.md.
 7. **[content needed before launch] Verified safety information.** The safety pages only show the national numbers (112, FRSC 122) and LASEMA 767 from the PRD, all marked "not yet verified". Hospitals with 24 h A&E, police stations, embassies, travel advice, area notes and scam-awareness text need real, checked information per city. I won't invent emergency contacts. Add them in **Admin → Safety info** (`/admin/safety`, built in L12) or via the L15 content loader, ticking "checked against the official source today" when verified.
+8. **[before launch — legal] Privacy policy and terms are templates.** I rewrote them in L13 to match exactly what the product does (processors, retention, NDPA/UK rights, cookies), but they need a lawyer's review. Two product points to confirm: (a) the service is **18+** (I assumed this for a nightlife product), and (b) the contact address. Set `NEXT_PUBLIC_CONTACT_EMAIL` in Vercel; it defaults to `hello@` the production domain.
 

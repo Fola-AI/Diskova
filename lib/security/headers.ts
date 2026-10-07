@@ -1,6 +1,6 @@
 /**
  * Security headers (PRD §7.7). Pure functions so they can be unit-tested and used by next.config.ts.
- * CSP is Report-Only until Stage L13, when `enforceCsp` flips to true.
+ * CSP was Report-Only until Stage L13; next.config.ts now enforces it.
  */
 
 export interface SecurityHeaderOptions {
@@ -53,7 +53,8 @@ export function buildCsp(opts: SecurityHeaderOptions): string {
 
   const directives: Record<string, string[]> = {
     "default-src": ["'self'"],
-    // Next.js App Router hydration uses inline scripts; nonce-based CSP is evaluated in L13.
+    // Next.js App Router hydration uses inline scripts. A nonce-based CSP would force every page to
+    // render dynamically (no ISR/static), so 'unsafe-inline' stays; no 'unsafe-eval' in production.
     "script-src": [
       "'self'",
       "'unsafe-inline'",

@@ -4,11 +4,13 @@ import { BRAND_NAME, SEASON_NAME, SITE_URL } from "@/lib/config";
 import { getCityBySlug } from "@/lib/db/directory";
 import { listEvents } from "@/lib/db/events";
 import { buildCalendar } from "@/lib/events/ical";
+import { calendarQuery } from "@/lib/validation/routes";
 
 /** Subscribable iCal feed: /events/calendar.ics?city=lagos&season=december (§8.6). */
 export async function GET(request: NextRequest): Promise<NextResponse> {
-  const citySlug = request.nextUrl.searchParams.get("city");
-  const season = request.nextUrl.searchParams.get("season") === "december";
+  const q = calendarQuery.parse(Object.fromEntries(request.nextUrl.searchParams));
+  const citySlug = q.city;
+  const season = q.season === "december";
   const city = citySlug ? await getCityBySlug(citySlug) : null;
   const events = await listEvents({ from: new Date(Date.now() - 86_400_000), cityId: city?.id, seasonOnly: season, limit: 500 });
   const host = new URL(SITE_URL).host;

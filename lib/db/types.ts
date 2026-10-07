@@ -919,7 +919,15 @@ isOneToOne: false
                 }
           }
           Functions: {
-            "admin_create_issue_report":
+            "admin_backup_rows":
+{ Args: { "p_limit"?: number,"p_offset"?: number,"p_schema": string,"p_table": string }; Returns: Json[]
+                           },
+"admin_backup_tables":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "est_rows": number,"schema_name": string,"table_name": string
+            }[]
+                           },
+"admin_create_issue_report":
 { Args: { "p_area_id"?: string,"p_category": Database["public"]['Enums']["issue_category"],"p_city_id"?: string,"p_description": string,"p_lat"?: number,"p_lng"?: number,"p_reporter_email"?: string,"p_reporter_id"?: string }; Returns: string
                            },
 "admin_create_verification_request":

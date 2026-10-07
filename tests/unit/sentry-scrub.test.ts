@@ -46,3 +46,34 @@ describe("Sentry scrubbing (PRD §7.8)", () => {
     expect(event.user.email).toBe("a@b.co");
   });
 });
+
+describe("Sentry wiring (CLAUDE.md: errors + tracing only, no PII)", async () => {
+  const { sentrySharedOptions } = await import("../../sentry.shared");
+  const { listSourceFiles, read, rel } = await import("../helpers/source-files");
+
+  it("scrubs events, spans and breadcrumbs; no default PII; 10% tracing; logs off", () => {
+    expect(sentrySharedOptions.beforeSend).toBe(scrubEvent);
+    expect(sentrySharedOptions.beforeSendSpan).toBe(scrubEvent);
+    expect(sentrySharedOptions.beforeBreadcrumb).toBe(scrubEvent);
+    expect(sentrySharedOptions.sendDefaultPii).toBe(false);
+    expect(sentrySharedOptions.tracesSampleRate).toBe(0.1);
+    expect(sentrySharedOptions.enableLogs).toBe(false);
+  });
+
+  it("a realistic server error event leaves nothing identifying", () => {
+    const out = scrubEvent({
+      exception: { values: [{ value: "insert failed for fola@diskova.io (sb_secret_abcdefghijk1234) from 2001:db8:85a3::8a2e:370:7334" }] },
+      request: { url: "https://diskova.io/auth/callback?token_hash=pkce_abc123&type=signup", headers: { "x-forwarded-for": "102.89.3.4" } },
+      breadcrumbs: [{ message: "fetch https://x.supabase.co/rest/v1/posts?apikey=sb_publishable_zzzzzzzzzz" }],
+    });
+    const json = JSON.stringify(out);
+    for (const leak of ["fola@diskova.io", "sb_secret_abcdefghijk1234", "2001:db8:85a3", "102.89.3.4", "sb_publishable_zzzzzzzzzz"]) expect(json).not.toContain(leak);
+  });
+
+  it("no Session Replay, profiling or Sentry logs integration is used anywhere", () => {
+    const offenders = listSourceFiles(["app", "components", "lib", "instrumentation-client.ts", "instrumentation.ts", "sentry.server.config.ts", "sentry.edge.config.ts", "next.config.ts"], [".ts", ".tsx"])
+      .filter((f) => /replayIntegration|browserProfilingIntegration|nodeProfilingIntegration|profilesSampleRate|replaysSessionSampleRate/.test(read(f)))
+      .map(rel);
+    expect(offenders).toEqual([]);
+  });
+});
