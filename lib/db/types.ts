@@ -925,9 +925,27 @@ isOneToOne: false
 "admin_create_verification_request":
 { Args: { "p_business_doc_path"?: string,"p_id_doc_path"?: string,"p_note"?: string,"p_social_proof_url"?: string,"p_submitted_by": string,"p_vendor_id": string }; Returns: string
                            },
+"admin_daily_counts":
+{ Args: { "p_days"?: number }; Returns: {
+              "checkins": number,"day": string,"official_updates": number,"posts": number,"pulses": number,"signups": number,"vendors": number
+            }[]
+                           },
 "admin_decide_verification_request":
 { Args: { "p_id": string,"p_reason"?: string,"p_reviewer": string,"p_status": Database["public"]['Enums']["verification_status"] }; Returns: {
               "submitted_by": string,"vendor_id": string
+            }[]
+                           },
+"admin_event_duplicates":
+{ Args: { "p_limit"?: number }; Returns: {
+              "a_id": string,"a_slug": string,"a_title": string,"b_id": string,"b_slug": string,"b_title": string,"day": string,"similarity": number
+            }[]
+                           },
+"admin_force_logout":
+{ Args: { "p_profile_id": string }; Returns: number
+                           },
+"admin_list_activity":
+{ Args: { "p_city_id"?: string,"p_kind_prefix"?: string,"p_limit"?: number,"p_profile_id"?: string,"p_vendor_id"?: string }; Returns: {
+              "at": string,"city_id": string,"city_name": string,"id": number,"kind": string,"meta": Json,"profile_id": string,"username": string,"vendor_id": string,"vendor_name": string
             }[]
                            },
 "admin_list_audit":
@@ -945,10 +963,26 @@ isOneToOne: false
               "area_name": string,"category": Database["public"]['Enums']["issue_category"],"city_name": string,"created_at": string,"description": string,"handled_by_username": string,"has_location": boolean,"id": string,"internal_note": string,"reporter_email": string,"reporter_username": string,"status": Database["public"]['Enums']["issue_status"]
             }[]
                            },
+"admin_list_users":
+{ Args: { "p_desc"?: boolean,"p_include_email"?: boolean,"p_include_ip"?: boolean,"p_limit"?: number,"p_offset"?: number,"p_q"?: string,"p_role"?: Database["public"]['Enums']["user_role"],"p_shadowbanned"?: boolean,"p_sort"?: string,"p_status"?: Database["public"]['Enums']["profile_status"] }; Returns: {
+              "created_at": string,"deleted_at": string,"display_name": string,"email": string,"email_verified": boolean,"id": string,"is_shadowbanned": boolean,"last_ip": string,"last_seen_at": string,"points": number,"post_count": number,"role": Database["public"]['Enums']["user_role"],"signup_ip": string,"status": Database["public"]['Enums']["profile_status"],"total": number,"trust_score": number,"username": string
+            }[]
+                           },
+"admin_list_vendors":
+{ Args: { "p_area_id"?: string,"p_category_id"?: string,"p_city_id"?: string,"p_claim"?: Database["public"]['Enums']["claim_status"],"p_desc"?: boolean,"p_limit"?: number,"p_never_posted"?: boolean,"p_no_photos"?: boolean,"p_no_prices"?: boolean,"p_offset"?: number,"p_q"?: string,"p_sort"?: string,"p_status"?: Database["public"]['Enums']["vendor_status"],"p_verified"?: boolean }; Returns: {
+              "area": string,"category": string,"city": string,"claim_status": Database["public"]['Enums']["claim_status"],"completeness": number,"created_at": string,"has_photos": boolean,"has_prices": boolean,"id": string,"is_seed": boolean,"last_activity_at": string,"name": string,"never_posted": boolean,"official_updates_7d": number,"open_reports": number,"owner_username": string,"posts_7d": number,"slug": string,"status": Database["public"]['Enums']["vendor_status"],"total": number,"verified": boolean
+            }[]
+                           },
 "admin_list_verification_requests":
 { Args: { "p_status"?: Database["public"]['Enums']["verification_status"] }; Returns: {
               "business_doc_path": string,"created_at": string,"docs_purged_at": string,"id": string,"id_doc_path": string,"is_claim": boolean,"note": string,"rejection_reason": string,"reviewed_at": string,"social_proof_url": string,"status": Database["public"]['Enums']["verification_status"],"submitted_by": string,"submitter_username": string,"vendor_claim_status": Database["public"]['Enums']["claim_status"],"vendor_id": string,"vendor_name": string,"vendor_slug": string
             }[]
+                           },
+"admin_moderation_stats":
+{ Args: Record<PropertyKey, never>; Returns: Json
+                           },
+"admin_platform_summary":
+{ Args: Record<PropertyKey, never>; Returns: Json
                            },
 "admin_points_today":
 { Args: { "p_profile_id": string }; Returns: number
@@ -967,6 +1001,11 @@ isOneToOne: false
                            },
 "admin_update_issue_report":
 { Args: { "p_handled_by": string,"p_id": string,"p_internal_note"?: string,"p_status": Database["public"]['Enums']["issue_status"] }; Returns: undefined
+                           },
+"admin_user_network":
+{ Args: { "p_profile_id": string }; Returns: {
+              "accounts_sharing_ip": number,"device_hash": string,"last_ip": string,"signup_ip": string,"signup_ua": string
+            }[]
                            },
 "admin_write_audit":
 { Args: { "p_action": string,"p_actor_id"?: string,"p_actor_role"?: string,"p_after"?: Json,"p_before"?: Json,"p_entity_id": string,"p_entity_type": string,"p_ip"?: unknown,"p_reason"?: string,"p_user_agent"?: string }; Returns: number

@@ -1,7 +1,7 @@
 # Build Progress
 
 ## Current stage
-Stage L12 — Super-admin back office
+Stage L13 — Security hardening and RLS matrix tests
 
 ## Launch stages (required before go-live)
 - [x] Stage L1: Project scaffold, tooling, `npm run verify`
@@ -15,7 +15,7 @@ Stage L12 — Super-admin back office
 - [x] Stage L9: Events and the December in Nigeria calendar
 - [x] Stage L10: Guides, daytime layer, diaspora toolkit, blog (CMS)
 - [x] Stage L11: Safety information section and private issue reports
-- [ ] Stage L12: Super-admin back office
+- [x] Stage L12: Super-admin back office
 - [ ] Stage L13: Security hardening and RLS matrix tests
 - [ ] Stage L14: SEO, performance, PWA, analytics
 - [ ] Stage L15: Final QA, content loader, LAUNCH.md (production promotion steps for Fola)
@@ -500,6 +500,49 @@ Acceptance evidence:
 - **Numbers render per city:** smoke `safety.spec.ts`: Lagos shows national 112 / FRSC 122 + LASEMA 767 (tap-to-call `tel:767`); Abuja shows the national numbers without LASEMA; every block shows "Last verified".
 - Also: the exact confirmation copy after submitting; honeypot submissions get the same response and are not stored.
 
+### Stage L12 — 2026-10-07
+```
+  ✓  18 [smoke] › tests/smoke/directory.spec.ts:70:5 › vendor page: header, prices, hours, deep links and share (236ms)
+  ✓  19 [smoke] › tests/smoke/content.spec.ts:95:5 › toolkit index and guides index render (233ms)
+  ✓  20 [smoke] › tests/smoke/directory.spec.ts:96:5 › search finds venues by partial name, with typeahead (614ms)
+  ✓  22 [smoke] › tests/smoke/directory.spec.ts:105:5 › sitemap lists cities and vendors; OG image renders (300ms)
+  ✓  15 [smoke] › tests/smoke/admin-backoffice.spec.ts:62:5 › admin: vendor table filters + posts bulk hide needs a reason (4.8s)
+  ✓  21 [smoke] › tests/smoke/events.spec.ts:51:5 › 200 events render smoothly in the list and month views (680ms)
+  ✓  25 [smoke] › tests/smoke/events.spec.ts:73:5 › December in Nigeria page shows the countdown before the season (325ms)
+  ✓  26 [smoke] › tests/smoke/events.spec.ts:79:5 › event page: venue card, external ticket link, share, valid .ics (353ms)
+  ✓  24 [smoke] › tests/smoke/moderation.spec.ts:37:5 › moderator (MFA) approves a held post from the queue and it goes live (4.6s)
+  ✓  28 [smoke] › tests/smoke/moderation.spec.ts:49:5 › community guidelines are linked from every page footer (242ms)
+  ✓  29 [smoke] › tests/smoke/safety.spec.ts:10:5 › emergency numbers render per city with verification status (373ms)
+  ✓  27 [smoke] › tests/smoke/events.spec.ts:99:5 › submit an event → admin approves → it is public (6.9s)
+  ✓  30 [smoke] › tests/smoke/safety.spec.ts:24:5 › anonymous private report → exact confirmation → visible only in admin triage (4.2s)
+  ✓  32 [smoke] › tests/smoke/safety.spec.ts:48:5 › honeypot submissions are not stored (436ms)
+  ✓  31 [smoke] › tests/smoke/settings.spec.ts:26:5 › edit profile: username, home city, diaspora, location consent (2.2s)
+  ✓  33 [smoke] › tests/smoke/tonight.spec.ts:41:5 › empty Tonight view invites the first pulse and vendor updates (807ms)
+  ✓  34 [smoke] › tests/smoke/settings.spec.ts:46:5 › avatar upload goes through the one-image pipeline (EXIF stripped, WebP) (5.1s)
+  ✓  35 [smoke] › tests/smoke/tonight.spec.ts:49:5 › a pulse becomes a live venue: rail, hero count, polling API and crowd badge (3.9s)
+  ✓  23 [smoke] › tests/smoke/feed.spec.ts:39:5 › one-tap pulse appears for a signed-in viewer within 2 s (Realtime) and an anonymous viewer within 30 s (17.8s)
+  ✓  37 [smoke] › tests/smoke/tonight.spec.ts:77:5 › heat map renders on toggle (1.9s)
+  ✓  39 [smoke] › tests/smoke/tonight.spec.ts:84:5 › forecast line shows once there are 4+ weeks of data (158ms)
+  ✓  36 [smoke] › tests/smoke/settings.spec.ts:75:5 › delete account anonymises the profile and blocks sign-in (3.4s)
+  ✓  40 [smoke] › tests/smoke/vendor.spec.ts:27:5 › fresh account → submitted vendor in under 10 minutes (13.0s)
+  ✓  38 [smoke] › tests/smoke/feed.spec.ts:73:5 › 4-photo check-in: every request finishes in under 5 s (18.6s)
+  ✓  41 [smoke] › tests/smoke/vendor.spec.ts:90:5 › admin (with MFA) approves the listing and it goes live (10.1s)
+  ✓  43 [smoke] › tests/smoke/vendor.spec.ts:112:5 › official update in two taps appears on the vendor page labelled Official (3.4s)
+  ✓  42 [smoke] › tests/smoke/feed.spec.ts:136:5 › my posts, public profile and leaderboard pages render (7.2s)
+  ✓  44 [smoke] › tests/smoke/vendor.spec.ts:135:5 › claim flow: claimant uploads ID, admin approves, claimant becomes owner (7.4s)
+
+  44 passed (1.2m)
+```
+Vitest in the same run: `Test Files  26 passed (26) Tests  160 passed (160)`
+
+Acceptance evidence:
+- **Moderator can't open settings:** smoke `admin-backoffice.spec.ts`: a moderator with MFA gets a 404 on `/admin/settings` and on `/admin/export/users`, and the Settings link isn't in their nav. Service level: `updateSettings` throws for an admin and succeeds (audited) for a super_admin (`tests/rls/l12-backoffice.test.ts`).
+- **User CSV export is super_admin only and audited:** an admin gets a 404 from the route and `forbidden` from the service with no audit row. A super_admin gets `text/csv` containing the filtered users' emails, and exactly one `export.users` audit row is written. IPs are never in the export.
+- **Digest renders:** `buildDigest()` + `DailyDigestEmail` render to HTML with the counts. The cron route rejects requests without, or with the wrong, `Bearer CRON_SECRET`.
+- **Filters work:** vendor table `no_prices` / `never_posted` / search (service test + smoke with `?tab=all&no_prices=1`); user table role filter (smoke); vendor CSV export honours the same filters.
+- **Destructive actions need a reason and are audited:** suspend user, bulk post hide, suspend vendor, settings change and blocklist add all reject empty reasons (ZodError, nothing written) and write `user.*` / `post.bulk_*` / `vendor.*` / `settings.updated` / `blocklist.phrase_added` audit rows. Smoke: bulk hide without a selection or reason shows an error.
+- **Live activity stream:** smoke: a new signup appears on the moderator's dashboard stream without reload; pause shows "Resume". A normal user is refused on the private `admin:activity` channel (`CHANNEL_ERROR`) and can't select `activity_events`.
+
 ## Notes / decisions
 (append here as you go)
 
@@ -639,6 +682,27 @@ Acceptance evidence:
 - Safety info is seeded only with the PRD's national numbers + LASEMA. Hospitals, police stations, embassies, travel advice and so on need verified data from you; I deliberately did not invent phone numbers. They're edited in the L12 content CMS (safety_info editor).
 - Footer now links Safety and the Diaspora toolkit.
 
+**L12 (2026-10-07)**
+- Admin nav is role-aware. Moderator: Dashboard, Moderation, Posts, Reports, Users, Tasks. Admin adds Vendors, Events, Content, Safety info, Issues, Cities, Points, Audit log. Super admin adds Settings. Every page re-checks the role server-side (`requireRole`, aal2); a role that's too low gets a 404.
+- **DataTable** (`components/admin/data-table.tsx`): server-rendered. Sort, page and filters live in the URL, so views are shareable and work without JS. Saved views ("Save view") go in localStorage per table. Row checkboxes post to a separate bulk form. CSV export at `/admin/export/[table]` (vendors / users / posts / audit / issues): role + aal2 checked in the route, 30 exports/user/hour, max 10k rows, formula-injection-safe cells, every export audited. `users` is super_admin only and never includes IPs.
+- **Dashboard:** KPI tiles from `private.v_platform_summary`, 14-day inline-SVG sparklines, needs-attention panel (pending vendors/events, P1 items, never-verified safety rows), tasks due, moderation stats, recent admin actions (admin+).
+- **Live activity stream:** `activity_events` is partitioned (pg_partman), and Realtime `postgres_changes` can't stream partitioned tables (the WAL names the partition), so 0043 never delivered. `0044` switches to **Broadcast from Database**: an AFTER INSERT trigger calls `realtime.send` to the private topic `admin:activity`, and a `realtime.messages` policy allows only `has_staff_role('moderator')` (aal2). Same §11.1 behaviour, different transport. The audit log isn't realtime: the dashboard shows the latest audit entries on load.
+- **Vendors:** "All vendors" tab with every §11.2 column and filter, bulk approve / suspend (reason required), export. Detail page tabs: Overview (actions + staff edit of core text fields, reason required), Posts, Members, Prices, Events, Verification (signed URLs + decide), Reports, Audit, Notes; plus "View as vendor" (the existing read-only preview) and "Create a task".
+- **Users:** email column for admin+; last IP for super_admin only, labelled informational with a CGNAT warning. Actions by role: moderators warn / suspend / shadowban / lift; admins also ban (+ force logout), reset trust, force logout, delete & anonymise (same `anonymiseAccount` as self-delete). Nobody can sanction themselves, and only a super admin can act on staff accounts. Role changes are super_admin only behind a **fresh MFA code (≤ 5 min, from the JWT `amr` claim)**, and they sign the user out everywhere. The timeline is the user's audit trail; notes are append-only audit entries (`note.added`).
+- **Posts:** all statuses with status / kind / hold / decision / venue / author / since / reported filters; bulk hide or remove (reason required, audited).
+- **Reports:** open by default, status / entity / reason filters, mark reviewing, resolve kept / removed, or dismiss (note required).
+- **Moderation additions:** stats line, keyboard shortcuts **A** approve · **R** remove (focuses the reason box first if it's empty) · **S** skip to the next item · **N** focus the note/reason box. "Add blocklist phrase" is append-only for moderators (audited); the full blocklist is edited in Settings. Decision: I read §11.3's "A/R/S/N" as Approve / Remove / Skip / Note.
+- **Events:** staff edit (title, times in venue timezone, category, venue name, ticket link, prices, description; reason required) and a duplicates finder (same city + day, pg_trgm title similarity).
+- **Cities & areas:** create / edit with a click-to-place pin on a Mapbox map (centroid). Polygons / bboxes aren't drawn in the UI (§11.10 says "map editor"; the pin covers what the directory uses today).
+- **Tasks:** kanban (to do / doing / done) with priority, assignee, due date and related entity. Moves are plain form posts.
+- **Audit log:** filter by action prefix / entity / actor, keyset pagination, field-level before→after diff, export.
+- **Points:** adjust ±, reset to 0, grant / revoke badge, all with a reason, written as `admin_adjustment` point events (running totals via the existing trigger).
+- **Settings (super_admin):** thresholds, hold rules, posting limits, check-in expiry, season dates, FX, notice, listing-is-free, **maintenance mode (now enforced: pulses, check-ins and official updates are refused while it's on)**, blocklist; read-only feature flags; staff roles list; **async data export** (gzipped JSON of content tables, no emails / IPs / auth data) via `after()` into the private `exports` bucket, with a 24 h signed link emailed to the requester and 10-minute links listed on the page. Agent API keys arrive with P1.
+- **Safety info editor** (`/admin/safety`): create / edit / delete (delete needs a reason), city or national, section, ordering, and a "checked against the official source today" box that stamps `last_verified_at` / `verified_by`.
+- **Daily digest:** `/api/cron/digest`, Vercel cron `0 7 * * *` (08:00 WAT), `Bearer CRON_SECRET` checked in constant time. Counts only, no user content, sent to `EMAIL_ADMIN_TO` (fallback `SUPER_ADMIN_EMAIL`).
+- **Bug fixes found while testing:** (1) empty optional numeric fields were coerced to `0` by `z.union([z.coerce.number(), z.literal("")])`, so the literal now comes first (settings FX and event prices). (2) `moderation_items` has no FK to its post, so hard-deleted posts (abandoned-upload purge, vendor cascade) left queue items open forever: 130 orphans on DEV. `0045` closes items when the post is deleted and cleaned up the existing orphans.
+- New rate limit `exportUser` 30/h (PRD doesn't specify). `safeRevalidatePath` accepts a type (`/safety` layout revalidation).
+
 ## Open questions for Fola
 (write here when you need me)
 
@@ -648,5 +712,5 @@ Acceptance evidence:
 4. **[needs your OK — secrets] Storage purges need the service key in Supabase Vault.** PRD §6.7/§7.12/§8.4 require pg_cron to delete expired uploads (24 h), verification documents (30 days after decision) and deleted users' media. Supabase now blocks deleting storage objects with SQL (`protect_objects_delete`), so the job has to call the Storage API, and for that the database needs the service-role key, stored encrypted in **Supabase Vault** as `app_service_role_key` (plus `app_project_url`). That's a new place for a secret, beyond §7, so I haven't stored it. Everything is built: until the secrets exist the purge jobs delete nothing, raise a warning, and never falsely mark documents as purged. **Reply "OK to store in Vault"** and I'll add `npm run db:vault` (it reads the key from `.env.local` and pipes it to psql over stdin, so it never appears in shell history or process args) and run it on DEV. The alternative is a Vercel cron route doing the deletes with the service key it already holds. That's also outside the PRD's "digest + backup only" Vercel crons.
 5. **[heads-up, non-blocking] Signups on DEV only work for Supabase team-member emails** until custom SMTP (Resend) is configured: the built-in sender rejects every other address with `email_address_invalid`, and caps at 2 emails/hour. The app shows a friendly message, and the tests avoid email (CLAUDE.md). When you set up SMTP, please also update the four email templates listed in LAUNCH.md §8, so confirmation links work when opened on a different device.
 6. **[heads-up] MFA recovery:** Supabase TOTP has no backup codes. If an admin loses their phone, a super admin has to remove the factor in the Supabase dashboard (Authentication → Users → user → MFA). I'd suggest enrolling a second authenticator (e.g. a password-manager TOTP) on your super-admin account. I'll mention this in LAUNCH.md.
-7. **[content needed before launch] Verified safety information.** The safety pages only show the national numbers (112, FRSC 122) and LASEMA 767 from the PRD, all marked "not yet verified". Hospitals with 24 h A&E, police stations, embassies, travel advice, area notes and scam-awareness text need real, checked information per city. I won't invent emergency contacts. Add them via Admin → Content (safety info, L12) or the L15 content loader, and set the verification date when checked.
+7. **[content needed before launch] Verified safety information.** The safety pages only show the national numbers (112, FRSC 122) and LASEMA 767 from the PRD, all marked "not yet verified". Hospitals with 24 h A&E, police stations, embassies, travel advice, area notes and scam-awareness text need real, checked information per city. I won't invent emergency contacts. Add them in **Admin → Safety info** (`/admin/safety`, built in L12) or via the L15 content loader, ticking "checked against the official source today" when verified.
 

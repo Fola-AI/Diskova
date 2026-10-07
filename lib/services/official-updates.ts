@@ -3,6 +3,7 @@ import { nanoid } from "nanoid";
 import type { SessionContext } from "@/lib/auth/guards";
 import { getAdminSupabase } from "@/lib/admin-db/client";
 import { getPlatformSettings, moderationSettings } from "@/lib/admin-db/settings";
+import { MAINTENANCE_MESSAGE } from "@/lib/services/posts";
 import { ImageRejectedError, processImage } from "@/lib/media/image";
 import { downloadIncoming, isOwnIncomingPath, putPublicWebp, removeIncoming } from "@/lib/media/uploads";
 import { decidePost, type DecideResult } from "@/lib/moderation/decide";
@@ -36,6 +37,7 @@ export async function createOfficialUpdate(
 ): Promise<OfficialUpdateResult> {
   const input = officialUpdateSchema.parse(raw);
   const settings = await getPlatformSettings();
+  if (settings.maintenance_mode) throw new OfficialUpdateError(MAINTENANCE_MESSAGE);
 
   const rl = await rateLimitAll([
     ["postUser", session.user.id, { tokens: settings.max_posts_per_user_per_hour }],

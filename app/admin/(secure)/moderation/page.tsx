@@ -2,7 +2,10 @@ import { formatDistanceToNowStrict } from "date-fns";
 import Image from "next/image";
 import Link from "next/link";
 
+import { BlocklistForm } from "@/components/admin/blocklist-form";
 import { ModerationForm } from "@/components/admin/moderation-form";
+import { ModerationShortcuts } from "@/components/admin/moderation-shortcuts";
+import { getAdminSupabase } from "@/lib/admin-db/client";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { requireRole } from "@/lib/auth/guards";
@@ -34,15 +37,27 @@ function topScores(score: unknown): Array<[string, number]> {
   return Object.entries(out).sort((a, b) => b[1] - a[1]).slice(0, 3);
 }
 
-/** Moderation queue (§11.3, minimal L8 version — keyboard shortcuts, stats and bulk actions in L12). */
+/** Moderation queue (§11.3) with stats and A/R/S/N keyboard shortcuts. */
 export default async function ModerationPage({ searchParams }: { searchParams: Promise<{ source?: string }> }) {
   await requireRole("moderator", "/admin/moderation");
   const source = (await searchParams).source;
-  const items = await listModerationQueue({ source: TABS.some((t) => t.source === source) ? source : undefined });
+  const [items, { data: statsRaw }] = await Promise.all([
+    listModerationQueue({ source: TABS.some((t) => t.source === source) ? source : undefined }),
+    getAdminSupabase().rpc("admin_moderation_stats"),
+  ]);
+  const stats = statsRaw as { open_total?: number; median_seconds_to_close_7d?: number | null; auto_flagged_7d?: number; human_actioned_7d?: number } | null;
 
   return (
     <div className="space-y-5">
-      <h1 className="text-2xl font-semibold">Moderation queue</h1>
+      <div className="space-y-1">
+        <h1 className="text-2xl font-semibold">Moderation queue</h1>
+        <p className="text-sm text-muted-foreground" data-testid="moderation-stats">
+          {stats?.open_total ?? 0} open · 7 days: {stats?.human_actioned_7d ?? 0} human decisions, {stats?.auto_flagged_7d ?? 0} auto-flagged
+          {stats?.median_seconds_to_close_7d ? `, median ${Math.round(stats.median_seconds_to_close_7d / 60)} min to close` : ""}
+        </p>
+        <ModerationShortcuts />
+        <BlocklistForm />
+      </div>
       <nav className="-mx-4 flex gap-2 overflow-x-auto px-4 text-sm [scrollbar-width:none]" aria-label="Queue filters">
         {TABS.map((t) => (
           <Link key={t.label} href={t.source ? `/admin/moderation?source=${t.source}` : "/admin/moderation"}
@@ -57,7 +72,7 @@ export default async function ModerationPage({ searchParams }: { searchParams: P
           const p = item.post;
           const ageDays = p?.author ? Math.floor((Date.now() - new Date(p.author.created_at).getTime()) / 86_400_000) : null;
           return (
-            <Card key={item.id} data-testid="moderation-item">
+            <Card key={item.id} data-testid="moderation-item" className="data-[current]:ring-2 data-[current]:ring-primary">
               <CardHeader className="flex-row flex-wrap items-center gap-2 space-y-0 pb-2">
                 <Badge variant={item.priority === 1 ? "destructive" : item.priority === 2 ? "gold" : "secondary"}>P{item.priority}</Badge>
                 <Badge variant="outline">{item.source.replace("_", " ")}</Badge>

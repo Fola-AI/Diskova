@@ -6,7 +6,8 @@ import { ZodError } from "zod";
 import type { FormState } from "@/components/forms/form-state";
 import { requireRole } from "@/lib/auth/guards";
 import { requestMeta } from "@/lib/http/request-meta";
-import { decideEvent, type EventAdminAction } from "@/lib/services/admin/events";
+import { toFormState } from "@/lib/admin/form-state";
+import { adminEditEvent, decideEvent, type EventAdminAction } from "@/lib/services/admin/events";
 import { AdminActionError } from "@/lib/services/admin/vendors";
 
 const ACTIONS: EventAdminAction[] = ["approve", "reject", "feature", "unfeature", "cancel"];
@@ -25,4 +26,16 @@ export async function eventDecisionAction(_prev: FormState, formData: FormData):
   }
   revalidatePath("/admin/events");
   return { ok: true, message: "Done." };
+}
+
+export async function editEventForm(_prev: FormState, formData: FormData): Promise<FormState> {
+  const session = await requireRole("admin", "/admin/events");
+  const eventId = String(formData.get("eventId") ?? "");
+  try {
+    await adminEditEvent(session, eventId, Object.fromEntries(formData), await requestMeta());
+  } catch (err) {
+    return toFormState(err);
+  }
+  revalidatePath("/admin/events");
+  return { ok: true, message: "Event saved." };
 }

@@ -27,3 +27,5 @@ const MEMBER_RANK: Record<VendorMemberRole, number> = { owner: 3, manager: 2, st
 export function memberRoleAtLeast(role: VendorMemberRole | null | undefined, min: VendorMemberRole): boolean {
   return Boolean(role) && MEMBER_RANK[role as VendorMemberRole] >= MEMBER_RANK[min];
 }
+
+export const USER_ROLES: readonly UserRole[] = ["user", "vendor_member", "moderator", "admin", "super_admin"];

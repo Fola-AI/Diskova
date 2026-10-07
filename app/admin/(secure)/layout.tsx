@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import type { ReactNode } from "react";
 
+import { AdminNav } from "@/components/admin/admin-nav";
 import { requireRole } from "@/lib/auth/guards";
 
 export const metadata: Metadata = { title: "Admin", robots: { index: false, follow: false } };
@@ -17,6 +18,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
           {profile.username} · {profile.role.replace("_", " ")} · MFA verified
         </span>
       </div>
+      <AdminNav role={profile.role} />
       {children}
     </div>
   );

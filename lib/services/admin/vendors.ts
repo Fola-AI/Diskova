@@ -8,6 +8,7 @@ import { VendorDecisionEmail, VerificationDecisionEmail } from "@/lib/email/temp
 import { safeRevalidatePath } from "@/lib/http/revalidate";
 import { assertServerOnly } from "@/lib/server-only";
 import { DOCS_BUCKET } from "@/lib/services/verification";
+import { reasonSchema } from "@/lib/services/admin/common";
 
 assertServerOnly("lib/services/admin/vendors");
 
@@ -22,7 +23,6 @@ export interface StaffMeta {
   userAgent: string | null;
 }
 
-const reasonSchema = z.string().trim().min(5, "Give a reason (at least 5 characters).").max(1000);
 
 async function ownerEmail(profileId: string | null): Promise<string | null> {
   if (!profileId) return null;
@@ -145,4 +145,136 @@ export async function decideVerification(
     react: VerificationDecisionEmail({ vendorName: request.vendor_name, approved: decision === "approve", isClaim: request.is_claim, reason }),
   });
   safeRevalidatePath(`/v/${request.vendor_slug}`);
+}
+
+// ---------------------------------------------------------------------------------------------
+// §11.2 full vendor table + actions (extends the L5 review queue)
+
+export interface VendorTableFilters {
+  q?: string;
+  status?: "draft" | "pending_review" | "published" | "suspended" | "rejected";
+  cityId?: string;
+  areaId?: string;
+  categoryId?: string;
+  verified?: boolean;
+  claim?: "unclaimed" | "claimed";
+  noPrices?: boolean;
+  noPhotos?: boolean;
+  neverPosted?: boolean;
+  sort?: string;
+  desc?: boolean;
+  limit?: number;
+  offset?: number;
+}
+
+export async function listVendorsTable(f: VendorTableFilters) {
+  const { data, error } = await getAdminSupabase().rpc("admin_list_vendors", {
+    p_q: f.q || undefined,
+    p_status: f.status,
+    p_city_id: f.cityId,
+    p_area_id: f.areaId,
+    p_category_id: f.categoryId,
+    p_verified: f.verified,
+    p_claim: f.claim,
+    p_no_prices: f.noPrices ?? false,
+    p_no_photos: f.noPhotos ?? false,
+    p_never_posted: f.neverPosted ?? false,
+    p_sort: f.sort ?? "created_at",
+    p_desc: f.desc ?? true,
+    p_limit: f.limit ?? 50,
+    p_offset: f.offset ?? 0,
+  });
+  if (error) throw error;
+  return { rows: data ?? [], total: Number(data?.[0]?.total ?? 0) };
+}
+
+export type VendorAdminAction = "verify" | "unverify" | "suspend" | "unsuspend" | "approve" | "reject";
+
+/** Verify / suspend / reinstate (reason required for anything destructive) — audited. */
+export async function vendorAdminAction(session: SessionContext, vendorId: string, action: VendorAdminAction, reasonRaw: string | null, meta: StaffMeta): Promise<void> {
+  if (action === "approve" || action === "reject") return decideVendor(session, vendorId, action, reasonRaw, meta);
+  const admin = getAdminSupabase();
+  const { data: v } = await admin.from("vendors").select("id, slug, status, verified").eq("id", vendorId).single();
+  if (!v) throw new AdminActionError("Vendor not found.");
+  const reason = action === "suspend" || action === "unverify" ? reasonSchema.parse(reasonRaw ?? "") : reasonRaw?.trim() || null;
+  const now = new Date().toISOString();
+  const patch =
+    action === "verify" ? { verified: true, verified_at: now, verified_by: session.user.id }
+    : action === "unverify" ? { verified: false, verified_at: null, verified_by: null }
+    : action === "suspend" ? { status: "suspended" as const }
+    : { status: "published" as const };
+  if (action === "unsuspend" && v.status !== "suspended") throw new AdminActionError("This vendor isn't suspended.");
+  const { error } = await admin.from("vendors").update(patch).eq("id", vendorId);
+  if (error) throw new AdminActionError("Couldn't update the vendor.");
+  await writeAudit({ action: `vendor.${action}`, entityType: "public.vendors", entityId: vendorId, before: { status: v.status, verified: v.verified }, after: patch as never, reason, actorId: session.user.id, actorRole: session.profile.role, ...meta });
+  safeRevalidatePath(`/v/${v.slug}`);
+}
+
+export async function bulkVendorAction(session: SessionContext, ids: string[], action: "approve" | "suspend", reason: string | null, meta: StaffMeta): Promise<{ done: number; failed: number }> {
+  let done = 0;
+  let failed = 0;
+  for (const id of ids.slice(0, 200)) {
+    try {
+      await vendorAdminAction(session, id, action, reason, meta);
+      done++;
+    } catch {
+      failed++;
+    }
+  }
+  return { done, failed };
+}
+
+/** §11.2 vendor detail tabs. */
+export async function getVendorAdminDetail(id: string) {
+  const admin = getAdminSupabase();
+  const { data: vendor } = await admin
+    .from("vendors")
+    .select("*, city:cities(name), area:areas(name), category:categories!vendors_category_id_fkey(name), owner:profiles!vendors_owner_profile_id_fkey(id, username)")
+    .eq("id", id)
+    .maybeSingle();
+  if (!vendor) return null;
+  const [members, prices, posts, events, verification, reports, audit, notes] = await Promise.all([
+    admin.from("vendor_members").select("role, accepted_at, created_at, profile:profiles!vendor_members_profile_id_fkey(id, username)").eq("vendor_id", id),
+    admin.from("vendor_prices").select("id, label, amount_ngn, note, is_active, valid_from, valid_to").eq("vendor_id", id).order("created_at", { ascending: false }),
+    admin.from("posts").select("id, kind, status, body, crowd_level, report_count, created_at, author:profiles!posts_author_id_fkey(username)").eq("vendor_id", id).order("created_at", { ascending: false }).limit(50),
+    admin.from("events").select("id, slug, title, status, starts_at").eq("vendor_id", id).order("starts_at", { ascending: false }).limit(50),
+    listVerificationRequests().then((r) => r.filter((x) => x.vendor_id === id)),
+    admin.from("reports").select("id, reason, status, details, created_at").eq("entity_type", "vendor").eq("entity_id", id).order("created_at", { ascending: false }),
+    admin.rpc("admin_list_audit", { p_entity_id: id, p_limit: 100 }),
+    admin.rpc("admin_list_audit", { p_entity_id: id, p_action_prefix: "note.", p_limit: 100 }),
+  ]);
+  return {
+    vendor,
+    members: members.data ?? [],
+    prices: prices.data ?? [],
+    posts: posts.data ?? [],
+    events: events.data ?? [],
+    verification,
+    reports: reports.data ?? [],
+    audit: (audit.data ?? []).filter((a) => !a.action.startsWith("note.")),
+    notes: notes.data ?? [],
+  };
+}
+
+const vendorEditSchema = z.object({
+  name: z.string().trim().min(2).max(120),
+  tagline: z.string().trim().max(140).transform((v) => v || null),
+  description_md: z.string().trim().max(5000).transform((v) => v || null),
+  phone: z.string().trim().max(30).transform((v) => v || null),
+  whatsapp: z.string().trim().max(30).transform((v) => v || null),
+  instagram_handle: z.string().trim().max(60).transform((v) => v.replace(/^@/, "") || null),
+  website_url: z.union([z.url().max(300), z.literal("")]).transform((v) => v || null),
+  reason: reasonSchema,
+});
+
+/** Staff edit of a listing's core text fields (§11.2 "edit"). Audited before/after. */
+export async function adminEditVendor(session: SessionContext, vendorId: string, raw: unknown, meta: StaffMeta): Promise<void> {
+  const { reason, ...patch } = vendorEditSchema.parse(raw);
+  const admin = getAdminSupabase();
+  const { data: before } = await admin.from("vendors").select("slug, name, tagline, description_md, phone, whatsapp, instagram_handle, website_url").eq("id", vendorId).single();
+  if (!before) throw new AdminActionError("Vendor not found.");
+  const { error } = await admin.from("vendors").update(patch).eq("id", vendorId);
+  if (error) throw new AdminActionError("Couldn't save the vendor.");
+  await writeAudit({ action: "vendor.edited_by_staff", entityType: "public.vendors", entityId: vendorId, before, after: patch, reason, actorId: session.user.id, actorRole: session.profile.role, ...meta });
+  safeRevalidatePath(`/v/${before.slug}`);
 }

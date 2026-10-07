@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { getAdminSupabase } from "@/lib/admin-db/client";
 import { requireRole } from "@/lib/auth/guards";
 
-/** Private issue reports (§11.9) — admin only. Never shown publicly. Export arrives with L12. */
+/** Private issue reports (§11.9) — admin only. Never shown publicly. Export is admin+ and audited. */
 export default async function AdminIssuesPage() {
   await requireRole("admin", "/admin/issues");
   const { data } = await getAdminSupabase().rpc("admin_list_issue_reports", {});
@@ -13,7 +13,10 @@ export default async function AdminIssuesPage() {
   return (
     <div className="space-y-4">
       <h1 className="text-2xl font-semibold">Issue reports</h1>
-      <p className="text-sm text-muted-foreground">Private. Descriptions may contain third-party personal data — handle accordingly.</p>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <p className="text-sm text-muted-foreground">Private. Descriptions may contain third-party personal data — handle accordingly.</p>
+        <a href="/admin/export/issues" download className="rounded-md border px-2 py-1 text-xs hover:bg-secondary" data-testid="export-csv">Export CSV</a>
+      </div>
       <ul className="space-y-3">
         {reports.map((r) => (
           <li key={r.id} className="space-y-2 rounded-xl border p-4 text-sm" data-testid="issue-report">

@@ -4,12 +4,29 @@ import { decideVendorAction, decideVerificationAction } from "@/app/admin/(secur
 import { DecisionForm } from "@/components/admin/decision-form";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { VendorTable } from "@/app/admin/(secure)/vendors/vendor-table";
+import { one, type SearchParams } from "@/lib/admin/params";
 import { requireRole } from "@/lib/auth/guards";
+import { cn } from "@/lib/utils";
 import { listVendorsForReview, listVerificationRequests } from "@/lib/services/admin/vendors";
 
 /** Minimal vendor review queue (Stage L5). Extended — not rewritten — into the full §11.2 table in L12. */
-export default async function AdminVendorsPage() {
+export default async function AdminVendorsPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
   await requireRole("admin", "/admin/vendors");
+  const sp = await searchParams;
+  const tab = one(sp, "tab") === "all" ? "all" : "queue";
+  return (
+    <div className="space-y-5">
+      <nav className="flex gap-2 text-sm" aria-label="Vendor views">
+        <Link href="/admin/vendors" className={cn("rounded-full border px-3 py-1.5", tab === "queue" && "border-primary bg-primary text-primary-foreground")}>Review queue</Link>
+        <Link href="/admin/vendors?tab=all" className={cn("rounded-full border px-3 py-1.5", tab === "all" && "border-primary bg-primary text-primary-foreground")}>All vendors</Link>
+      </nav>
+      {tab === "all" ? <VendorTable sp={sp} /> : <ReviewQueue />}
+    </div>
+  );
+}
+
+async function ReviewQueue() {
   const [vendors, requests] = await Promise.all([listVendorsForReview(), listVerificationRequests()]);
 
   return (

@@ -18,6 +18,8 @@ import { checkinSchema, pulseSchema } from "@/lib/validation/posts";
 assertServerOnly("lib/services/posts");
 
 export class PostError extends Error {}
+
+export const MAINTENANCE_MESSAGE = "Posting is paused for maintenance. Please try again shortly.";
 export const MAX_CHECKIN_PHOTOS = 4;
 
 /** Record explicit location consent given in the posting UI (stored on the profile, revocable in Settings). */
@@ -41,6 +43,7 @@ export async function createPulse(
   meta: { ip: string | null },
 ): Promise<{ postId: string; isAtVenue: boolean; points: number }> {
   const input = pulseSchema.parse(raw);
+  if ((await getPlatformSettings()).maintenance_mode) throw new PostError(MAINTENANCE_MESSAGE);
   const rl = await rateLimitAll([
     ["pulseUser", session.user.id],
     ["pulseUserVendor", `${session.user.id}:${input.vendorId}`],
@@ -73,6 +76,7 @@ export async function createCheckin(
 ): Promise<{ postId: string }> {
   const input = checkinSchema.parse(raw);
   const settings = await getPlatformSettings();
+  if (settings.maintenance_mode) throw new PostError(MAINTENANCE_MESSAGE);
   const rl = await rateLimitAll([
     ["postUser", session.user.id, { tokens: settings.max_posts_per_user_per_hour }],
     ["postIp", meta.ip],

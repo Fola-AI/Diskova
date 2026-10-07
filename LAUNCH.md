@@ -54,3 +54,14 @@
     emailed there (falls back to `SUPER_ADMIN_EMAIL`).
 16. Vendor review lives at `/admin/vendors` (admin role + MFA). Verification documents are deleted 30 days after a
     decision by the daily purge — this needs the Vault secrets in step 6.
+
+## Back office (from Stage L12)
+
+17. Set `CRON_SECRET` in Vercel **Production** (any long random string). Vercel Cron sends it automatically to
+    `/api/cron/digest` (daily 07:00 UTC = 08:00 WAT, declared in `vercel.json`). Without it the route returns 401.
+18. After `supabase db push` on PROD, confirm the private `exports` storage bucket exists (migration 0042) and that
+    migration 0044's `realtime.messages` policy is present (Dashboard → Realtime → Policies). The dashboard's live
+    activity stream depends on it.
+19. Staff roles: promote moderators/admins from `/admin/users/[id]` as super admin (needs a fresh MFA code). Each
+    staff member must enrol TOTP at `/admin/mfa` on first visit.
+
