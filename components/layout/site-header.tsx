@@ -24,6 +24,7 @@ export function SiteHeader() {
             <span className="h-2 w-2 animate-live-pulse rounded-full bg-primary" aria-hidden />
             Live
           </span>
+          <Link href="/events" className="rounded-md px-2 py-1.5 hover:bg-secondary hover:text-foreground">Events</Link>
           <Link href="/search" aria-label="Search" className="grid h-9 w-9 place-items-center rounded-md hover:bg-secondary">
             <Search className="h-4 w-4" aria-hidden />
           </Link>

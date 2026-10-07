@@ -1,7 +1,7 @@
 # Build Progress
 
 ## Current stage
-Stage L9 — Events and the December in Nigeria calendar
+Stage L10 — Guides, daytime layer, diaspora toolkit, blog (CMS)
 
 ## Launch stages (required before go-live)
 - [x] Stage L1: Project scaffold, tooling, `npm run verify`
@@ -12,7 +12,7 @@ Stage L9 — Events and the December in Nigeria calendar
 - [x] Stage L6: Check-ins (full + one-tap pulse), image pipeline, live feed, points
 - [x] Stage L7: Crowd snapshots (pg_cron), Tonight view, heat map, forecast
 - [x] Stage L8: Moderation pipeline, holds, reports, sanctions, labels
-- [ ] Stage L9: Events and the December in Nigeria calendar
+- [x] Stage L9: Events and the December in Nigeria calendar
 - [ ] Stage L10: Guides, daytime layer, diaspora toolkit, blog (CMS)
 - [ ] Stage L11: Safety information section and private issue reports
 - [ ] Stage L12: Super-admin back office
@@ -378,6 +378,47 @@ Acceptance evidence (`tests/rls/l8-moderation.test.ts` runs REAL OpenAI moderati
 - **Thresholds unit-tested:** `tests/unit/moderation-decide.test.ts`; trust maths, blocklist matching and fail-safe in `tests/unit/moderation-text.test.ts`.
 - Also: more than 3 posts in 10 minutes escalates to P1; removing without a reason is refused; smoke `moderation.spec.ts`: a moderator with MFA approves a held post from `/admin/moderation?source=hold` and it goes live; the guidelines link resolves.
 
+### Stage L9 — 2026-10-07
+```
+  ✓  10 [smoke] › tests/smoke/auth.spec.ts:75:5 › used or invalid links land on login with a clear message (268ms)
+  ✓   8 [smoke] › tests/smoke/admin-mfa.spec.ts:42:5 › non-staff users get a 404 for admin pages (1.4s)
+  ✓  12 [smoke] › tests/smoke/auth.spec.ts:81:5 › open redirects are refused after login (1.1s)
+  ✓  13 [smoke] › tests/smoke/events.spec.ts:51:5 › 200 events render smoothly in the list and month views (781ms)
+  ✓  11 [smoke] › tests/smoke/directory.spec.ts:50:5 › map loads only when toggled (2.0s)
+  ✓  15 [smoke] › tests/smoke/events.spec.ts:73:5 › December in Nigeria page shows the countdown before the season (338ms)
+  ✓  16 [smoke] › tests/smoke/directory.spec.ts:70:5 › vendor page: header, prices, hours, deep links and share (243ms)
+  ✓  17 [smoke] › tests/smoke/events.spec.ts:79:5 › event page: venue card, external ticket link, share, valid .ics (501ms)
+  ✓  18 [smoke] › tests/smoke/directory.spec.ts:96:5 › search finds venues by partial name, with typeahead (767ms)
+  ✓  20 [smoke] › tests/smoke/directory.spec.ts:105:5 › sitemap lists cities and vendors; OG image renders (442ms)
+  ✓  14 [smoke] › tests/smoke/auth.spec.ts:93:5 › password reset: recovery link → choose new password → sign in with it (2.6s)
+  ✓  22 [smoke] › tests/smoke/moderation.spec.ts:37:5 › moderator (MFA) approves a held post from the queue and it goes live (4.6s)
+  ✓  23 [smoke] › tests/smoke/moderation.spec.ts:49:5 › community guidelines are linked from every page footer (268ms)
+  ✓  19 [smoke] › tests/smoke/events.spec.ts:99:5 › submit an event → admin approves → it is public (7.7s)
+  ✓  24 [smoke] › tests/smoke/settings.spec.ts:26:5 › edit profile: username, home city, diaspora, location consent (2.1s)
+  ✓  25 [smoke] › tests/smoke/tonight.spec.ts:41:5 › empty Tonight view invites the first pulse and vendor updates (467ms)
+  ✓  27 [smoke] › tests/smoke/tonight.spec.ts:49:5 › a pulse becomes a live venue: rail, hero count, polling API and crowd badge (3.6s)
+  ✓  26 [smoke] › tests/smoke/settings.spec.ts:46:5 › avatar upload goes through the one-image pipeline (EXIF stripped, WebP) (4.2s)
+  ✓  28 [smoke] › tests/smoke/tonight.spec.ts:77:5 › heat map renders on toggle (1.9s)
+  ✓  30 [smoke] › tests/smoke/tonight.spec.ts:84:5 › forecast line shows once there are 4+ weeks of data (174ms)
+  ✓  29 [smoke] › tests/smoke/settings.spec.ts:75:5 › delete account anonymises the profile and blocks sign-in (2.7s)
+  ✓  21 [smoke] › tests/smoke/feed.spec.ts:39:5 › one-tap pulse appears for a signed-in viewer within 2 s (Realtime) and an anonymous viewer within 30 s (17.2s)
+  ✓  31 [smoke] › tests/smoke/vendor.spec.ts:27:5 › fresh account → submitted vendor in under 10 minutes (15.5s)
+  ✓  33 [smoke] › tests/smoke/vendor.spec.ts:90:5 › admin (with MFA) approves the listing and it goes live (7.8s)
+  ✓  32 [smoke] › tests/smoke/feed.spec.ts:73:5 › 4-photo check-in: every request finishes in under 5 s (20.5s)
+  ✓  34 [smoke] › tests/smoke/vendor.spec.ts:112:5 › official update in two taps appears on the vendor page labelled Official (5.0s)
+  ✓  35 [smoke] › tests/smoke/feed.spec.ts:128:5 › my posts, public profile and leaderboard pages render (5.2s)
+  ✓  36 [smoke] › tests/smoke/vendor.spec.ts:135:5 › claim flow: claimant uploads ID, admin approves, claimant becomes owner (8.5s)
+
+  36 passed (1.0m)
+```
+Vitest in the same run: `Test Files  20 passed (20) Tests  125 passed (125)`
+
+Acceptance evidence:
+- **Season trigger correct:** `tests/rls/l9-events.test.ts`, exact Lagos-midnight boundaries: 14 Nov 23:30 WAT → false, 15 Nov 00:30 WAT → true, 10 Jan 23:00 WAT → true, 11 Jan 00:30 WAT → false. Moving an event re-flags it, and changing the season dates in `platform_settings` re-flags existing events (both directions).
+- **iCal valid:** `tests/unit/ical.test.ts` runs a structural RFC 5545 validator (CRLF endings, ≤ 75-octet folded lines including multi-byte ₦, balanced BEGIN/END, VEVENT has UID / DTSTAMP / UTC DTSTART / SUMMARY, TEXT escaping). The smoke test also checks the served `.ics` (content-type `text/calendar`) and the city feed (≥ 200 VEVENTs).
+- **200 events render smoothly:** smoke `events.spec.ts`: 200 published events in Owerri; `/events?city=owerri` loads with all 200 cards in **652 ms** and scrolls to the end in **25 ms** (cards use `content-visibility: auto`). The month grid renders.
+- Also: `/events/december` countdown before 15 Nov; event page with venue card, external ticket link (`rel=nofollow noopener`), share, add-to-calendar; submit → pending (404 publicly) → admin (MFA) approves → public. Approve / reject (reason required) is audited.
+
 ## Notes / decisions
 (append here as you go)
 
@@ -493,6 +534,14 @@ Acceptance evidence (`tests/rls/l8-moderation.test.ts` runs REAL OpenAI moderati
 - `/guidelines` (Community Guidelines) is linked from the footer disclaimer and footer nav. The removal email links to it.
 - `0039`: `admin_list_audit()` service-role RPC (L12 audit viewer + tests). `safeRevalidatePath()` lets services run outside Next (tests/scripts).
 - Test infra: Vitest compiles TSX (React Email templates) via the automatic JSX runtime. Playwright smoke uses 3 workers against the shared DEV project, with a 10 s default for UI assertions (explicit performance limits are unchanged).
+
+**L9 (2026-10-07)**
+- **Bug fixed (0040):** Supabase's `pg-safeupdate` rejects UPDATE/DELETE without WHERE on API sessions. The season re-flag trigger had a bare `UPDATE events SET …`, so changing season dates through the API would always have failed. It now only touches rows whose flag changes. I audited every other UPDATE/DELETE in our SQL; all have WHERE clauses.
+- Submission (`/events/submit`, verified users; venue members can post as their venue): times are entered in Lagos local time (`datetime-local`) and stored as UTC. Choosing a listed venue copies its location; otherwise a free-text venue name is used. Title and description go through the moderation pipeline: auto-blocked text is refused, flagged text is queued (`moderation_items`, entity `event`). Rate limit 10 submissions/user/day (my choice). Status is always `pending_review` (guard trigger + RLS: users can't publish).
+- Admin (`/admin/events`, admin + aal2): approve, reject (reason required, emailed), feature/unfeature, mark cancelled (reason required). Audited. The duplicates finder and editing come in L12.
+- Public: `/events` (city + category chips, list grouped by Lagos date, month grid that shows counts on phones and titles on larger screens, prev/next month), `/events/december` (countdown before the season, season-only list), `/events/[slug]` (ISR 5 min, venue card, external ticket link, share, add to calendar, map, report, Event JSON-LD), `/events/[slug]/ics`, `/events/calendar.ics?city=&season=december`, per-event OG image. Cancelled events stay listed, marked "Cancelled". No tickets are sold here and the page says so.
+- Tonight view gains a "This week" events rail; `/vendor/events` lists a venue's events; the header has an Events link; events are in the sitemap.
+- Hand-written iCalendar writer (`lib/events/ical.ts`), no dependency. Default duration 3 h when no end time is given.
 
 ## Open questions for Fola
 (write here when you need me)

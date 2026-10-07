@@ -23,6 +23,15 @@ export default function AdminHome() {
           <Link href="/admin/moderation" className="text-sm underline underline-offset-4">Open moderation queue</Link>
         </CardContent>
       </Card>
+      <Card>
+        <CardHeader>
+          <CardTitle>Events</CardTitle>
+          <CardDescription>Approve submissions, feature and cancel events.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Link href="/admin/events" className="text-sm underline underline-offset-4">Open events</Link>
+        </CardContent>
+      </Card>
     </div>
   );
 }

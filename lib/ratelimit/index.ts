@@ -28,7 +28,8 @@ const LIMITS = {
   mediaUser: { tokens: 12, window: "1 h" },
   liveIp: { tokens: 120, window: "1 m" },
   profileUpdateUser: { tokens: 30, window: "1 h" },
-  likeUser: { tokens: 120, window: "1 h" }, // decision: likes are cheap but shouldn't be scriptable
+  likeUser: { tokens: 120, window: "1 h" },
+  eventSubmitUser: { tokens: 10, window: "1 d" }, // decision: PRD doesn't specify one // decision: likes are cheap but shouldn't be scriptable
   assistantUser: { tokens: 20, window: "1 h" },
   assistantIp: { tokens: 200, window: "1 h" },
 } as const satisfies Record<string, { tokens: number; window: `${number} ${"s" | "m" | "h" | "d"}` }>;

@@ -1,8 +1,9 @@
-import { CalendarHeart, Megaphone, Sparkles, Sun, Trophy } from "lucide-react";
+import { CalendarDays, CalendarHeart, Megaphone, Sparkles, Sun, Trophy } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
 
 import { VendorCard } from "@/components/directory/vendor-card";
+import { EventCard } from "@/components/events/event-card";
 import { MapToggle } from "@/components/map/map-toggle";
 import type { MapPoint } from "@/components/map/vendor-map";
 import { Avatar } from "@/components/me/avatar";
@@ -10,6 +11,7 @@ import { LiveRail } from "@/components/tonight/live-rail";
 import { Button } from "@/components/ui/button";
 import { DEFAULT_TIMEZONE, FEATURES, MAPBOX_TOKEN, SEASON_NAME } from "@/lib/config";
 import { listAreas, listCategories, listVendorsForCity, type CityRow } from "@/lib/db/directory";
+import { listEvents } from "@/lib/db/events";
 import { getLeaderboard } from "@/lib/db/leaderboard";
 import { getCityLive, getUsuallyBusyNow, type LiveVenue } from "@/lib/db/live";
 import { getPublicSettings } from "@/lib/db/settings-public";
@@ -48,10 +50,11 @@ export async function TonightView({ city, mapPoints }: { city: CityRow; mapPoint
     getPublicSettings(),
     listCategories(),
   ]);
-  const [usuallyBusy, leaders, vendors] = await Promise.all([
+  const [usuallyBusy, leaders, vendors, weekEvents] = await Promise.all([
     live.length ? Promise.resolve([]) : getUsuallyBusyNow(city.id, now),
     FEATURES.points ? getLeaderboard("month", city.id, 5) : Promise.resolve([]),
     listVendorsForCity(city.id, { limit: 500 }),
+    listEvents({ cityId: city.id, from: new Date(now.getTime() - 3 * 3600_000), to: new Date(now.getTime() + 7 * 86_400_000), limit: 8 }),
   ]);
   const areaNames = Object.fromEntries(areas.map((a) => [a.id, a.name]));
   const daytimeGroups = new Set(categories.filter((c) => c.group === "daytime" || c.group === "culture").map((c) => c.slug));
@@ -116,6 +119,14 @@ export async function TonightView({ city, mapPoints }: { city: CityRow; mapPoint
           staticImageUrl={city.hero_image_url ?? staticMapUrl(MAPBOX_TOKEN, center, { zoom: 11, width: 480, height: 220, retina: false })}
           label={live.length ? "Heat map" : "Map"}
         />
+      ) : null}
+
+      {weekEvents.length ? (
+        <Section title="This week" icon={<CalendarDays className="h-5 w-5 text-accent" aria-hidden />} href={`/events?city=${city.slug}`} linkLabel="All events">
+          <ul className="grid gap-2 sm:grid-cols-2">
+            {weekEvents.map((e) => <li key={e.id}><EventCard event={e} /></li>)}
+          </ul>
+        </Section>
       ) : null}
 
       {daytime.length ? (

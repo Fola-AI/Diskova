@@ -1,4 +1,4 @@
-import { BadgeCheck, CircleDollarSign, Megaphone, Pencil, QrCode, ShieldCheck, Store } from "lucide-react";
+import { BadgeCheck, CalendarDays, CircleDollarSign, Megaphone, Pencil, QrCode, ShieldCheck, Store } from "lucide-react";
 import Link from "next/link";
 
 import { switchVendorAction } from "@/app/(vendor)/vendor/actions";
@@ -112,6 +112,7 @@ export default async function VendorDashboard({ searchParams }: { searchParams: 
           { href: "/vendor/prices", label: "Prices", icon: CircleDollarSign },
           { href: "/vendor/verification", label: vendor.verified ? "Verified" : "Get verified", icon: ShieldCheck },
           { href: "/vendor/qr", label: "QR poster", icon: QrCode },
+          { href: "/vendor/events", label: "Events", icon: CalendarDays },
         ].map(({ href, label, icon: Icon }) => (
           <Button key={href} asChild variant="secondary" className="h-14 justify-start">
             <Link href={href}><Icon aria-hidden /> {label}</Link>
