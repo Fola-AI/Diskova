@@ -16,11 +16,15 @@ import { ActionRow } from "@/components/vendor/action-row";
 import { HoursTable } from "@/components/vendor/hours-table";
 import { Section } from "@/components/vendor/section";
 import { ShareButtons } from "@/components/vendor/share-buttons";
-import { BRAND_NAME, DEFAULT_TIMEZONE, MAPBOX_TOKEN, SITE_URL } from "@/lib/config";
+import { BRAND_NAME, DEFAULT_TIMEZONE, FEATURES as FEATURE_FLAGS, MAPBOX_TOKEN, SITE_URL } from "@/lib/config";
 import { getVendorBySlug, listRecentOfficialUpdates, listUpcomingEventsForVendor, listVendorPrices } from "@/lib/db/directory";
 import { FEATURES, formatNaira, priceBandSymbol, PRICE_BANDS } from "@/lib/directory/constants";
 import { instagramUrl, staticMapUrl } from "@/lib/directory/links";
 import { listCommunityPhotos, listVendorFeed } from "@/lib/db/feed";
+import { getVendorForecast, getVendorLive } from "@/lib/db/live";
+import { CrowdBadge } from "@/components/tonight/crowd-badge";
+import { crowdLabel } from "@/lib/directory/crowd";
+import { formatTime } from "@/lib/services/opening-hours";
 import { hasAnyHours, parseOpeningHours } from "@/lib/services/opening-hours";
 
 export const revalidate = 60;
@@ -54,12 +58,14 @@ export default async function VendorPage({ params }: { params: Params }) {
   const vendor = await getVendorBySlug((await params).slug);
   if (!vendor) notFound();
 
-  const [prices, events, officialUpdates, feed, communityPhotos] = await Promise.all([
+  const [prices, events, officialUpdates, feed, communityPhotos, liveNow, forecast] = await Promise.all([
     listVendorPrices(vendor.id),
     listUpcomingEventsForVendor(vendor.id),
     listRecentOfficialUpdates(vendor.id),
     listVendorFeed(vendor.id),
     listCommunityPhotos(vendor.id),
+    getVendorLive(vendor.id),
+    FEATURE_FLAGS.crowdForecast ? getVendorForecast(vendor.id) : Promise.resolve(null),
   ]);
   const timeZone = vendor.city?.timezone ?? DEFAULT_TIMEZONE;
   const hours = parseOpeningHours(vendor.opening_hours);
@@ -115,6 +121,9 @@ export default async function VendorPage({ params }: { params: Params }) {
           </h1>
           {vendor.tagline ? <p className="text-muted-foreground">{vendor.tagline}</p> : null}
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+            {liveNow ? (
+              <span data-testid="vendor-crowd"><CrowdBadge level={Number(liveNow.crowd_level_avg)} confidence={liveNow.confidence} /></span>
+            ) : null}
             <OpenStatusBadge hours={vendor.opening_hours} timeZone={timeZone} className="text-sm" />
             {price ? (
               <span className="text-sm" title={priceLabel}>
@@ -123,6 +132,12 @@ export default async function VendorPage({ params }: { params: Params }) {
               </span>
             ) : null}
           </div>
+          {forecast ? (
+            <p className="text-sm text-muted-foreground" data-testid="forecast-line">
+              Usually {crowdLabel(forecast.level)?.toLowerCase()} around {formatTime(`${String(forecast.hour).padStart(2, "0")}:00`)} on{" "}
+              {["Sundays", "Mondays", "Tuesdays", "Wednesdays", "Thursdays", "Fridays", "Saturdays"][forecast.weekday]}
+            </p>
+          ) : null}
         </header>
 
         {/* 3. Action row */}

@@ -27,13 +27,13 @@ export function FilterBar({
   return (
     <div className="space-y-3">
       <nav aria-label="Categories" className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none]">
-        <Chip href={`${basePath}${filtersToQuery(filters, { category: undefined })}`} active={!filters.category}>
+        <Chip href={`${basePath}${filtersToQuery(filters, { category: undefined })}#places`} active={!filters.category}>
           All
         </Chip>
         {categories.map((c) => (
           <Chip
             key={c.slug}
-            href={`${basePath}${filtersToQuery(filters, { category: c.slug })}`}
+            href={`${basePath}${filtersToQuery(filters, { category: c.slug })}#places`}
             active={filters.category === c.slug}
           >
             <CategoryIcon icon={c.icon} className="h-3.5 w-3.5" />
@@ -51,7 +51,7 @@ export function FilterBar({
           </span>
           <span className="text-xs text-muted-foreground group-open:hidden">Area, price, open now…</span>
         </summary>
-        <form method="get" action={basePath} className="grid gap-3 border-t p-4 sm:grid-cols-2">
+        <form method="get" action={`${basePath}#places`} className="grid gap-3 border-t p-4 sm:grid-cols-2">
           {filters.category ? <input type="hidden" name="category" value={filters.category} /> : null}
           <label className="space-y-1 text-sm">
             <span className="font-medium">Area</span>

@@ -1,7 +1,7 @@
 # Build Progress
 
 ## Current stage
-Stage L7 — Crowd snapshots (pg_cron), Tonight view, heat map, forecast
+Stage L8 — Moderation pipeline, holds, reports, sanctions, labels
 
 ## Launch stages (required before go-live)
 - [x] Stage L1: Project scaffold, tooling, `npm run verify`
@@ -10,7 +10,7 @@ Stage L7 — Crowd snapshots (pg_cron), Tonight view, heat map, forecast
 - [x] Stage L4: Cities, areas, categories, vendor directory, share buttons (read-only)
 - [x] Stage L5: Vendor self-serve onboarding, dashboard, official updates
 - [x] Stage L6: Check-ins (full + one-tap pulse), image pipeline, live feed, points
-- [ ] Stage L7: Crowd snapshots (pg_cron), Tonight view, heat map, forecast
+- [x] Stage L7: Crowd snapshots (pg_cron), Tonight view, heat map, forecast
 - [ ] Stage L8: Moderation pipeline, holds, reports, sanctions, labels
 - [ ] Stage L9: Events and the December in Nigeria calendar
 - [ ] Stage L10: Guides, daytime layer, diaspora toolkit, blog (CMS)
@@ -278,6 +278,61 @@ Acceptance evidence:
 - Also tested: likes toggle once per user; reports are unique per user per item; a post's `location` / `distance_from_venue_m` / moderation internals and `post_media.phash` are unreadable by anon and users (42501).
 - Lighthouse (vendor page, map closed) after L6: performance 88 (3 runs), accessibility 100.
 
+### Stage L7 — 2026-10-07
+```
+  ✓   3 [smoke] › tests/smoke/tonight.spec.ts:41:5 › empty Tonight view invites the first pulse and vendor updates (777ms)
+  ✓   1 [smoke] › tests/smoke/directory.spec.ts:9:5 › city directory lists published seed vendors with open-now status (1.1s)
+  ✓   9 [smoke] › tests/smoke/auth.spec.ts:27:5 › signup form validates before calling the server (359ms)
+  ✓   2 [smoke] › tests/smoke/admin-mfa.spec.ts:21:5 › admin without MFA is redirected to enrol, and gets in after verifying a TOTP code (4.1s)
+  ✓   6 [smoke] › tests/smoke/settings.spec.ts:26:5 › edit profile: username, home city, diaspora, location consent (4.9s)
+  ✓  12 [smoke] › tests/smoke/auth.spec.ts:36:5 › signup → verify → login (4.7s)
+  ✓  11 [smoke] › tests/smoke/directory.spec.ts:19:5 › category chip, area and price filters narrow the list (5.3s)
+  ✓  15 [smoke] › tests/smoke/auth.spec.ts:75:5 › used or invalid links land on login with a clear message (417ms)
+  ✓  16 [smoke] › tests/smoke/directory.spec.ts:45:5 › unknown city and unpublished vendor return 404 (579ms)
+  ✓  13 [smoke] › tests/smoke/admin-mfa.spec.ts:42:5 › non-staff users get a 404 for admin pages (2.7s)
+  ✓  10 [smoke] › tests/smoke/tonight.spec.ts:49:5 › a pulse becomes a live venue: rail, hero count, polling API and crowd badge (6.0s)
+  ✓  17 [smoke] › tests/smoke/auth.spec.ts:81:5 › open redirects are refused after login (1.3s)
+  ✓  18 [smoke] › tests/smoke/directory.spec.ts:50:5 › map loads only when toggled (1.9s)
+  ✓  19 [smoke] › tests/smoke/tonight.spec.ts:77:5 › heat map renders on toggle (2.0s)
+  ✓  21 [smoke] › tests/smoke/directory.spec.ts:70:5 › vendor page: header, prices, hours, deep links and share (235ms)
+  ✓  22 [smoke] › tests/smoke/tonight.spec.ts:84:5 › forecast line shows once there are 4+ weeks of data (168ms)
+  ✓  14 [smoke] › tests/smoke/settings.spec.ts:46:5 › avatar upload goes through the one-image pipeline (EXIF stripped, WebP) (5.1s)
+  ✓  23 [smoke] › tests/smoke/directory.spec.ts:96:5 › search finds venues by partial name, with typeahead (1.4s)
+  ✓  25 [smoke] › tests/smoke/directory.spec.ts:105:5 › sitemap lists cities and vendors; OG image renders (683ms)
+  ✓  20 [smoke] › tests/smoke/auth.spec.ts:93:5 › password reset: recovery link → choose new password → sign in with it (4.0s)
+  ✓  24 [smoke] › tests/smoke/settings.spec.ts:75:5 › delete account anonymises the profile and blocks sign-in (3.0s)
+  ✓   7 [smoke] › tests/smoke/vendor.spec.ts:27:5 › fresh account → submitted vendor in under 10 minutes (15.5s)
+  ✓   5 [smoke] › tests/smoke/feed.spec.ts:39:5 › one-tap pulse appears for a signed-in viewer within 2 s (Realtime) and an anonymous viewer within 30 s (17.8s)
+  ✓  26 [smoke] › tests/smoke/vendor.spec.ts:90:5 › admin (with MFA) approves the listing and it goes live (4.5s)
+  ✓  28 [smoke] › tests/smoke/vendor.spec.ts:112:5 › official update in two taps appears on the vendor page labelled Official (2.8s)
+  ✓  27 [smoke] › tests/smoke/feed.spec.ts:73:5 › 4-photo check-in: every request finishes in under 5 s (13.8s)
+  ✓  29 [smoke] › tests/smoke/vendor.spec.ts:135:5 › claim flow: claimant uploads ID, admin approves, claimant becomes owner (8.9s)
+  ✓  30 [smoke] › tests/smoke/feed.spec.ts:128:5 › my posts, public profile and leaderboard pages render (2.9s)
+
+  30 passed (37.3s)
+```
+Vitest in the same run: `Test Files  15 passed (15) Tests  100 passed (100)`
+
+Acceptance evidence:
+- **Weighting unit test on seeded posts:** `tests/rls/l7-crowd.test.ts` runs the real `private.refresh_crowd_snapshots()` on posts seeded at a fixed 2020 instant. One fresh official alone → avg 5, **medium**. The mixed venue (official ×3, at-venue ×2, 45-min-old ×0.6, 75-min-old pulse ×0.3) → avg 19.4/5.9 = 3.29, **high**, post_count 3 / official 1 / at-venue 1; > 90-min, shadowbanned and pending posts excluded. Weighted vibe 20.8/5.6. A lone 50-min check-in → **low**. Re-running the bucket upserts (1 row).
+- **Snapshot function < 2 s on 10k synthetic vendors:** `npm run bench:snapshots` (10,000 published vendors, 30,000 posts in the last 90 min, rolled back afterwards):
+```
+ bench_vendors 
+         10000
+ recent_published_posts 
+                  30000
+         10000
+Time: 893.482 ms
+         10000
+Time: 1290.356 ms (00:01.290)
+         10000
+Time: 801.882 ms
+```
+  → 0.89 s / 1.29 s / 0.80 s. (Without fresh statistics inside the bench transaction the planner chose a 53 s plan, because the single synthetic author's profile row had 30k dead versions. In production autovacuum/analyze keeps statistics current; the bench now runs ANALYZE first.)
+- **Heat map renders:** smoke `tonight.spec.ts`: after the toggle the GL canvas mounts and the `live-heat` heatmap layer is confirmed loaded.
+- **Empty state correct:** Aba shows "Be the first — open a venue and tap to pulse" and the "Vendors: post an official update" CTA (plus a "usually busy around now" line when forecast data exists).
+- Also: a pulse → snapshot → venue appears in the live rail with its crowd badge and the hero count; `/api/live/[city]` returns it with `s-maxage=30`; the venue header shows the live crowd badge; the forecast line "Usually packed around 11pm on …days" appears (rows with sample_size < 4 are ignored).
+
 ## Notes / decisions
 (append here as you go)
 
@@ -372,6 +427,15 @@ Acceptance evidence:
 - New pages: `/me/posts` (all own posts with status, including "Your photo is being reviewed — usually under an hour"; soft delete), `/u/[username]` (ISR), `/leaderboard/[city]` (monthly + December in Nigeria, from the hourly materialized views), `/leaderboard` → Lagos.
 - Bundle: the check-in and report sheets (Radix Dialog) load after the page is interactive (`components/feed/lazy.tsx`), and supabase-js loads only at upload time. Venue page first-load JS is 240 kB (it was 326 kB before these fixes).
 - Noted for L13: a report-only CSP `unsafe-eval` violation appears on the venue page; I'll trace its source before enforcing CSP.
+
+**L7 (2026-10-07)**
+- Tonight view (§8.1) is a server component (`components/tonight/tonight-view.tsx`) used by `/` (default city Lagos, ISR 60 s) and `/c/[city]` (Tonight + the L4 directory with filters, one shared map). City choice: signed-in users with a home city are redirected to it; "Near me" uses one-off geolocation on tap (explicit); otherwise Lagos.
+- Live rail sorted confidence desc, crowd desc (from `v_live_now`). Cards show the latest community photo or cover, a crowd badge ("early signal" when confidence is low), price band, area, and "Official update N min ago" (if within 90 min) or "N check-ins · N min ago".
+- Realtime: signed-in visitors subscribe to `crowd_snapshots` changes (no city column to filter on, so one debounced refetch per 5-minute run); anonymous visitors poll `/api/live/[city]` every 30 s (CDN `s-maxage=30`, 120/IP/min). **No server data cache for live data:** I tried `unstable_cache` and it served stale data to cache-busting refetches.
+- Map: heat layer weighted `crowd_level_avg × (post_count + official_count × 3)`, pins coloured by crowd, tapping a pin opens a bottom panel. On `/c/[city]` the same map also pins every place matching the directory filters.
+- Forecast line on the venue page: today's busiest usual hour (`sample_size ≥ 4`), behind `FEATURE_CROWD_FORECAST`. The empty state lists "usually busy around now" venues for the current Lagos weekday and hour.
+- December in Nigeria banner shows between the season dates (Lagos date) and links to `/events/december` (built in L9). Events rail and trending guides on the Tonight view arrive with L9 / L10 content.
+- `0038`: service-role RPCs `admin_refresh_crowd_snapshots`, `admin_refresh_crowd_forecast`, `admin_refresh_leaderboards` (tests, benchmarks, future admin "refresh now").
 
 ## Open questions for Fola
 (write here when you need me)

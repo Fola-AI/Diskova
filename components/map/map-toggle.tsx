@@ -21,6 +21,7 @@ export function MapToggle({
   staticImageUrl,
   label = "Show map",
   eager = false,
+  heat = false,
 }: {
   token: string;
   center: { lat: number; lng: number };
@@ -30,6 +31,8 @@ export function MapToggle({
   label?: string;
   /** Above the fold (city page): load the preview eagerly with high priority — it is the LCP image. */
   eager?: boolean;
+  /** Tonight view: heat layer weighted by crowd × activity. */
+  heat?: boolean;
 }) {
   const [open, setOpen] = useState(false);
 
@@ -62,7 +65,7 @@ export function MapToggle({
 
   return (
     <div className="relative h-[60vh] min-h-[320px] overflow-hidden rounded-xl border" data-testid="map-container">
-      <VendorMap token={token} center={center} zoom={zoom} points={points} />
+      <VendorMap token={token} center={center} zoom={zoom} points={points} heat={heat} />
       <Button
         type="button"
         size="icon"

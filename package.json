@@ -22,7 +22,8 @@
     "db:seed": "dotenv -e .env.local -- node scripts/dev-db.mjs seed",
     "db:types": "dotenv -e .env.local -- node scripts/dev-db.mjs types",
     "create-super-admin": "dotenv -e .env.local -- tsx scripts/create-super-admin.ts",
-    "db:samples": "dotenv -e .env.local -- node scripts/dev-db.mjs samples"
+    "db:samples": "dotenv -e .env.local -- node scripts/dev-db.mjs samples",
+    "bench:snapshots": "dotenv -e .env.local -- sh -c 'psql \"$SUPABASE_DB_URL\" -X -q -f scripts/bench/crowd-snapshots.sql'"
   },
   "dependencies": {
     "@hookform/resolvers": "5.9.1",
