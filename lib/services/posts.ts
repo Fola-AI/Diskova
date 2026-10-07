@@ -6,8 +6,10 @@ import { getPlatformSettings, moderationSettings } from "@/lib/admin-db/settings
 import { ImageRejectedError, processImage } from "@/lib/media/image";
 import { downloadIncoming, isOwnIncomingPath, putPublicWebp, removeIncoming, UploadError } from "@/lib/media/uploads";
 import { decidePost, type DecideResult } from "@/lib/moderation/decide";
+import { escalateIfNeeded } from "@/lib/moderation/heuristics";
 import { moderateImage } from "@/lib/moderation/image";
-import { maxScore, moderateText } from "@/lib/moderation/text";
+import { effectiveScore, moderateText } from "@/lib/moderation/text";
+import type { ModerationResult } from "@/lib/moderation/image";
 import { rateLimit, rateLimitAll, retryAfterText } from "@/lib/ratelimit";
 import { assertServerOnly } from "@/lib/server-only";
 import { awardForPost } from "@/lib/services/points";
@@ -58,6 +60,7 @@ export async function createPulse(
     .select("id, author_id, vendor_id, kind, is_at_venue, created_at, status")
     .single();
   if (error || !data) throw new PostError("You can't pulse this venue right now.");
+  await escalateIfNeeded(data.id).catch(() => undefined);
   const points = data.status === "published" ? await awardForPost(data, { hasPhoto: false }) : 0;
   return { postId: data.id, isAtVenue: data.is_at_venue, points };
 }
@@ -160,8 +163,12 @@ export async function finalizeCheckin(session: SessionContext, postId: string): 
     admin.from("profiles").select("trust_score, created_at").eq("id", session.user.id).single(),
   ]);
   const photos = (media ?? []).filter((m) => m.processed_at).length;
-  const textMod = await moderateText(post.body);
-  const imageScores = (media ?? []).map((m) => ({ decision: "auto_pass" as const, scores: (m.moderation_score ?? null) as Record<string, number> | null }));
+  const textMod = await moderateText(post.body, { blocklist: settings.blocklist_phrases });
+  // Image scores were stored per photo at processing time; null = moderation was unavailable then.
+  const imageResults: ModerationResult[] = (media ?? []).map((m) => ({
+    scores: (m.moderation_score ?? null) as Record<string, number> | null,
+    available: m.moderation_score !== null,
+  }));
 
   const result = decidePost({
     kind: "checkin",
@@ -169,7 +176,7 @@ export async function finalizeCheckin(session: SessionContext, postId: string): 
     hasVideo: false,
     accountAgeDays: author ? (Date.now() - new Date(author.created_at).getTime()) / 86_400_000 : 0,
     trustScore: author?.trust_score ?? 0,
-    maxScore: maxScore(textMod, ...imageScores),
+    maxScore: effectiveScore([textMod, ...imageResults], moderationSettings(settings).autoFlagThreshold),
     settings: moderationSettings(settings),
   });
 
@@ -179,11 +186,12 @@ export async function finalizeCheckin(session: SessionContext, postId: string): 
       status: result.status,
       hold_reason: result.holdReason,
       moderation_decision: result.decision,
-      moderation_score: { text: textMod.scores },
+      moderation_score: { text: textMod.scores, blocklist: textMod.blocklistHit ?? null, unavailable: !textMod.available },
     })
     .eq("id", postId);
   if (error) throw new PostError("Couldn't publish your check-in.");
 
+  await escalateIfNeeded(postId).catch(() => undefined); // never block publishing on heuristics
   const points = result.status === "published" ? await awardForPost(post, { hasPhoto: photos > 0 }) : 0;
   return { ...result, points, photos };
 }

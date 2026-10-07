@@ -3,6 +3,7 @@ import Link from "next/link";
 
 import { switchVendorAction } from "@/app/(vendor)/vendor/actions";
 import { FormAlert } from "@/components/forms/form-alert";
+import { DisputeList } from "@/components/vendor-dashboard/dispute-list";
 import { ListingNotice } from "@/components/vendor-dashboard/notice";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -51,6 +52,15 @@ export default async function VendorDashboard({ searchParams }: { searchParams: 
     .is("deleted_at", null)
     .order("created_at", { ascending: false })
     .limit(5);
+  const { data: community } = await session.supabase
+    .from("posts")
+    .select("id, kind, crowd_level, body, created_at, author:profiles!posts_author_id_fkey(username)")
+    .eq("vendor_id", vendor.id)
+    .in("kind", ["checkin", "pulse"])
+    .eq("status", "published")
+    .is("deleted_at", null)
+    .order("created_at", { ascending: false })
+    .limit(10);
 
   return (
     <div className="space-y-6">
@@ -108,6 +118,8 @@ export default async function VendorDashboard({ searchParams }: { searchParams: 
           </Button>
         ))}
       </div>
+
+      <DisputeList posts={(community ?? []) as unknown as Parameters<typeof DisputeList>[0]["posts"]} />
 
       <section className="space-y-2">
         <h2 className="text-xl font-semibold">Recent official updates</h2>

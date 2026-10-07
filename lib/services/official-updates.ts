@@ -6,8 +6,10 @@ import { getPlatformSettings, moderationSettings } from "@/lib/admin-db/settings
 import { ImageRejectedError, processImage } from "@/lib/media/image";
 import { downloadIncoming, isOwnIncomingPath, putPublicWebp, removeIncoming } from "@/lib/media/uploads";
 import { decidePost, type DecideResult } from "@/lib/moderation/decide";
+import { escalateIfNeeded } from "@/lib/moderation/heuristics";
 import { moderateImage } from "@/lib/moderation/image";
-import { maxScore, moderateText } from "@/lib/moderation/text";
+import { effectiveScore, moderateText } from "@/lib/moderation/text";
+import type { ModerationResult } from "@/lib/moderation/image";
 import { rateLimitAll, retryAfterText } from "@/lib/ratelimit";
 import { assertServerOnly } from "@/lib/server-only";
 import { awardForPost } from "@/lib/services/points";
@@ -62,14 +64,14 @@ export async function createOfficialUpdate(
   const vendorSlug = (post.vendor as unknown as { slug: string } | null)?.slug ?? "";
   const admin = getAdminSupabase();
 
-  let imageScores = { decision: "auto_pass" as const, scores: null as Record<string, number> | null };
+  let imageResult: ModerationResult | null = null;
   let hasImage = false;
   try {
     if (input.incomingPath) {
       const original = await downloadIncoming(input.incomingPath);
       const image = await processImage(original);
       const imgMod = await moderateImage(image.data);
-      imageScores = { decision: "auto_pass", scores: imgMod.scores };
+      imageResult = imgMod;
       const path = `posts/${post.id}/${nanoid(12)}.webp`;
       await putPublicWebp(path, image.data);
       const { error: mediaError } = await admin.from("post_media").insert({
@@ -95,7 +97,7 @@ export async function createOfficialUpdate(
     if (input.incomingPath) await removeIncoming(input.incomingPath).catch(() => undefined);
   }
 
-  const textMod = await moderateText(input.note);
+  const textMod = await moderateText(input.note, { blocklist: settings.blocklist_phrases });
   const { data: author } = await admin.from("profiles").select("trust_score, created_at").eq("id", session.user.id).single();
   const accountAgeDays = author ? (Date.now() - new Date(author.created_at).getTime()) / 86_400_000 : 0;
 
@@ -105,7 +107,7 @@ export async function createOfficialUpdate(
     hasVideo: false,
     accountAgeDays,
     trustScore: author?.trust_score ?? 0,
-    maxScore: maxScore(textMod, imageScores),
+    maxScore: effectiveScore(imageResult ? [textMod, imageResult] : [textMod], moderationSettings(settings).autoFlagThreshold),
     settings: moderationSettings(settings),
   });
 
@@ -115,11 +117,12 @@ export async function createOfficialUpdate(
       status: result.status,
       hold_reason: result.holdReason,
       moderation_decision: result.decision,
-      moderation_score: { text: textMod.scores, image: imageScores.scores },
+      moderation_score: { text: textMod.scores, image: imageResult?.scores ?? null, blocklist: textMod.blocklistHit ?? null },
     })
     .eq("id", post.id);
   if (updateError) throw new OfficialUpdateError("We couldn't publish your update. Please try again.");
 
+  await escalateIfNeeded(post.id).catch(() => undefined);
   if (result.status === "published") {
     await awardForPost(
       { id: post.id, author_id: session.user.id, vendor_id: input.vendorId, kind: "official", is_at_venue: false, created_at: new Date().toISOString() },

@@ -1,4 +1,3 @@
-import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
 import type { SessionContext } from "@/lib/auth/guards";
@@ -6,6 +5,7 @@ import { writeAudit } from "@/lib/admin-db/audit";
 import { getAdminSupabase } from "@/lib/admin-db/client";
 import { sendEmail } from "@/lib/email/send";
 import { VendorDecisionEmail, VerificationDecisionEmail } from "@/lib/email/templates/vendor";
+import { safeRevalidatePath } from "@/lib/http/revalidate";
 import { assertServerOnly } from "@/lib/server-only";
 import { DOCS_BUCKET } from "@/lib/services/verification";
 
@@ -73,7 +73,7 @@ export async function decideVendor(
     subject: decision === "approve" ? `${before.name} is live` : `About your listing: ${before.name}`,
     react: VendorDecisionEmail({ vendorName: before.name, slug: before.slug, approved: decision === "approve", reason }),
   });
-  revalidatePath(`/v/${before.slug}`);
+  safeRevalidatePath(`/v/${before.slug}`);
 }
 
 export async function listVerificationRequests() {
@@ -143,5 +143,5 @@ export async function decideVerification(
     subject: `Your ${request.is_claim ? "claim" : "verification request"} for ${request.vendor_name}`,
     react: VerificationDecisionEmail({ vendorName: request.vendor_name, approved: decision === "approve", isClaim: request.is_claim, reason }),
   });
-  revalidatePath(`/v/${request.vendor_slug}`);
+  safeRevalidatePath(`/v/${request.vendor_slug}`);
 }

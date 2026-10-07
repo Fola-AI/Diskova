@@ -5,20 +5,15 @@
 import sharp from "sharp";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
-import type { SessionContext } from "@/lib/auth/guards";
 import { awardForPost, DAILY_CAP } from "@/lib/services/points";
 import { attachCheckinPhoto, createCheckin, createPulse, finalizeCheckin, toggleLike } from "@/lib/services/posts";
 import { reportContent } from "@/lib/services/reports";
 
 import { anonClient, cleanup, createPublishedVendor, createUser, hasDevEnv, serviceClient, type TestUser } from "./helpers";
+import { sessionFor } from "./session";
 
 const d = hasDevEnv ? describe : describe.skip;
 
-async function sessionFor(u: TestUser): Promise<SessionContext> {
-  const { data } = await u.client.rpc("get_my_profile");
-  const { data: auth } = await u.client.auth.getUser();
-  return { supabase: u.client as never, user: auth.user!, profile: data![0] } as SessionContext;
-}
 
 async function ageAccount(id: string, days: number) {
   await serviceClient().from("profiles").update({ created_at: new Date(Date.now() - days * 86_400_000).toISOString() }).eq("id", id);

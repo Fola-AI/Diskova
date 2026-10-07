@@ -3,7 +3,9 @@ import { nanoid } from "nanoid";
 import { getAdminSupabase } from "@/lib/admin-db/client";
 import { ImageRejectedError, processImage } from "@/lib/media/image";
 import { downloadIncoming, MEDIA_BUCKET, putPublicWebp, removeIncoming, UploadError } from "@/lib/media/uploads";
+import { getPlatformSettings } from "@/lib/admin-db/settings";
 import { moderateImage } from "@/lib/moderation/image";
+import { maxScore } from "@/lib/moderation/text";
 import { assertServerOnly } from "@/lib/server-only";
 
 assertServerOnly("lib/services/avatar");
@@ -20,7 +22,7 @@ export async function processAvatar(userId: string, incomingPath: string): Promi
     const original = await downloadIncoming(incomingPath);
     const image = await processImage(original, { square: 512 });
     const moderation = await moderateImage(image.data);
-    if (moderation.decision === "auto_block") {
+    if (maxScore(moderation) >= Number((await getPlatformSettings()).moderation_auto_block_threshold)) {
       throw new AvatarError("That image can't be used as a profile photo.");
     }
 

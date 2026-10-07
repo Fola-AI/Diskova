@@ -16,9 +16,12 @@ export default function AdminHome() {
       </Card>
       <Card>
         <CardHeader>
-          <CardTitle>More coming</CardTitle>
-          <CardDescription>Moderation (L8), content (L10) and the full back office (L12).</CardDescription>
+          <CardTitle>Moderation</CardTitle>
+          <CardDescription>Holds, flagged posts, reports and vendor disputes.</CardDescription>
         </CardHeader>
+        <CardContent>
+          <Link href="/admin/moderation" className="text-sm underline underline-offset-4">Open moderation queue</Link>
+        </CardContent>
       </Card>
     </div>
   );

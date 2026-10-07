@@ -927,6 +927,11 @@ isOneToOne: false
               "submitted_by": string,"vendor_id": string
             }[]
                            },
+"admin_list_audit":
+{ Args: { "p_action_prefix"?: string,"p_actor_id"?: string,"p_before_id"?: number,"p_entity_id"?: string,"p_entity_type"?: string,"p_limit"?: number }; Returns: {
+              "action": string,"actor_id": string,"actor_role": string,"after": Json,"at": string,"before": Json,"entity_id": string,"entity_type": string,"id": number,"ip": unknown,"reason": string,"user_agent": string
+            }[]
+                           },
 "admin_list_cron_jobs":
 { Args: Record<PropertyKey, never>; Returns: {
               "active": boolean,"command": string,"jobname": string,"schedule": string

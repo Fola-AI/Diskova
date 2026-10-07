@@ -5,7 +5,9 @@ import { memberRoleAtLeast } from "@/lib/auth/roles";
 import { getAdminSupabase } from "@/lib/admin-db/client";
 import { ImageRejectedError, processImage } from "@/lib/media/image";
 import { downloadIncoming, putPublicWebp, removeIncoming, UploadError, VENDOR_ASSETS_BUCKET } from "@/lib/media/uploads";
+import { getPlatformSettings } from "@/lib/admin-db/settings";
 import { moderateImage } from "@/lib/moderation/image";
+import { maxScore } from "@/lib/moderation/text";
 import { assertServerOnly } from "@/lib/server-only";
 
 assertServerOnly("lib/services/vendor-assets");
@@ -65,7 +67,7 @@ export async function processVendorAsset(
     const original = await downloadIncoming(incomingPath);
     const image = await processImage(original, kind === "logo" ? { square: 512 } : { maxEdge: kind === "cover" ? 2000 : 1600 });
     const moderation = await moderateImage(image.data);
-    if (moderation.decision === "auto_block") throw new VendorAssetError("That photo can't be used.");
+    if (maxScore(moderation) >= Number((await getPlatformSettings()).moderation_auto_block_threshold)) throw new VendorAssetError("That photo can't be used.");
 
     const path = `${vendorId}/${kind}/${nanoid(12)}.webp`;
     const url = await putPublicWebp(path, image.data, VENDOR_ASSETS_BUCKET);

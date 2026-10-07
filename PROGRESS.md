@@ -1,7 +1,7 @@
 # Build Progress
 
 ## Current stage
-Stage L8 — Moderation pipeline, holds, reports, sanctions, labels
+Stage L9 — Events and the December in Nigeria calendar
 
 ## Launch stages (required before go-live)
 - [x] Stage L1: Project scaffold, tooling, `npm run verify`
@@ -11,7 +11,7 @@ Stage L8 — Moderation pipeline, holds, reports, sanctions, labels
 - [x] Stage L5: Vendor self-serve onboarding, dashboard, official updates
 - [x] Stage L6: Check-ins (full + one-tap pulse), image pipeline, live feed, points
 - [x] Stage L7: Crowd snapshots (pg_cron), Tonight view, heat map, forecast
-- [ ] Stage L8: Moderation pipeline, holds, reports, sanctions, labels
+- [x] Stage L8: Moderation pipeline, holds, reports, sanctions, labels
 - [ ] Stage L9: Events and the December in Nigeria calendar
 - [ ] Stage L10: Guides, daytime layer, diaspora toolkit, blog (CMS)
 - [ ] Stage L11: Safety information section and private issue reports
@@ -333,6 +333,51 @@ Time: 801.882 ms
 - **Empty state correct:** Aba shows "Be the first — open a venue and tap to pulse" and the "Vendors: post an official update" CTA (plus a "usually busy around now" line when forecast data exists).
 - Also: a pulse → snapshot → venue appears in the live rail with its crowd badge and the hero count; `/api/live/[city]` returns it with `s-maxage=30`; the venue header shows the live crowd badge; the forecast line "Usually packed around 11pm on …days" appears (rows with sample_size < 4 are ignored).
 
+### Stage L8 — 2026-10-07
+```
+  ✓   2 [smoke] › tests/smoke/admin-mfa.spec.ts:21:5 › admin without MFA is redirected to enrol, and gets in after verifying a TOTP code (3.1s)
+  ✓   6 [smoke] › tests/smoke/directory.spec.ts:19:5 › category chip, area and price filters narrow the list (2.6s)
+  ✓   9 [smoke] › tests/smoke/directory.spec.ts:45:5 › unknown city and unpublished vendor return 404 (274ms)
+  ✓   7 [smoke] › tests/smoke/auth.spec.ts:36:5 › signup → verify → login (2.9s)
+  ✓  11 [smoke] › tests/smoke/auth.spec.ts:75:5 › used or invalid links land on login with a clear message (253ms)
+  ✓   8 [smoke] › tests/smoke/admin-mfa.spec.ts:42:5 › non-staff users get a 404 for admin pages (1.5s)
+  ✓  12 [smoke] › tests/smoke/auth.spec.ts:81:5 › open redirects are refused after login (1.1s)
+  ✓  10 [smoke] › tests/smoke/directory.spec.ts:50:5 › map loads only when toggled (1.9s)
+  ✓  15 [smoke] › tests/smoke/directory.spec.ts:70:5 › vendor page: header, prices, hours, deep links and share (274ms)
+  ✓  16 [smoke] › tests/smoke/directory.spec.ts:96:5 › search finds venues by partial name, with typeahead (1.2s)
+  ✓  17 [smoke] › tests/smoke/directory.spec.ts:105:5 › sitemap lists cities and vendors; OG image renders (345ms)
+  ✓  14 [smoke] › tests/smoke/auth.spec.ts:93:5 › password reset: recovery link → choose new password → sign in with it (2.5s)
+  ✓  19 [smoke] › tests/smoke/settings.spec.ts:26:5 › edit profile: username, home city, diaspora, location consent (2.2s)
+  ✓  18 [smoke] › tests/smoke/moderation.spec.ts:37:5 › moderator (MFA) approves a held post from the queue and it goes live (4.7s)
+  ✓  21 [smoke] › tests/smoke/moderation.spec.ts:49:5 › community guidelines are linked from every page footer (274ms)
+  ✓  22 [smoke] › tests/smoke/tonight.spec.ts:41:5 › empty Tonight view invites the first pulse and vendor updates (375ms)
+  ✓  20 [smoke] › tests/smoke/settings.spec.ts:46:5 › avatar upload goes through the one-image pipeline (EXIF stripped, WebP) (4.6s)
+  ✓  23 [smoke] › tests/smoke/tonight.spec.ts:49:5 › a pulse becomes a live venue: rail, hero count, polling API and crowd badge (3.1s)
+  ✓  24 [smoke] › tests/smoke/settings.spec.ts:75:5 › delete account anonymises the profile and blocks sign-in (2.6s)
+  ✓  25 [smoke] › tests/smoke/tonight.spec.ts:77:5 › heat map renders on toggle (1.9s)
+  ✓  27 [smoke] › tests/smoke/tonight.spec.ts:84:5 › forecast line shows once there are 4+ weeks of data (167ms)
+  ✓  13 [smoke] › tests/smoke/feed.spec.ts:39:5 › one-tap pulse appears for a signed-in viewer within 2 s (Realtime) and an anonymous viewer within 30 s (17.7s)
+  ✓  26 [smoke] › tests/smoke/vendor.spec.ts:27:5 › fresh account → submitted vendor in under 10 minutes (12.3s)
+  ✓  29 [smoke] › tests/smoke/vendor.spec.ts:90:5 › admin (with MFA) approves the listing and it goes live (7.1s)
+  ✓  30 [smoke] › tests/smoke/vendor.spec.ts:112:5 › official update in two taps appears on the vendor page labelled Official (5.2s)
+  ✓  28 [smoke] › tests/smoke/feed.spec.ts:73:5 › 4-photo check-in: every request finishes in under 5 s (20.0s)
+  ✓  32 [smoke] › tests/smoke/feed.spec.ts:128:5 › my posts, public profile and leaderboard pages render (4.6s)
+  ✓  31 [smoke] › tests/smoke/vendor.spec.ts:135:5 › claim flow: claimant uploads ID, admin approves, claimant becomes owner (9.3s)
+
+  32 passed (53.8s)
+```
+Vitest in the same run: `Test Files  18 passed (18) Tests  115 passed (115)`
+
+Acceptance evidence (`tests/rls/l8-moderation.test.ts` runs REAL OpenAI moderation against DEV; `l8-borderline.test.ts` mocks the provider to control scores):
+- **Harmful text auto-hidden:** a threatening note (test text avoids slurs; it is a violent threat, provider max score 0.95) → `hidden`, `auto_block`, P1 queue item, invisible to anon, still visible to its author. Admin blocklist phrases also auto-block without calling the provider.
+- **Borderline publishes + queued:** score 0.62 → `published`, `auto_flag`, P2 queue item. If the provider is unavailable the post is still flagged, never silently passed.
+- **New-account photo held:** L6 test + L8 approval test (pending / `media_new_account`, P2 hold item, 0 points). On moderator approval → published, points awarded, trust +2.
+- **Pulse never held:** a pulse from a brand-new, trust-0 account publishes immediately.
+- **3 reports hide:** three users report "fake" → `hidden`, report_count 3, P1 `user_report` item. Moderator "remove + warn" → trust −25 (fake), status `warned`, reports `resolved_removed`, items closed, audit row with actor and reason.
+- **Shadowban RLS proven:** L2 matrix + a moderator shadowban action here: the author still sees their post, anon doesn't.
+- **Thresholds unit-tested:** `tests/unit/moderation-decide.test.ts`; trust maths, blocklist matching and fail-safe in `tests/unit/moderation-text.test.ts`.
+- Also: more than 3 posts in 10 minutes escalates to P1; removing without a reason is refused; smoke `moderation.spec.ts`: a moderator with MFA approves a held post from `/admin/moderation?source=hold` and it goes live; the guidelines link resolves.
+
 ## Notes / decisions
 (append here as you go)
 
@@ -436,6 +481,18 @@ Time: 801.882 ms
 - Forecast line on the venue page: today's busiest usual hour (`sample_size ≥ 4`), behind `FEATURE_CROWD_FORECAST`. The empty state lists "usually busy around now" venues for the current Lagos weekday and hour.
 - December in Nigeria banner shows between the season dates (Lagos date) and links to `/events/december` (built in L9). Events rail and trending guides on the Tonight view arrive with L9 / L10 content.
 - `0038`: service-role RPCs `admin_refresh_crowd_snapshots`, `admin_refresh_crowd_forecast`, `admin_refresh_leaderboards` (tests, benchmarks, future admin "refresh now").
+
+**L8 (2026-10-07)**
+- Moderation provider: OpenAI `omni-moderation-latest` (`lib/moderation/openai.ts`), text and images. Images go as a 512 px JPEG data URL. 3.5 s timeout, no retries, so every pipeline request stays under 5 s. Score = max over all categories.
+- Fail-safe: if moderation can't run (no key / error / timeout), the content is treated as at least `auto_flag` (published and queued, or held if a hold applies). Image scores are stored per photo at processing time; `null` = unavailable.
+- Blocklist: `platform_settings.blocklist_phrases`, whole-word and case-insensitive; a hit scores 1.0 → auto-block. It's edited in Admin → Settings (L12). Avatars and vendor photos are rejected at the block threshold.
+- Heuristics (`lib/moderation/heuristics.ts`): only a near-duplicate photo (dHash Hamming ≤ 6/64) already posted at a **different** venue in the last 30 days, or **> 3 posts in 10 minutes**, escalates (P1). Distance, at-venue and IP/device data are shown to moderators as informational and never act automatically. The risk score is display-only.
+- Human decisions (`lib/services/admin/moderation.ts`): approve (+2 trust, publish, award held points, reports `resolved_kept`), approve + verify, remove (−10, or −25 for fake / rival sabotage), remove + warn (30-day warning), remove + suspend (7 days), remove + ban, shadowban, dismiss. Removals, sanctions and shadowbans require a reason. The author is emailed on removal. Everything is audited. Sanction → profile status / shadowban flag is handled by the L2 triggers.
+- Minimal `/admin/moderation` (moderator + aal2): priority/age-ordered queue with tabs (holds, auto-blocked, flagged, reports, disputes, random sample), post preview, top scores, author card (trust, account age, post count, status), signals, reports, actions. Keyboard shortcuts, stats and bulk actions follow in L12 (same service, extended).
+- Vendor disputes: venue staff see recent community posts on their dashboard with "Not ours" → a report with reason `wrong_venue`, which the L2 trigger turns into a P2 `vendor_dispute`.
+- `/guidelines` (Community Guidelines) is linked from the footer disclaimer and footer nav. The removal email links to it.
+- `0039`: `admin_list_audit()` service-role RPC (L12 audit viewer + tests). `safeRevalidatePath()` lets services run outside Next (tests/scripts).
+- Test infra: Vitest compiles TSX (React Email templates) via the automatic JSX runtime. Playwright smoke uses 3 workers against the shared DEV project, with a 10 s default for UI assertions (explicit performance limits are unchanged).
 
 ## Open questions for Fola
 (write here when you need me)

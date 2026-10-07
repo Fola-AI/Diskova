@@ -2,6 +2,8 @@ import path from "node:path";
 import { defineConfig } from "vitest/config";
 
 export default defineConfig({
+  // Services under test import React Email templates (TSX); tsconfig keeps jsx: "preserve" for Next.
+  oxc: { jsx: { runtime: "automatic" } },
   resolve: {
     alias: { "@": path.resolve(import.meta.dirname, ".") },
   },

@@ -10,9 +10,22 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Textarea } from "@/components/ui/textarea";
 import { REPORT_REASONS } from "@/lib/validation/posts";
 
-export function ReportButton({ entityType, entityId, label = "Report" }: { entityType: "post" | "vendor" | "event" | "profile"; entityId: string; label?: string }) {
+export function ReportButton({
+  entityType,
+  entityId,
+  label = "Report",
+  presetReason,
+  title = "Report this",
+}: {
+  entityType: "post" | "vendor" | "event" | "profile";
+  entityId: string;
+  label?: string;
+  /** Vendor disputes: "wrong_venue" pre-selected (a report from venue staff becomes a P2 vendor dispute). */
+  presetReason?: string;
+  title?: string;
+}) {
   const [open, setOpen] = useState(false);
-  const [reason, setReason] = useState<string>("");
+  const [reason, setReason] = useState<string>(presetReason ?? "");
   const [details, setDetails] = useState("");
   const [busy, setBusy] = useState(false);
   const [state, setState] = useState<{ error?: string; message?: string }>({});
@@ -35,7 +48,7 @@ export function ReportButton({ entityType, entityId, label = "Report" }: { entit
           <Flag aria-hidden /> {label}
         </Button>
       </SheetTrigger>
-      <SheetContent title="Report this" description="Tell us what's wrong. Reports are private.">
+      <SheetContent title={title} description="Tell us what's wrong. Reports are private.">
         {state.message ? (
           <FormAlert state={state} />
         ) : (

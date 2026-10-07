@@ -8,6 +8,10 @@ const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? `http://localhost:${PORT}`;
 export default defineConfig({
   testDir: "./tests/smoke",
   fullyParallel: false,
+  // Every spec talks to the shared DEV Supabase project; 3 workers keeps latency realistic.
+  workers: 3,
+  // Navigation/UI assertions. Performance limits (< 5 s requests, ≤ 2 s Realtime) are asserted explicitly.
+  expect: { timeout: 10_000 },
   forbidOnly: Boolean(process.env.CI),
   retries: process.env.CI ? 1 : 0,
   reporter: [["list"]],
