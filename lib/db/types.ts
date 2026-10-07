@@ -919,7 +919,10 @@ isOneToOne: false
                 }
           }
           Functions: {
-            "admin_create_verification_request":
+            "admin_create_issue_report":
+{ Args: { "p_area_id"?: string,"p_category": Database["public"]['Enums']["issue_category"],"p_city_id"?: string,"p_description": string,"p_lat"?: number,"p_lng"?: number,"p_reporter_email"?: string,"p_reporter_id"?: string }; Returns: string
+                           },
+"admin_create_verification_request":
 { Args: { "p_business_doc_path"?: string,"p_id_doc_path"?: string,"p_note"?: string,"p_social_proof_url"?: string,"p_submitted_by": string,"p_vendor_id": string }; Returns: string
                            },
 "admin_decide_verification_request":
@@ -935,6 +938,11 @@ isOneToOne: false
 "admin_list_cron_jobs":
 { Args: Record<PropertyKey, never>; Returns: {
               "active": boolean,"command": string,"jobname": string,"schedule": string
+            }[]
+                           },
+"admin_list_issue_reports":
+{ Args: { "p_limit"?: number,"p_status"?: Database["public"]['Enums']["issue_status"] }; Returns: {
+              "area_name": string,"category": Database["public"]['Enums']["issue_category"],"city_name": string,"created_at": string,"description": string,"handled_by_username": string,"has_location": boolean,"id": string,"internal_note": string,"reporter_email": string,"reporter_username": string,"status": Database["public"]['Enums']["issue_status"]
             }[]
                            },
 "admin_list_verification_requests":
@@ -956,6 +964,9 @@ isOneToOne: false
                            },
 "admin_refresh_leaderboards":
 { Args: Record<PropertyKey, never>; Returns: undefined
+                           },
+"admin_update_issue_report":
+{ Args: { "p_handled_by": string,"p_id": string,"p_internal_note"?: string,"p_status": Database["public"]['Enums']["issue_status"] }; Returns: undefined
                            },
 "admin_write_audit":
 { Args: { "p_action": string,"p_actor_id"?: string,"p_actor_role"?: string,"p_after"?: Json,"p_before"?: Json,"p_entity_id": string,"p_entity_type": string,"p_ip"?: unknown,"p_reason"?: string,"p_user_agent"?: string }; Returns: number

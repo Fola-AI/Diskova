@@ -16,6 +16,8 @@ export function SiteFooter() {
           <Link href="/guidelines" className="hover:text-foreground">Guidelines</Link>
           <Link href="/privacy" className="hover:text-foreground">Privacy</Link>
           <Link href="/terms" className="hover:text-foreground">Terms</Link>
+          <Link href="/safety" className="hover:text-foreground">Safety</Link>
+          <Link href="/toolkit" className="hover:text-foreground">Diaspora toolkit</Link>
           <Link href="/vendor" className="hover:text-foreground">For venues</Link>
         </nav>
         <p>

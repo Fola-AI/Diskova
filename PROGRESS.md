@@ -1,7 +1,7 @@
 # Build Progress
 
 ## Current stage
-Stage L11 — Safety information section and private issue reports
+Stage L12 — Super-admin back office
 
 ## Launch stages (required before go-live)
 - [x] Stage L1: Project scaffold, tooling, `npm run verify`
@@ -14,7 +14,7 @@ Stage L11 — Safety information section and private issue reports
 - [x] Stage L8: Moderation pipeline, holds, reports, sanctions, labels
 - [x] Stage L9: Events and the December in Nigeria calendar
 - [x] Stage L10: Guides, daytime layer, diaspora toolkit, blog (CMS)
-- [ ] Stage L11: Safety information section and private issue reports
+- [x] Stage L11: Safety information section and private issue reports
 - [ ] Stage L12: Super-admin back office
 - [ ] Stage L13: Security hardening and RLS matrix tests
 - [ ] Stage L14: SEO, performance, PWA, analytics
@@ -459,6 +459,47 @@ Acceptance evidence:
 - Markdown security: `tests/unit/markdown.test.ts` (10 XSS vectors: script, onerror, javascript: / data: / protocol-relative links, iframe, svg onload…; allowlist sanitizer; custom-tag parsing, including rejection of malformed slugs). Preview tokens: `tests/unit/preview-token.test.ts` (expiry, wrong guide, tampering).
 - Regression fixed and re-measured: once real image moderation was in the photo request (L8), the L6 "no request > 5 s" check failed under parallel load. Moderation now runs alongside the upload and WebP encoding is faster: the slowest of 4 photo requests is **3,377 ms** end-to-end (server-side 1.8–3.3 s, mostly laptop ↔ London storage transfer; Vercel `lhr1` sits next to Supabase London).
 
+### Stage L11 — 2026-10-07
+```
+  ✓  13 [smoke] › tests/smoke/events.spec.ts:51:5 › 200 events render smoothly in the list and month views (817ms)
+  ✓  17 [smoke] › tests/smoke/events.spec.ts:73:5 › December in Nigeria page shows the countdown before the season (274ms)
+  ✓  16 [smoke] › tests/smoke/content.spec.ts:95:5 › toolkit index and guides index render (319ms)
+  ✓  18 [smoke] › tests/smoke/events.spec.ts:79:5 › event page: venue card, external ticket link, share, valid .ics (345ms)
+  ✓  15 [smoke] › tests/smoke/directory.spec.ts:50:5 › map loads only when toggled (2.0s)
+  ✓  21 [smoke] › tests/smoke/directory.spec.ts:70:5 › vendor page: header, prices, hours, deep links and share (288ms)
+  ✓  22 [smoke] › tests/smoke/directory.spec.ts:96:5 › search finds venues by partial name, with typeahead (1.6s)
+  ✓  23 [smoke] › tests/smoke/directory.spec.ts:105:5 › sitemap lists cities and vendors; OG image renders (388ms)
+  ✓  24 [smoke] › tests/smoke/moderation.spec.ts:37:5 › moderator (MFA) approves a held post from the queue and it goes live (5.6s)
+  ✓  25 [smoke] › tests/smoke/moderation.spec.ts:49:5 › community guidelines are linked from every page footer (233ms)
+  ✓  20 [smoke] › tests/smoke/events.spec.ts:99:5 › submit an event → admin approves → it is public (9.3s)
+  ✓  26 [smoke] › tests/smoke/safety.spec.ts:10:5 › emergency numbers render per city with verification status (671ms)
+  ✓  27 [smoke] › tests/smoke/settings.spec.ts:26:5 › edit profile: username, home city, diaspora, location consent (2.2s)
+  ✓  28 [smoke] › tests/smoke/safety.spec.ts:24:5 › anonymous private report → exact confirmation → visible only in admin triage (3.8s)
+  ✓  30 [smoke] › tests/smoke/safety.spec.ts:48:5 › honeypot submissions are not stored (453ms)
+  ✓  31 [smoke] › tests/smoke/tonight.spec.ts:41:5 › empty Tonight view invites the first pulse and vendor updates (554ms)
+  ✓  29 [smoke] › tests/smoke/settings.spec.ts:46:5 › avatar upload goes through the one-image pipeline (EXIF stripped, WebP) (3.8s)
+  ✓  19 [smoke] › tests/smoke/feed.spec.ts:39:5 › one-tap pulse appears for a signed-in viewer within 2 s (Realtime) and an anonymous viewer within 30 s (18.2s)
+  ✓  32 [smoke] › tests/smoke/tonight.spec.ts:49:5 › a pulse becomes a live venue: rail, hero count, polling API and crowd badge (3.2s)
+  ✓  33 [smoke] › tests/smoke/settings.spec.ts:75:5 › delete account anonymises the profile and blocks sign-in (2.6s)
+  ✓  35 [smoke] › tests/smoke/tonight.spec.ts:77:5 › heat map renders on toggle (1.8s)
+  ✓  37 [smoke] › tests/smoke/tonight.spec.ts:84:5 › forecast line shows once there are 4+ weeks of data (173ms)
+  ✓  36 [smoke] › tests/smoke/vendor.spec.ts:27:5 › fresh account → submitted vendor in under 10 minutes (12.8s)
+  ✓  34 [smoke] › tests/smoke/feed.spec.ts:73:5 › 4-photo check-in: every request finishes in under 5 s (15.6s)
+  ✓  38 [smoke] › tests/smoke/vendor.spec.ts:90:5 › admin (with MFA) approves the listing and it goes live (6.0s)
+  ✓  39 [smoke] › tests/smoke/feed.spec.ts:136:5 › my posts, public profile and leaderboard pages render (4.1s)
+  ✓  40 [smoke] › tests/smoke/vendor.spec.ts:112:5 › official update in two taps appears on the vendor page labelled Official (2.8s)
+  ✓  41 [smoke] › tests/smoke/vendor.spec.ts:135:5 › claim flow: claimant uploads ID, admin approves, claimant becomes owner (7.3s)
+
+  41 passed (1.0m)
+```
+Vitest in the same run: `Test Files  24 passed (24) Tests  141 passed (141)`
+
+Acceptance evidence:
+- **Issue report invisible to every non-admin role:** `tests/rls/l11-issue-reports.test.ts`. A report created server-side exists, yet anon, user, vendor_member, moderator, admin and super_admin API sessions all get `PGRST106` on the table and permission errors on the list / create / update RPCs. Admins only ever see reports through the server-rendered `/admin/issues` (admin + aal2). Smoke: an anonymous report doesn't appear on `/safety/lagos`, `/`, `/c/lagos` or `/events`, and does appear in admin triage.
+- **No "authorities will act"-type copy:** `tests/unit/content-rules.test.ts` greps app / components / lib / content / supabase for authority-action promises. `tests/unit/safety-copy.test.ts` pins the exact §10 confirmation text and checks that no incident-feed or report-map route exists and that report reads happen only in admin code.
+- **Numbers render per city:** smoke `safety.spec.ts`: Lagos shows national 112 / FRSC 122 + LASEMA 767 (tap-to-call `tel:767`); Abuja shows the national numbers without LASEMA; every block shows "Last verified".
+- Also: the exact confirmation copy after submitting; honeypot submissions get the same response and are not stored.
+
 ## Notes / decisions
 (append here as you go)
 
@@ -591,6 +632,13 @@ Acceptance evidence:
 - Publishing guides, approving venues and approving events now also revalidate `/sitemap.xml`.
 - The 12 seeded toolkit drafts stay as drafts until real content is written (L15 content loader).
 
+**L11 (2026-10-07)**
+- `/safety` (national numbers + city list) and `/safety/[city]` (published `safety_page` guide for the city, if any, then national + city `safety_info` grouped by section). Every block shows "Last verified: {date}", or "not yet verified — please double-check" while `last_verified_at` is null (all seeded rows today). Bold numbers become `tel:` links. A prominent "not an emergency service — call 112" banner. No incident feed, no map of reports.
+- Report an issue (`#report` on each city page): category, optional area, description, optional one-off location. Anonymous reports need an email; signed-in reports are linked to the profile. Hidden honeypot field. Rate limits 5/user/h and 50/IP/h. Stored via the service-role RPC `admin_create_issue_report` (`0041`) into `private.issue_reports`. Safety-category reports email admins (category only, no report content in email). Confirmation copy is verbatim from §10.
+- Admin triage (`/admin/issues`, admin + aal2): list ordered new → escalated → triaged → closed, status + internal note, audited. CSV export comes with the L12 data tables.
+- Safety info is seeded only with the PRD's national numbers + LASEMA. Hospitals, police stations, embassies, travel advice and so on need verified data from you; I deliberately did not invent phone numbers. They're edited in the L12 content CMS (safety_info editor).
+- Footer now links Safety and the Diaspora toolkit.
+
 ## Open questions for Fola
 (write here when you need me)
 
@@ -600,4 +648,5 @@ Acceptance evidence:
 4. **[needs your OK — secrets] Storage purges need the service key in Supabase Vault.** PRD §6.7/§7.12/§8.4 require pg_cron to delete expired uploads (24 h), verification documents (30 days after decision) and deleted users' media. Supabase now blocks deleting storage objects with SQL (`protect_objects_delete`), so the job has to call the Storage API, and for that the database needs the service-role key, stored encrypted in **Supabase Vault** as `app_service_role_key` (plus `app_project_url`). That's a new place for a secret, beyond §7, so I haven't stored it. Everything is built: until the secrets exist the purge jobs delete nothing, raise a warning, and never falsely mark documents as purged. **Reply "OK to store in Vault"** and I'll add `npm run db:vault` (it reads the key from `.env.local` and pipes it to psql over stdin, so it never appears in shell history or process args) and run it on DEV. The alternative is a Vercel cron route doing the deletes with the service key it already holds. That's also outside the PRD's "digest + backup only" Vercel crons.
 5. **[heads-up, non-blocking] Signups on DEV only work for Supabase team-member emails** until custom SMTP (Resend) is configured: the built-in sender rejects every other address with `email_address_invalid`, and caps at 2 emails/hour. The app shows a friendly message, and the tests avoid email (CLAUDE.md). When you set up SMTP, please also update the four email templates listed in LAUNCH.md §8, so confirmation links work when opened on a different device.
 6. **[heads-up] MFA recovery:** Supabase TOTP has no backup codes. If an admin loses their phone, a super admin has to remove the factor in the Supabase dashboard (Authentication → Users → user → MFA). I'd suggest enrolling a second authenticator (e.g. a password-manager TOTP) on your super-admin account. I'll mention this in LAUNCH.md.
+7. **[content needed before launch] Verified safety information.** The safety pages only show the national numbers (112, FRSC 122) and LASEMA 767 from the PRD, all marked "not yet verified". Hospitals with 24 h A&E, police stations, embassies, travel advice, area notes and scam-awareness text need real, checked information per city. I won't invent emergency contacts. Add them via Admin → Content (safety info, L12) or the L15 content loader, and set the verification date when checked.
 

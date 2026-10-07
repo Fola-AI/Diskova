@@ -41,6 +41,15 @@ export default function AdminHome() {
           <Link href="/admin/content" className="text-sm underline underline-offset-4">Open content</Link>
         </CardContent>
       </Card>
+      <Card>
+        <CardHeader>
+          <CardTitle>Issue reports</CardTitle>
+          <CardDescription>Private safety, scam and conduct reports.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Link href="/admin/issues" className="text-sm underline underline-offset-4">Open issue reports</Link>
+        </CardContent>
+      </Card>
     </div>
   );
 }
