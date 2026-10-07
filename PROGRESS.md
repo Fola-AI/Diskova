@@ -1,12 +1,12 @@
 # Build Progress
 
 ## Current stage
-Stage L3 — Authentication, profiles, roles, MFA
+Stage L4 — Cities, areas, categories, vendor directory, share buttons (read-only)
 
 ## Launch stages (required before go-live)
 - [x] Stage L1: Project scaffold, tooling, `npm run verify`
 - [x] Stage L2: Database schema, private schema, RLS, pg_cron jobs, seed (DEV only)
-- [ ] Stage L3: Authentication, profiles, roles, MFA
+- [x] Stage L3: Authentication, profiles, roles, MFA
 - [ ] Stage L4: Cities, areas, categories, vendor directory, share buttons (read-only)
 - [ ] Stage L5: Vendor self-serve onboarding, dashboard, official updates
 - [ ] Stage L6: Check-ins (full + one-tap pulse), image pipeline, live feed, points
@@ -112,6 +112,46 @@ Acceptance evidence:
 - Audit log: UPDATE / DELETE / TRUNCATE rejected even as `postgres` (trigger) — API roles hold no privileges at all.
 - `supabase db advisors --type security`: only 2 WARN (leaderboard materialized views readable by API — intentional, public fields only).
 
+### Stage L3 — 2026-10-07
+```
+
+ RUN  v5.0.3 /Users/fola/Apps/Diskova
+
+
+ Test Files  8 passed (8)
+      Tests  61 passed (61)
+   Start at  18:34:13
+   Duration  7.19s (tests 97%, import 2%, transform 1%)
+
+    Isolate  8 workers spawned · ~54ms startup each (spawn + environment, per file)
+             at least ~380ms faster with isolate: false — reuses workers across files instead of one per file
+
+[verify] Playwright smoke: running 3 spec file(s)…
+
+Running 12 tests using 3 workers
+
+  ✓   2 [smoke] › tests/smoke/auth.spec.ts:11:5 › home renders the branded shell with security headers (266ms)
+  ✓   4 [smoke] › tests/smoke/auth.spec.ts:20:5 › protected pages send anonymous visitors to login with a safe next (242ms)
+  ✓   5 [smoke] › tests/smoke/auth.spec.ts:27:5 › signup form validates before calling the server (263ms)
+  ✓   3 [smoke] › tests/smoke/settings.spec.ts:26:5 › edit profile: username, home city, diaspora, location consent (2.9s)
+  ✓   1 [smoke] › tests/smoke/admin-mfa.spec.ts:21:5 › admin without MFA is redirected to enrol, and gets in after verifying a TOTP code (2.9s)
+  ✓   6 [smoke] › tests/smoke/auth.spec.ts:36:5 › signup → verify → login (2.2s)
+  ✓   9 [smoke] › tests/smoke/auth.spec.ts:75:5 › used or invalid links land on login with a clear message (262ms)
+  ✓  10 [smoke] › tests/smoke/auth.spec.ts:81:5 › open redirects are refused after login (1.2s)
+  ✓   8 [smoke] › tests/smoke/admin-mfa.spec.ts:42:5 › non-staff users get a 404 for admin pages (2.0s)
+  ✓   7 [smoke] › tests/smoke/settings.spec.ts:46:5 › avatar upload goes through the one-image pipeline (EXIF stripped, WebP) (4.6s)
+  ✓  11 [smoke] › tests/smoke/auth.spec.ts:93:5 › password reset: recovery link → choose new password → sign in with it (3.2s)
+  ✓  12 [smoke] › tests/smoke/settings.spec.ts:75:5 › delete account anonymises the profile and blocks sign-in (2.4s)
+
+  12 passed (11.6s)
+```
+Acceptance evidence:
+- **Unverified user blocked from posting:** Supabase `Confirm email` stops unverified sign-in (smoke: "confirm your email first"); RLS `is_verified_user()` blocks inserts (L2 RLS test); `requireVerifiedUser()` guards server paths.
+- **Admin without MFA redirected:** smoke `admin-mfa.spec.ts`. An aal1 admin is sent to `/admin/mfa`, enrols TOTP (code computed from the shown secret), lands on `/admin` with an aal2 session. Non-staff get 404 on `/admin` and `/admin/mfa`.
+- **Playwright signup → verify → login green** against DEV: user created + token via `auth.admin.generateLink` (no email), verified through `/auth/callback?token_hash…`, profile `email_verified_at` synced by trigger, signed out, signed back in via the UI.
+- Also green: password reset via recovery link; profile edit; avatar through signed upload → `/api/media/process` (512² WebP, EXIF stripped, incoming object deleted); delete account (profile anonymised, sign-in blocked); invalid/used link handling; open-redirect refusal; protected-route redirects.
+- `npm audit --omit=dev`: 0.
+
 ## Notes / decisions
 (append here as you go)
 
@@ -153,6 +193,20 @@ Acceptance evidence:
 - `LAUNCH.md` started as a running checklist (DB steps so far); finalised in L15.
 - RLS tests live in `tests/rls/` and run in `npm run verify` against DEV (env loaded by `tests/setup/load-env.ts`). Fixtures are tagged with a run id and deleted afterwards.
 
+**L3 (2026-10-07)**
+- Auth uses the standard Supabase flows from Server Actions (`signUp`, `signInWithPassword`, `signInWithOtp` with `shouldCreateUser:false` so new accounts always pass the terms checkbox, `resetPasswordForEmail`, `resend`). Responses for magic link / reset / resend are generic (no account enumeration); signup relies on Supabase's obfuscated response for existing emails.
+- `/auth/callback` handles both `?code=` (PKCE: Google + default templates, same browser) and `?token_hash=&type=` (server-side `verifyOtp`, works across devices). LAUNCH.md lists the recommended email-template URLs. `next` is always passed through `safeNext()` (open-redirect safe, unit-tested).
+- Rate limits (`lib/ratelimit`, Upstash sliding window): login 20/email/15 min + 300/IP/15 min, signup 100/IP/h, magic link / reset / resend 5 per address per hour + 100/IP/h (the per-address figure is my choice; the PRD doesn't specify it). Keys for emails are SHA-256 hashed. **Fail-open** if Upstash is down (Sentry alert): availability first, and Supabase Auth keeps its own limits.
+- Guards (`lib/auth/guards.ts`): `getSession()` uses `auth.getUser()` (verified by the Auth server) + `get_my_profile()`; `requireRole()` 404s non-matching roles and sends staff without `aal2` to `/admin/mfa`; `requireVendorMember()` checks accepted membership + role rank.
+- Middleware refreshes the session only when an `sb-…-auth-token` cookie exists (anonymous visitors skip the Auth round-trip) and redirects anonymous visitors away from `/me`, `/vendor`, `/admin`. The header's auth state is a client component so public pages stay static/ISR.
+- Admin routes live in `app/admin/(secure)` (layout = `requireRole('moderator')` + aal2) with `/admin/mfa` outside the group. MFA uses Supabase's built-in TOTP: QR comes back as an SVG data URI, so no QR or OTP library was needed (`otplib` not installed). Abandoned unverified factors are cleaned up before re-enrolling.
+- Media pipeline core landed early for avatars: `lib/media/image.ts` (sharp: EXIF orientation applied then ALL metadata dropped, ≤ 2000 px long edge / 512² for avatars, WebP q80, blurhash, 64-bit dHash, decompression-bomb limit), `lib/media/uploads.ts` (signed upload URLs into `media-incoming/{uid}/…`, own-folder path check), `POST /api/media/process` (exactly one image per call, `mediaUser` 12/h). Image moderation is a stub returning `auto_pass` until L8 (callers already branch on the decision). HEIC isn't accepted (sharp's prebuilt binaries can't decode it); iOS converts to JPEG for file inputs.
+- Delete account: profile anonymised + posts hidden immediately, auth user soft-deleted (`deleteUser(id, true)`, so it can't sign in and the anonymised profile row survives), audited, signed out. Media files go via the daily purge (pending Vault, Open question 4).
+- Signup/login IP + UA go into `private.profile_meta` via a service-role RPC (`0033`). Informational only.
+- `/privacy` and `/terms` are template pages so signup links resolve. Final wording is in L13.
+- Playwright smoke runs Chromium with an iPhone 13 viewport against `next start` on port 3100, loading `.env.local` (`tests/setup/load-env.ts`). Test users use `@example.com` (admin API only) and are deleted after each run. TOTP codes in tests are computed with Node crypto (RFC 6238).
+- Google sign-in is wired (`signInWithOAuth` → `/auth/callback`) but not e2e-tested: the DEV consent screen is in Testing mode.
+
 ## Open questions for Fola
 (write here when you need me)
 
@@ -160,4 +214,6 @@ Acceptance evidence:
 2. **[non-blocking] `EMAIL_ADMIN_TO` is empty** in `.env.local` (`RESEND_API_KEY` is also empty — known, per CLAUDE.md). Until it's set, admin notification emails will fall back to `SUPER_ADMIN_EMAIL`, and email sending stays a no-op while there's no Resend key.
 3. **[optional] `tailwindcss-animate`** (shadcn's animation plugin for Tailwind 3) isn't in PRD §4, so it isn't installed. Dialogs/sheets will open without enter/exit animations. Approve it if you want those animations.
 4. **[needs your OK — secrets] Storage purges need the service key in Supabase Vault.** PRD §6.7/§7.12/§8.4 require pg_cron to delete expired uploads (24 h), verification documents (30 days after decision) and deleted users' media. Supabase now blocks deleting storage objects with SQL (`protect_objects_delete`), so the job has to call the Storage API, and for that the database needs the service-role key, stored encrypted in **Supabase Vault** as `app_service_role_key` (plus `app_project_url`). That's a new place for a secret, beyond §7, so I haven't stored it. Everything is built: until the secrets exist the purge jobs delete nothing, raise a warning, and never falsely mark documents as purged. **Reply "OK to store in Vault"** and I'll add `npm run db:vault` (it reads the key from `.env.local` and pipes it to psql over stdin, so it never appears in shell history or process args) and run it on DEV. The alternative is a Vercel cron route doing the deletes with the service key it already holds. That's also outside the PRD's "digest + backup only" Vercel crons.
+5. **[heads-up, non-blocking] Signups on DEV only work for Supabase team-member emails** until custom SMTP (Resend) is configured: the built-in sender rejects every other address with `email_address_invalid`, and caps at 2 emails/hour. The app shows a friendly message, and the tests avoid email (CLAUDE.md). When you set up SMTP, please also update the four email templates listed in LAUNCH.md §8, so confirmation links work when opened on a different device.
+6. **[heads-up] MFA recovery:** Supabase TOTP has no backup codes. If an admin loses their phone, a super admin has to remove the factor in the Supabase dashboard (Authentication → Users → user → MFA). I'd suggest enrolling a second authenticator (e.g. a password-manager TOTP) on your super-admin account. I'll mention this in LAUNCH.md.
 

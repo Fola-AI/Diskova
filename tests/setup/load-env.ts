@@ -3,7 +3,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 
-const file = path.resolve(import.meta.dirname, "../../.env.local");
+const file = path.resolve(process.cwd(), ".env.local");
 if (existsSync(file)) {
   for (const raw of readFileSync(file, "utf8").split(/\r?\n/)) {
     const line = raw.trim();

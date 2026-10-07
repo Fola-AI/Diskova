@@ -924,6 +924,9 @@ isOneToOne: false
               "active": boolean,"command": string,"jobname": string,"schedule": string
             }[]
                            },
+"admin_record_profile_meta":
+{ Args: { "p_ip"?: unknown,"p_is_signup"?: boolean,"p_profile_id": string,"p_user_agent"?: string }; Returns: undefined
+                           },
 "admin_write_audit":
 { Args: { "p_action": string,"p_actor_id"?: string,"p_actor_role"?: string,"p_after"?: Json,"p_before"?: Json,"p_entity_id": string,"p_entity_type": string,"p_ip"?: unknown,"p_reason"?: string,"p_user_agent"?: string }; Returns: number
                            },

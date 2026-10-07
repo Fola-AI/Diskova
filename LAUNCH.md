@@ -21,3 +21,22 @@
 6. Storage purges (pending decision — see PROGRESS.md "Open questions"): if approved, store Vault
    secrets `app_project_url` and `app_service_role_key` on PROD so pg_cron can delete expired uploads,
    verification documents (30 days) and deleted-account media through the Storage API.
+
+## Auth (from Stage L3)
+
+7. **Custom SMTP (Resend)** on PROD *and* DEV — Dashboard → Authentication → SMTP Settings (SETUP.md §3a.9).
+   Without it Supabase only emails project team members: on DEV today, signups from any other address are
+   rejected with `email_address_invalid`.
+8. **Email templates** (Authentication → Email Templates). Point links at the app so verification works across
+   devices (open on phone after signing up on a laptop):
+   - Confirm signup: `{{ .SiteURL }}/auth/callback?token_hash={{ .TokenHash }}&type=signup&next=/me?welcome=1`
+   - Magic link: `{{ .SiteURL }}/auth/callback?token_hash={{ .TokenHash }}&type=magiclink&next=/me`
+   - Reset password: `{{ .SiteURL }}/auth/callback?token_hash={{ .TokenHash }}&type=recovery&next=/reset/update`
+   - Change email: `{{ .SiteURL }}/auth/callback?token_hash={{ .TokenHash }}&type=email_change&next=/me/settings`
+   (The default `{{ .ConfirmationURL }}` templates also work, but only in the same browser that started the flow.)
+9. **URL configuration**: Site URL `https://diskova.io`; redirect URLs `https://diskova.io/**` (PROD) — DEV keeps
+   `http://localhost:3000/**` and `https://*.vercel.app/**`.
+10. **Google OAuth**: publish the consent screen (DEV is in Testing mode — only listed test users can sign in).
+11. Keep **Confirm email ON**, **TOTP MFA ON**, password policy = lower + upper + digit, min 8 (matches the app's validation).
+12. **MFA recovery:** enrol two TOTP factors on the super-admin account (phone app + password manager). Supabase
+    TOTP has no backup codes; a lost factor is removed in Dashboard → Authentication → Users → MFA.

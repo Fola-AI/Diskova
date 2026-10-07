@@ -1,5 +1,7 @@
 import Link from "next/link";
 
+import { AuthNav } from "@/components/layout/auth-nav";
+
 import { BRAND_NAME } from "@/lib/config";
 
 export function SiteHeader() {
@@ -15,11 +17,12 @@ export function SiteHeader() {
           </span>
           <span className="font-display text-lg font-semibold tracking-tight">{BRAND_NAME}</span>
         </Link>
-        <nav aria-label="Primary" className="flex items-center gap-1 text-sm text-muted-foreground">
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1">
+        <nav aria-label="Primary" className="flex items-center gap-2 text-sm text-muted-foreground">
+          <span className="hidden items-center gap-1.5 rounded-full border border-border px-3 py-1 sm:inline-flex">
             <span className="h-2 w-2 animate-live-pulse rounded-full bg-primary" aria-hidden />
             Live
           </span>
+          <AuthNav />
         </nav>
       </div>
     </header>

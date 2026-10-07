@@ -1,5 +1,7 @@
 import { defineConfig, devices } from "@playwright/test";
 
+import "./tests/setup/load-env";
+
 const PORT = Number(process.env.PLAYWRIGHT_PORT ?? 3100);
 const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? `http://localhost:${PORT}`;
 
