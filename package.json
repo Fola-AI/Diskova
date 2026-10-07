@@ -21,7 +21,8 @@
     "db:push": "dotenv -e .env.local -- node scripts/dev-db.mjs push",
     "db:seed": "dotenv -e .env.local -- node scripts/dev-db.mjs seed",
     "db:types": "dotenv -e .env.local -- node scripts/dev-db.mjs types",
-    "create-super-admin": "dotenv -e .env.local -- tsx scripts/create-super-admin.ts"
+    "create-super-admin": "dotenv -e .env.local -- tsx scripts/create-super-admin.ts",
+    "db:samples": "dotenv -e .env.local -- node scripts/dev-db.mjs samples"
   },
   "dependencies": {
     "@hookform/resolvers": "5.9.1",

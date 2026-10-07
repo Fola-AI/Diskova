@@ -44,6 +44,7 @@ const config: Config = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        positive: "hsl(var(--positive))",
         // Brand palette (PRD §1.5)
         brand: {
           green: "#0B7A3B",

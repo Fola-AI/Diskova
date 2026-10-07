@@ -20,7 +20,7 @@ export default function VerifyPage() {
       }
     >
       <div className="mb-6 flex items-center gap-3 rounded-lg bg-secondary p-4 text-sm">
-        <MailCheck className="h-6 w-6 shrink-0 text-primary" aria-hidden />
+        <MailCheck className="h-6 w-6 shrink-0 text-positive" aria-hidden />
         <p>Open the email on this device and tap the link. It can take a minute — check spam too.</p>
       </div>
       <p className="mb-3 text-sm text-muted-foreground">Didn&apos;t get it? We can send another.</p>

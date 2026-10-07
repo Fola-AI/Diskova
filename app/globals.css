@@ -29,6 +29,8 @@
     --ring: 146 83% 26%;
     --radius: 0.75rem;
 
+    --positive: 146 83% 26%;
+
     --crowd-1: 210 15% 55%;
     --crowd-2: 160 60% 38%;
     --crowd-3: 44 100% 45%;
@@ -43,7 +45,8 @@
     --card-foreground: 40 20% 96%;
     --popover: 150 10% 8%;
     --popover-foreground: 40 20% 96%;
-    --primary: 146 70% 38%;
+    /* Brand green #0B7A3B: white text on it passes WCAG AA (≈5.5:1). */
+    --primary: 146 83% 26%;
     --primary-foreground: 0 0% 100%;
     --secondary: 150 8% 14%;
     --secondary-foreground: 40 20% 96%;
@@ -55,7 +58,9 @@
     --destructive-foreground: 0 0% 100%;
     --border: 150 8% 18%;
     --input: 150 8% 18%;
-    --ring: 146 70% 38%;
+    --ring: 146 60% 45%;
+    /* Green for text / icons on dark surfaces (≥ 4.5:1 on the dark background). */
+    --positive: 146 55% 55%;
 
     --crowd-1: 210 12% 60%;
     --crowd-2: 160 55% 45%;

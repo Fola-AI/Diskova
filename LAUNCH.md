@@ -40,3 +40,10 @@
 11. Keep **Confirm email ON**, **TOTP MFA ON**, password policy = lower + upper + digit, min 8 (matches the app's validation).
 12. **MFA recovery:** enrol two TOTP factors on the super-admin account (phone app + password manager). Supabase
     TOTP has no backup codes; a lost factor is removed in Dashboard → Authentication → Users → MFA.
+
+## Content (from Stage L4)
+
+13. **Never run `npm run db:samples` (or `supabase/seed/dev-sample-content.sql`) on PROD** — it publishes the
+    fictional sample vendors. On PROD the sample vendors don't exist at all (seed is DEV-only).
+14. **Mapbox**: the PROD token must be URL-restricted to `https://diskova.io/*` (and preview domains if wanted).
+    The app uses GL JS (map toggle) *and* the Static Images API (map previews) — both count toward usage.

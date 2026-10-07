@@ -171,9 +171,9 @@ isOneToOne: false
                   ]
                 },"areas": {
                   Row: {
-                    "centroid": unknown,"city_id": string,"created_at": string,"id": string,"is_active": boolean,"name": string,"polygon": unknown,"slug": string,"sort_order": number,"updated_at": string
+                    "centroid": unknown,"city_id": string,"created_at": string,"id": string,"is_active": boolean,"name": string,"polygon": unknown,"slug": string,"sort_order": number,"updated_at": string,"lat": number | null,"lng": number | null
                   }
-                  ComputedFields: never
+                  ComputedFields: "lat" | "lng"
                   Insert: {
                     "centroid"?: unknown,"city_id": string,"created_at"?: string,"id"?: string,"is_active"?: boolean,"name": string,"polygon"?: unknown,"slug": string,"sort_order"?: number,"updated_at"?: string
                   }
@@ -205,9 +205,9 @@ isOneToOne: false
                   ]
                 },"cities": {
                   Row: {
-                    "bbox": unknown,"centroid": unknown,"country": string,"created_at": string,"hero_image_url": string | null,"id": string,"intro_md": string | null,"is_active": boolean,"name": string,"slug": string,"sort_order": number,"state": string,"timezone": string,"updated_at": string
+                    "bbox": unknown,"centroid": unknown,"country": string,"created_at": string,"hero_image_url": string | null,"id": string,"intro_md": string | null,"is_active": boolean,"name": string,"slug": string,"sort_order": number,"state": string,"timezone": string,"updated_at": string,"lat": number | null,"lng": number | null
                   }
-                  ComputedFields: never
+                  ComputedFields: "lat" | "lng"
                   Insert: {
                     "bbox"?: unknown,"centroid"?: unknown,"country"?: string,"created_at"?: string,"hero_image_url"?: string | null,"id"?: string,"intro_md"?: string | null,"is_active"?: boolean,"name": string,"slug": string,"sort_order"?: number,"state": string,"timezone"?: string,"updated_at"?: string
                   }
@@ -271,9 +271,9 @@ isOneToOne: false
                   ]
                 },"events": {
                   Row: {
-                    "approved_at": string | null,"approved_by": string | null,"area_id": string | null,"category": Database["public"]['Enums']["event_category"],"city_id": string,"cover_image_url": string | null,"created_at": string,"deleted_at": string | null,"description_md": string | null,"ends_at": string | null,"id": string,"is_december_season": boolean,"is_featured": boolean,"is_free": boolean,"location": unknown,"price_from_ngn": number | null,"price_to_ngn": number | null,"search_tsv": unknown,"slug": string,"starts_at": string,"status": Database["public"]['Enums']["event_status"],"submitted_by": string | null,"ticket_url": string | null,"timezone": string,"title": string,"updated_at": string,"vendor_id": string | null,"venue_name_freeform": string | null,"venue_vendor_id": string | null,"view_count": number
+                    "approved_at": string | null,"approved_by": string | null,"area_id": string | null,"category": Database["public"]['Enums']["event_category"],"city_id": string,"cover_image_url": string | null,"created_at": string,"deleted_at": string | null,"description_md": string | null,"ends_at": string | null,"id": string,"is_december_season": boolean,"is_featured": boolean,"is_free": boolean,"location": unknown,"price_from_ngn": number | null,"price_to_ngn": number | null,"search_tsv": unknown,"slug": string,"starts_at": string,"status": Database["public"]['Enums']["event_status"],"submitted_by": string | null,"ticket_url": string | null,"timezone": string,"title": string,"updated_at": string,"vendor_id": string | null,"venue_name_freeform": string | null,"venue_vendor_id": string | null,"view_count": number,"lat": number | null,"lng": number | null
                   }
-                  ComputedFields: never
+                  ComputedFields: "lat" | "lng"
                   Insert: {
                     "approved_at"?: string | null,"approved_by"?: string | null,"area_id"?: string | null,"category"?: Database["public"]['Enums']["event_category"],"city_id": string,"cover_image_url"?: string | null,"created_at"?: string,"deleted_at"?: string | null,"description_md"?: string | null,"ends_at"?: string | null,"id"?: string,"is_december_season"?: boolean,"is_featured"?: boolean,"is_free"?: boolean,"location"?: unknown,"price_from_ngn"?: number | null,"price_to_ngn"?: number | null,"search_tsv"?: never,"slug": string,"starts_at": string,"status"?: Database["public"]['Enums']["event_status"],"submitted_by"?: string | null,"ticket_url"?: string | null,"timezone"?: string,"title": string,"updated_at"?: string,"vendor_id"?: string | null,"venue_name_freeform"?: string | null,"venue_vendor_id"?: string | null,"view_count"?: number
                   }
@@ -803,9 +803,9 @@ isOneToOne: false
                   ]
                 },"vendors": {
                   Row: {
-                    "address_line": string | null,"age_policy": string | null,"area_id": string | null,"booking_url": string | null,"category_id": string,"city_id": string,"claim_status": Database["public"]['Enums']["claim_status"],"cover_image_url": string | null,"created_at": string,"deleted_at": string | null,"description_md": string | null,"dress_code": string | null,"email": string | null,"features": (string)[],"gallery": NonNullable<Json>,"id": string,"instagram_handle": string | null,"is_seed": boolean,"last_activity_at": string | null,"last_official_update_at": string | null,"late_night_area_note": string | null,"location": unknown,"logo_url": string | null,"name": string,"opening_hours": NonNullable<Json>,"owner_profile_id": string | null,"parking_note": string | null,"phone": string | null,"points": number,"price_band": Database["public"]['Enums']["price_band"] | null,"search_tsv": unknown,"secondary_category_ids": (string)[],"slug": string,"status": Database["public"]['Enums']["vendor_status"],"tagline": string | null,"tiktok_handle": string | null,"updated_at": string,"verified": boolean,"verified_at": string | null,"verified_by": string | null,"view_count": number,"website_url": string | null,"whatsapp": string | null,"x_handle": string | null,"vendor_completeness": number | null
+                    "address_line": string | null,"age_policy": string | null,"area_id": string | null,"booking_url": string | null,"category_id": string,"city_id": string,"claim_status": Database["public"]['Enums']["claim_status"],"cover_image_url": string | null,"created_at": string,"deleted_at": string | null,"description_md": string | null,"dress_code": string | null,"email": string | null,"features": (string)[],"gallery": NonNullable<Json>,"id": string,"instagram_handle": string | null,"is_seed": boolean,"last_activity_at": string | null,"last_official_update_at": string | null,"late_night_area_note": string | null,"location": unknown,"logo_url": string | null,"name": string,"opening_hours": NonNullable<Json>,"owner_profile_id": string | null,"parking_note": string | null,"phone": string | null,"points": number,"price_band": Database["public"]['Enums']["price_band"] | null,"search_tsv": unknown,"secondary_category_ids": (string)[],"slug": string,"status": Database["public"]['Enums']["vendor_status"],"tagline": string | null,"tiktok_handle": string | null,"updated_at": string,"verified": boolean,"verified_at": string | null,"verified_by": string | null,"view_count": number,"website_url": string | null,"whatsapp": string | null,"x_handle": string | null,"lat": number | null,"lng": number | null,"vendor_completeness": number | null
                   }
-                  ComputedFields: "vendor_completeness"
+                  ComputedFields: "lat" | "lng" | "vendor_completeness"
                   Insert: {
                     "address_line"?: string | null,"age_policy"?: string | null,"area_id"?: string | null,"booking_url"?: string | null,"category_id": string,"city_id": string,"claim_status"?: Database["public"]['Enums']["claim_status"],"cover_image_url"?: string | null,"created_at"?: string,"deleted_at"?: string | null,"description_md"?: string | null,"dress_code"?: string | null,"email"?: string | null,"features"?: (string)[],"gallery"?: NonNullable<Json>,"id"?: string,"instagram_handle"?: string | null,"is_seed"?: boolean,"last_activity_at"?: string | null,"last_official_update_at"?: string | null,"late_night_area_note"?: string | null,"location": unknown,"logo_url"?: string | null,"name": string,"opening_hours"?: NonNullable<Json>,"owner_profile_id"?: string | null,"parking_note"?: string | null,"phone"?: string | null,"points"?: number,"price_band"?: Database["public"]['Enums']["price_band"] | null,"search_tsv"?: never,"secondary_category_ids"?: (string)[],"slug": string,"status"?: Database["public"]['Enums']["vendor_status"],"tagline"?: string | null,"tiktok_handle"?: string | null,"updated_at"?: string,"verified"?: boolean,"verified_at"?: string | null,"verified_by"?: string | null,"view_count"?: number,"website_url"?: string | null,"whatsapp"?: string | null,"x_handle"?: string | null
                   }
@@ -952,6 +952,29 @@ isOneToOne: false
                            },
 "is_verified_user":
 { Args: Record<PropertyKey, never>; Returns: boolean
+                           },
+"lat":
+{ Args: { "r": Omit<Database["public"]['Tables']["areas"]['Row'], Database["public"]['Tables']["areas"]['ComputedFields']> }; Returns: { error: true } & "Could not choose the best candidate function between: public.lat(r => cities), public.lat(r => areas), public.lat(r => vendors), public.lat(r => events). Try renaming the parameters or the function itself in the database so function overloading can be resolved"
+                           } |
+{ Args: { "r": Omit<Database["public"]['Tables']["cities"]['Row'], Database["public"]['Tables']["cities"]['ComputedFields']> }; Returns: { error: true } & "Could not choose the best candidate function between: public.lat(r => cities), public.lat(r => areas), public.lat(r => vendors), public.lat(r => events). Try renaming the parameters or the function itself in the database so function overloading can be resolved"
+                           } |
+{ Args: { "r": Omit<Database["public"]['Tables']["events"]['Row'], Database["public"]['Tables']["events"]['ComputedFields']> }; Returns: { error: true } & "Could not choose the best candidate function between: public.lat(r => cities), public.lat(r => areas), public.lat(r => vendors), public.lat(r => events). Try renaming the parameters or the function itself in the database so function overloading can be resolved"
+                           } |
+{ Args: { "r": Omit<Database["public"]['Tables']["vendors"]['Row'], Database["public"]['Tables']["vendors"]['ComputedFields']> }; Returns: { error: true } & "Could not choose the best candidate function between: public.lat(r => cities), public.lat(r => areas), public.lat(r => vendors), public.lat(r => events). Try renaming the parameters or the function itself in the database so function overloading can be resolved"
+                           },
+"lng":
+{ Args: { "r": Omit<Database["public"]['Tables']["areas"]['Row'], Database["public"]['Tables']["areas"]['ComputedFields']> }; Returns: { error: true } & "Could not choose the best candidate function between: public.lng(r => cities), public.lng(r => areas), public.lng(r => vendors), public.lng(r => events). Try renaming the parameters or the function itself in the database so function overloading can be resolved"
+                           } |
+{ Args: { "r": Omit<Database["public"]['Tables']["cities"]['Row'], Database["public"]['Tables']["cities"]['ComputedFields']> }; Returns: { error: true } & "Could not choose the best candidate function between: public.lng(r => cities), public.lng(r => areas), public.lng(r => vendors), public.lng(r => events). Try renaming the parameters or the function itself in the database so function overloading can be resolved"
+                           } |
+{ Args: { "r": Omit<Database["public"]['Tables']["events"]['Row'], Database["public"]['Tables']["events"]['ComputedFields']> }; Returns: { error: true } & "Could not choose the best candidate function between: public.lng(r => cities), public.lng(r => areas), public.lng(r => vendors), public.lng(r => events). Try renaming the parameters or the function itself in the database so function overloading can be resolved"
+                           } |
+{ Args: { "r": Omit<Database["public"]['Tables']["vendors"]['Row'], Database["public"]['Tables']["vendors"]['ComputedFields']> }; Returns: { error: true } & "Could not choose the best candidate function between: public.lng(r => cities), public.lng(r => areas), public.lng(r => vendors), public.lng(r => events). Try renaming the parameters or the function itself in the database so function overloading can be resolved"
+                           },
+"search_directory":
+{ Args: { "p_city_id"?: string,"p_limit"?: number,"p_q": string }; Returns: {
+              "city_id": string,"id": string,"kind": string,"score": number,"slug": string,"subtitle": string,"title": string
+            }[]
                            },
 "vendor_completeness":
 { Args: { "v": Omit<Database["public"]['Tables']["vendors"]['Row'], Database["public"]['Tables']["vendors"]['ComputedFields']> }; Returns: number

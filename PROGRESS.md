@@ -1,13 +1,13 @@
 # Build Progress
 
 ## Current stage
-Stage L4 — Cities, areas, categories, vendor directory, share buttons (read-only)
+Stage L5 — Vendor self-serve onboarding, dashboard, official updates
 
 ## Launch stages (required before go-live)
 - [x] Stage L1: Project scaffold, tooling, `npm run verify`
 - [x] Stage L2: Database schema, private schema, RLS, pg_cron jobs, seed (DEV only)
 - [x] Stage L3: Authentication, profiles, roles, MFA
-- [ ] Stage L4: Cities, areas, categories, vendor directory, share buttons (read-only)
+- [x] Stage L4: Cities, areas, categories, vendor directory, share buttons (read-only)
 - [ ] Stage L5: Vendor self-serve onboarding, dashboard, official updates
 - [ ] Stage L6: Check-ins (full + one-tap pulse), image pipeline, live feed, points
 - [ ] Stage L7: Crowd snapshots (pg_cron), Tonight view, heat map, forecast
@@ -152,6 +152,46 @@ Acceptance evidence:
 - Also green: password reset via recovery link; profile edit; avatar through signed upload → `/api/media/process` (512² WebP, EXIF stripped, incoming object deleted); delete account (profile anonymised, sign-in blocked); invalid/used link handling; open-redirect refusal; protected-route redirects.
 - `npm audit --omit=dev`: 0.
 
+### Stage L4 — 2026-10-07
+```
+ Test Files  10 passed (10)
+      Tests  74 passed (74)
+   Start at  18:51:00
+   Duration  11.98s (tests 94%, import 5%, transform 1%)
+
+[verify] Playwright smoke: running 4 spec file(s)…
+
+Running 19 tests using 4 workers
+
+  ✓   3 [smoke] › tests/smoke/auth.spec.ts:11:5 › home renders the branded shell with security headers (281ms)
+  ✓   1 [smoke] › tests/smoke/directory.spec.ts:9:5 › city directory lists published seed vendors with open-now status (502ms)
+  ✓   5 [smoke] › tests/smoke/auth.spec.ts:20:5 › protected pages send anonymous visitors to login with a safe next (238ms)
+  ✓   7 [smoke] › tests/smoke/auth.spec.ts:27:5 › signup form validates before calling the server (282ms)
+  ✓   6 [smoke] › tests/smoke/directory.spec.ts:18:5 › category chip, area and price filters narrow the list (1.6s)
+  ✓   9 [smoke] › tests/smoke/directory.spec.ts:37:5 › unknown city and unpublished vendor return 404 (264ms)
+  ✓   4 [smoke] › tests/smoke/settings.spec.ts:26:5 › edit profile: username, home city, diaspora, location consent (2.9s)
+  ✓   2 [smoke] › tests/smoke/admin-mfa.spec.ts:21:5 › admin without MFA is redirected to enrol, and gets in after verifying a TOTP code (3.0s)
+  ✓   8 [smoke] › tests/smoke/auth.spec.ts:36:5 › signup → verify → login (2.9s)
+  ✓  13 [smoke] › tests/smoke/auth.spec.ts:75:5 › used or invalid links land on login with a clear message (282ms)
+  ✓  10 [smoke] › tests/smoke/directory.spec.ts:42:5 › map loads only when toggled (2.0s)
+  ✓  15 [smoke] › tests/smoke/directory.spec.ts:62:5 › vendor page: header, prices, hours, deep links and share (193ms)
+  ✓  14 [smoke] › tests/smoke/auth.spec.ts:81:5 › open redirects are refused after login (1.1s)
+  ✓  12 [smoke] › tests/smoke/admin-mfa.spec.ts:42:5 › non-staff users get a 404 for admin pages (2.1s)
+  ✓  16 [smoke] › tests/smoke/directory.spec.ts:88:5 › search finds venues by partial name, with typeahead (1.1s)
+  ✓  18 [smoke] › tests/smoke/directory.spec.ts:97:5 › sitemap lists cities and vendors; OG image renders (353ms)
+  ✓  11 [smoke] › tests/smoke/settings.spec.ts:46:5 › avatar upload goes through the one-image pipeline (EXIF stripped, WebP) (5.0s)
+  ✓  17 [smoke] › tests/smoke/auth.spec.ts:93:5 › password reset: recovery link → choose new password → sign in with it (2.9s)
+  ✓  19 [smoke] › tests/smoke/settings.spec.ts:75:5 › delete account anonymises the profile and blocks sign-in (2.3s)
+
+  19 passed (12.1s)
+```
+Acceptance evidence:
+- **Seed vendors render:** smoke `directory.spec.ts`: `/c/lagos` lists all 10 Lagos sample vendors; category / area / price + feature filters narrow correctly; junk query values are ignored (200, full list).
+- **Map loads only on toggle:** smoke asserts zero Mapbox GL / tile / style / telemetry requests and no `.mapboxgl-map` before clicking; after clicking, the GL map mounts and requests tiles. Also checked by hand in the browser: 10 pins on the Lagos map.
+- **Open-now correct in Africa/Lagos:** `tests/unit/opening-hours.test.ts` (9 cases: overnight spill-over, exact close, split days, next-day/next-week opening, UTC vs Lagos, 24 h days).
+- **Lighthouse mobile (vendor page, map closed):** performance **90** (3 runs: 90/90/90), accessibility 100, best practices 100, SEO 100. LCP 3.6 s, TBT ≤ 40 ms, CLS 0.004. Before the font + header-JS fixes it was 82–87. Also measured: home 89/100/100/100, city page 83–89/100/100/100 (to be tuned in L14).
+- Deep links (Uber/Bolt/Directions/WhatsApp formats, `rel=nofollow noopener`), WhatsApp share + copy link, search with typeahead, sitemap entries and the per-vendor OG image are all covered by smoke tests.
+
 ## Notes / decisions
 (append here as you go)
 
@@ -206,6 +246,19 @@ Acceptance evidence:
 - `/privacy` and `/terms` are template pages so signup links resolve. Final wording is in L13.
 - Playwright smoke runs Chromium with an iPhone 13 viewport against `next start` on port 3100, loading `.env.local` (`tests/setup/load-env.ts`). Test users use `@example.com` (admin API only) and are deleted after each run. TOTP codes in tests are computed with Node crypto (RFC 6238).
 - Google sign-in is wired (`signInWithOAuth` → `/auth/callback`) but not e2e-tested: the DEV consent screen is in Testing mode.
+
+**L4 (2026-10-07)**
+- DEV sample content: `npm run db:samples` (`supabase/seed/dev-sample-content.sql`) **publishes the 60 fictional seed vendors on DEV** and gives them sample hours, prices and features so the directory can be built and tested. `seed.sql` still inserts them as drafts per the PRD. This file must never run on PROD (LAUNCH.md says so). The L2 seed test now counts sample vendors regardless of status; draft invisibility is still tested with a dedicated draft vendor.
+- `opening_hours` JSON format: `{"mon":[["18:00","02:00"]], …}`. End ≤ start means past midnight; `["00:00","00:00"]` means 24 h. Open-now logic lives in `lib/services/opening-hours.ts` (date-fns-tz, venue/city time zone).
+- Public reads use a cookie-less anon client (`lib/db/public.ts`), so vendor pages are ISR (60 s) and see exactly what anon sees under RLS. Queries live in `lib/db/directory.ts`; filter logic is in `lib/services/directory.ts`.
+- `0034`: `lat`/`lng` exposed as PostgREST computed fields (functions over vendors/cities/areas/events; geography otherwise comes back as hex EWKB); `search_directory()` combines FTS (`search_tsv`), escaped substring and `word_similarity > 0.45` across published vendors, upcoming events and published guides (SECURITY INVOKER, so RLS applies).
+- City directory: one query per city (≤ 500 vendors), filtered in memory so the category chips show city-wide counts. Filters are a no-JS GET form + link chips; unknown values are dropped by zod. Pagination is needed only once a city passes ~500 published vendors (noted for later).
+- Map: `MapToggle` shows a Mapbox **Static Images API** preview (or `cities.hero_image_url` when set) and loads `react-map-gl/mapbox` + `mapbox-gl` via `next/dynamic` only on click. Pins fit their bounds; tapping one opens a popup linking to the venue. The heat layer is L7.
+- Vendor page = §8.2 minus feed/pulse/check-in (L6) and crowd badge/forecast (L7). Description is rendered as plain paragraphs (no HTML) until the sanitised markdown renderer lands in L10. Outbound links are http(s) only (`safeExternalUrl`). The Uber link also sets `pickup=my_location`. The unclaimed-venue CTA links to `/vendor/onboarding?claim=…` (built in L5).
+- Performance: Fraunces loads at weight 600 only. The header's sign-in state now checks for the Supabase auth cookie instead of importing supabase-js, which took ~110 KB off every public page. Vercel Analytics / Speed Insights render only on Vercel builds (no local 404s).
+- Accessibility: buttons use brand green #0B7A3B (white text ≈ 5.5:1). A new `positive` colour token covers green text/icons on dark surfaces. Fixed definition-list structure and the header link's accessible name.
+- Lighthouse runs use `npx lighthouse@12` against the local production build with the installed Chrome. It's a one-off tool run, not a project dependency.
+- OG images: `next/og` (part of Next; `@vercel/og` approved). Shared card in `lib/og/card.tsx`; per-vendor and per-city images plus a site default. `robots.ts` disallows everything on Vercel Preview so DEV data is never indexed.
 
 ## Open questions for Fola
 (write here when you need me)

@@ -1,5 +1,5 @@
 // DEV database helper: push migrations, load the seed, generate types.
-// Usage (env loaded by dotenv-cli from .env.local): node scripts/dev-db.mjs push|seed|types
+// Usage (env loaded by dotenv-cli from .env.local): node scripts/dev-db.mjs push|seed|samples|types
 // Guard: refuses to run unless SUPABASE_DB_URL points at SUPABASE_PROJECT_REF (the DEV project).
 import { spawnSync } from "node:child_process";
 import { writeFileSync } from "node:fs";
@@ -37,6 +37,10 @@ switch (command) {
     run("psql", [dbUrl, "-X", "-q", "-v", "ON_ERROR_STOP=1", "-f", "supabase/seed/seed.sql"]);
     console.log("[dev-db] seed loaded");
     break;
+  case "samples":
+    run("psql", [dbUrl, "-X", "-q", "-v", "ON_ERROR_STOP=1", "-f", "supabase/seed/dev-sample-content.sql"]);
+    console.log("[dev-db] DEV sample content loaded (seed vendors published)");
+    break;
   case "types": {
     const res = spawnSync(
       "npx",
@@ -52,5 +56,5 @@ switch (command) {
     break;
   }
   default:
-    fail("usage: node scripts/dev-db.mjs push|seed|types");
+    fail("usage: node scripts/dev-db.mjs push|seed|samples|types");
 }

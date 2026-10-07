@@ -12,7 +12,8 @@ import { BRAND_COLORS, BRAND_NAME, SITE_URL } from "@/lib/config";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
-const fraunces = Fraunces({ subsets: ["latin"], variable: "--font-fraunces", display: "swap" });
+// Display headings only use 600 — a single static weight is far smaller than the variable font.
+const fraunces = Fraunces({ subsets: ["latin"], weight: "600", variable: "--font-fraunces", display: "swap" });
 
 const description =
   "What's happening right now in Nigeria — live crowd levels and photos from venues, the December in Nigeria calendar, honest prices and city guides.";
@@ -55,8 +56,13 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           <main id="main">{children}</main>
           <SiteFooter />
         </Providers>
-        <Analytics />
-        <SpeedInsights />
+        {/* Vercel serves these scripts only on its own deployments. */}
+        {process.env.VERCEL ? (
+          <>
+            <Analytics />
+            <SpeedInsights />
+          </>
+        ) : null}
       </body>
     </html>
   );

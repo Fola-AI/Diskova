@@ -1,12 +1,16 @@
 import { ArrowRight, CalendarDays, MapPin, Radio } from "lucide-react";
+import Link from "next/link";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { SearchBox } from "@/components/search/search-box";
 import { BRAND_NAME, SEASON_NAME } from "@/lib/config";
+import { listCities } from "@/lib/db/directory";
 
-const LAUNCH_CITIES = ["Lagos", "Abuja", "Ibadan", "Port Harcourt", "Aba", "Owerri"] as const;
+export const revalidate = 300;
 
-export default function HomePage() {
+export default async function HomePage() {
+  const cities = await listCities();
   return (
     <div className="relative overflow-hidden">
       {/* Photo-first hero placeholder: gradient stands in until live venue photos exist (L7). */}
@@ -17,7 +21,7 @@ export default function HomePage() {
         />
         <div className="container max-w-3xl space-y-6 px-0">
           <Badge variant="outline" className="border-primary/50 bg-primary/10 text-foreground">
-            <Radio className="h-3.5 w-3.5 text-primary" aria-hidden />
+            <Radio className="h-3.5 w-3.5 text-positive" aria-hidden />
             Live from venues across Nigeria
           </Badge>
           <h1 id="hero-title" className="text-4xl font-semibold leading-[1.05] sm:text-6xl">
@@ -29,31 +33,35 @@ export default function HomePage() {
             scrolling Instagram to guess.
           </p>
           <div className="flex flex-col gap-3 sm:flex-row">
-            <Button size="lg" className="w-full sm:w-auto" disabled>
-              Tonight in Lagos
-              <ArrowRight aria-hidden />
+            <Button asChild size="lg" className="w-full sm:w-auto">
+              <Link href="/c/lagos">
+                Explore Lagos
+                <ArrowRight aria-hidden />
+              </Link>
             </Button>
             <Button size="lg" variant="outline" className="w-full sm:w-auto" disabled>
               <CalendarDays aria-hidden />
               {SEASON_NAME}
             </Button>
           </div>
-          <p className="text-xs text-muted-foreground">Launching soon.</p>
+          <SearchBox />
         </div>
       </section>
 
       <section className="container max-w-3xl" aria-labelledby="cities-title">
         <h2 id="cities-title" className="mb-4 text-xl font-semibold">
-          Launch cities
+          Pick a city
         </h2>
         <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-          {LAUNCH_CITIES.map((city) => (
-            <li
-              key={city}
-              className="flex items-center gap-2 rounded-lg border border-border bg-card px-4 py-3 text-sm"
-            >
-              <MapPin className="h-4 w-4 text-primary" aria-hidden />
-              {city}
+          {cities.map((city) => (
+            <li key={city.slug}>
+              <Link
+                href={`/c/${city.slug}`}
+                className="flex items-center gap-2 rounded-lg border border-border bg-card px-4 py-3 text-sm transition-colors hover:border-primary/60"
+              >
+                <MapPin className="h-4 w-4 text-positive" aria-hidden />
+                {city.name}
+              </Link>
             </li>
           ))}
         </ul>

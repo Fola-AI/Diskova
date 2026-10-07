@@ -99,7 +99,7 @@ export function MfaPanel({ next, issuer }: { next: string; issuer: string }) {
         </div>
       ) : (
         <p className="flex items-center gap-2 text-sm">
-          <ShieldCheck className="h-5 w-5 text-primary" aria-hidden /> Enter the 6-digit code from your authenticator app.
+          <ShieldCheck className="h-5 w-5 text-positive" aria-hidden /> Enter the 6-digit code from your authenticator app.
         </p>
       )}
       <div className="space-y-2">

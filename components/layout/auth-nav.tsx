@@ -1,28 +1,32 @@
 "use client";
 
-import type { User } from "@supabase/supabase-js";
 import { UserRound } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
-import { getBrowserSupabase } from "@/lib/db/client";
 
 /**
- * Client-side auth state for the header, so public pages stay static/ISR (no cookies read on the server).
+ * Header sign-in state without loading supabase-js on public pages (~110 KB): we only check whether a
+ * Supabase auth cookie exists. /me is still guarded server-side, so a stale cookie just leads to
+ * the login page.
  */
+function hasAuthCookie(): boolean {
+  return document.cookie.split("; ").some((c) => c.startsWith("sb-") && c.includes("-auth-token"));
+}
+
 export function AuthNav() {
-  const [user, setUser] = useState<User | null | undefined>(undefined);
+  const [signedIn, setSignedIn] = useState<boolean | null>(null);
 
   useEffect(() => {
-    const supabase = getBrowserSupabase();
-    void supabase.auth.getSession().then(({ data }) => setUser(data.session?.user ?? null));
-    const { data } = supabase.auth.onAuthStateChange((_event, session) => setUser(session?.user ?? null));
-    return () => data.subscription.unsubscribe();
+    setSignedIn(hasAuthCookie());
+    const onFocus = () => setSignedIn(hasAuthCookie());
+    window.addEventListener("focus", onFocus);
+    return () => window.removeEventListener("focus", onFocus);
   }, []);
 
-  if (user === undefined) return <span className="h-9 w-20" aria-hidden />;
-  if (!user) {
+  if (signedIn === null) return <span className="h-9 w-20" aria-hidden />;
+  if (!signedIn) {
     return (
       <Button asChild size="sm" variant="secondary">
         <Link href="/login">Sign in</Link>

@@ -18,7 +18,7 @@ export function FormAlert({ state, className }: { state: FormState; className?: 
       {isError ? (
         <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-destructive" aria-hidden />
       ) : (
-        <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-primary" aria-hidden />
+        <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-positive" aria-hidden />
       )}
       <span>{state.error ?? state.message}</span>
     </div>
