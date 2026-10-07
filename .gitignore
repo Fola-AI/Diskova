@@ -1,6 +1,39 @@
-# env — never commit secrets
+# env — never commit secrets (.env.example is the only env file tracked)
 .env
 .env*.local
 .env.local
+!.env.example
 
+# dependencies
+/node_modules
+
+# testing
+/coverage
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+
+# next.js
+/.next/
+/out/
+/build
+
+# supabase cli local state
+/supabase/.temp/
+/supabase/.branches/
+
+# misc
 .DS_Store
+*.pem
+npm-debug.log*
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+# sentry
+.sentryclirc
