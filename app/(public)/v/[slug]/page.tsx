@@ -1,22 +1,26 @@
 import type { Metadata } from "next";
 import { AtSign, BadgeCheck, MapPin, Shirt, Ticket } from "lucide-react";
 import Image from "next/image";
+import { Suspense } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { CategoryIcon, categoryGradient } from "@/components/directory/category-icon";
+import { LazyCheckinSheet } from "@/components/feed/lazy";
+import { LiveFeed } from "@/components/feed/live-feed";
+import { PulseBar } from "@/components/feed/pulse-bar";
 import { OpenStatusBadge } from "@/components/directory/open-status-badge";
 import { MapToggle } from "@/components/map/map-toggle";
 import { Badge } from "@/components/ui/badge";
 import { ActionRow } from "@/components/vendor/action-row";
 import { HoursTable } from "@/components/vendor/hours-table";
-import { OfficialUpdates } from "@/components/vendor/official-updates";
 import { Section } from "@/components/vendor/section";
 import { ShareButtons } from "@/components/vendor/share-buttons";
 import { BRAND_NAME, DEFAULT_TIMEZONE, MAPBOX_TOKEN, SITE_URL } from "@/lib/config";
 import { getVendorBySlug, listRecentOfficialUpdates, listUpcomingEventsForVendor, listVendorPrices } from "@/lib/db/directory";
 import { FEATURES, formatNaira, priceBandSymbol, PRICE_BANDS } from "@/lib/directory/constants";
 import { instagramUrl, staticMapUrl } from "@/lib/directory/links";
+import { listCommunityPhotos, listVendorFeed } from "@/lib/db/feed";
 import { hasAnyHours, parseOpeningHours } from "@/lib/services/opening-hours";
 
 export const revalidate = 60;
@@ -50,10 +54,12 @@ export default async function VendorPage({ params }: { params: Params }) {
   const vendor = await getVendorBySlug((await params).slug);
   if (!vendor) notFound();
 
-  const [prices, events, officialUpdates] = await Promise.all([
+  const [prices, events, officialUpdates, feed, communityPhotos] = await Promise.all([
     listVendorPrices(vendor.id),
     listUpcomingEventsForVendor(vendor.id),
     listRecentOfficialUpdates(vendor.id),
+    listVendorFeed(vendor.id),
+    listCommunityPhotos(vendor.id),
   ]);
   const timeZone = vendor.city?.timezone ?? DEFAULT_TIMEZONE;
   const hours = parseOpeningHours(vendor.opening_hours);
@@ -75,6 +81,16 @@ export default async function VendorPage({ params }: { params: Params }) {
         )}
         <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-background to-transparent" />
       </div>
+      {communityPhotos.length ? (
+        <ul className="flex gap-1 overflow-x-auto px-4 pt-2 [scrollbar-width:none]" aria-label="Community photos">
+          {communityPhotos.map((m) => (
+            <li key={m.url} className="relative h-24 w-32 shrink-0 overflow-hidden rounded-lg bg-secondary">
+              <Image src={m.url} alt="Community photo" fill sizes="128px" className="object-cover" />
+              <span className="absolute bottom-1 left-1 rounded bg-black/65 px-1 text-[9px] font-medium text-white">Community photo · Unverified</span>
+            </li>
+          ))}
+        </ul>
+      ) : null}
 
       <div className="container max-w-3xl space-y-8 px-4">
         {/* 2. Header */}
@@ -123,8 +139,16 @@ export default async function VendorPage({ params }: { params: Params }) {
           <ShareButtons url={url} title={vendor.name} text={`${vendor.name} on ${BRAND_NAME}:`} />
         </div>
 
-        {/* 4. Live feed — official updates pinned for 24 h (community posts join in Stage L6) */}
-        <OfficialUpdates updates={officialUpdates} verified={vendor.verified} />
+        {/* Pulse (one tap) + check-in */}
+        <div className="space-y-3">
+          <Suspense fallback={null}>
+            <PulseBar vendorId={vendor.id} vendorSlug={vendor.slug} />
+          </Suspense>
+          <LazyCheckinSheet vendorId={vendor.id} vendorSlug={vendor.slug} vendorName={vendor.name} />
+        </div>
+
+        {/* 4. Live feed — official updates pinned 24 h, then community posts (Realtime / polling) */}
+        <LiveFeed vendorId={vendor.id} vendorSlug={vendor.slug} verified={vendor.verified} initial={{ feed, official: officialUpdates }} />
 
         {/* 5. Prices · dress code · age policy */}
         <Section title="Prices" id="prices">

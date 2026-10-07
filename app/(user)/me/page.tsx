@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Award, Settings, ShieldCheck } from "lucide-react";
+import { Award, ListChecks, Settings, ShieldCheck, Store, Trophy } from "lucide-react";
 import Link from "next/link";
 
 import { FormAlert } from "@/components/forms/form-alert";
@@ -66,7 +66,19 @@ export default async function MePage({
 
       <div className="grid gap-3 sm:grid-cols-2">
         <Button asChild variant="secondary" className="justify-start">
+          <Link href="/me/posts"><ListChecks aria-hidden /> My posts</Link>
+        </Button>
+        <Button asChild variant="secondary" className="justify-start">
           <Link href="/me/settings"><Settings aria-hidden /> Settings</Link>
+        </Button>
+        <Button asChild variant="secondary" className="justify-start">
+          <Link href={`/u/${profile.username}`}><Award aria-hidden /> Public profile</Link>
+        </Button>
+        <Button asChild variant="secondary" className="justify-start">
+          <Link href="/leaderboard"><Trophy aria-hidden /> Leaderboard</Link>
+        </Button>
+        <Button asChild variant="secondary" className="justify-start">
+          <Link href="/vendor"><Store aria-hidden /> For venues</Link>
         </Button>
         {isStaffRole(profile.role) ? (
           <Button asChild variant="secondary" className="justify-start">

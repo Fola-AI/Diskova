@@ -10,6 +10,7 @@ import { moderateImage } from "@/lib/moderation/image";
 import { maxScore, moderateText } from "@/lib/moderation/text";
 import { rateLimitAll, retryAfterText } from "@/lib/ratelimit";
 import { assertServerOnly } from "@/lib/server-only";
+import { awardForPost } from "@/lib/services/points";
 import { officialUpdateSchema } from "@/lib/validation/vendor";
 
 assertServerOnly("lib/services/official-updates");
@@ -119,5 +120,11 @@ export async function createOfficialUpdate(
     .eq("id", post.id);
   if (updateError) throw new OfficialUpdateError("We couldn't publish your update. Please try again.");
 
+  if (result.status === "published") {
+    await awardForPost(
+      { id: post.id, author_id: session.user.id, vendor_id: input.vendorId, kind: "official", is_at_venue: false, created_at: new Date().toISOString() },
+      { hasPhoto: hasImage },
+    );
+  }
   return { ...result, postId: post.id, vendorSlug };
 }

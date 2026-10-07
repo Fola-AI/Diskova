@@ -1,3 +1,5 @@
+"use client";
+
 import { formatDistanceToNowStrict } from "date-fns";
 import { BadgeCheck, Megaphone } from "lucide-react";
 import Image from "next/image";

@@ -5,16 +5,13 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
+import { hasAuthCookie } from "@/lib/client/auth-cookie";
 
 /**
  * Header sign-in state without loading supabase-js on public pages (~110 KB): we only check whether a
  * Supabase auth cookie exists. /me is still guarded server-side, so a stale cookie just leads to
  * the login page.
  */
-function hasAuthCookie(): boolean {
-  return document.cookie.split("; ").some((c) => c.startsWith("sb-") && c.includes("-auth-token"));
-}
-
 export function AuthNav() {
   const [signedIn, setSignedIn] = useState<boolean | null>(null);
 

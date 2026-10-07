@@ -26,6 +26,7 @@
   },
   "dependencies": {
     "@hookform/resolvers": "5.9.1",
+    "@radix-ui/react-dialog": "1.2.0",
     "@radix-ui/react-slot": "1.4.0",
     "@react-email/components": "1.0.12",
     "@sentry/nextjs": "11.5.0",

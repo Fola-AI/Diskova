@@ -1,5 +1,3 @@
-import { getBrowserSupabase } from "@/lib/db/client";
-
 export const CLIENT_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
 export const CLIENT_MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 
@@ -16,6 +14,8 @@ export async function uploadToIncoming(
 ): Promise<string> {
   const signed = await getSigned(file.type, file.size);
   if (!signed.ok) throw new Error(signed.error);
+  // Loaded on demand so public pages don't ship supabase-js until someone actually uploads.
+  const { getBrowserSupabase } = await import("@/lib/db/client");
   const { error } = await getBrowserSupabase()
     .storage.from(bucket)
     .uploadToSignedUrl(signed.data.path, signed.data.token, file, { contentType: file.type });

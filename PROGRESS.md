@@ -1,7 +1,7 @@
 # Build Progress
 
 ## Current stage
-Stage L6 — Check-ins (full + one-tap pulse), image pipeline, live feed, points
+Stage L7 — Crowd snapshots (pg_cron), Tonight view, heat map, forecast
 
 ## Launch stages (required before go-live)
 - [x] Stage L1: Project scaffold, tooling, `npm run verify`
@@ -9,7 +9,7 @@ Stage L6 — Check-ins (full + one-tap pulse), image pipeline, live feed, points
 - [x] Stage L3: Authentication, profiles, roles, MFA
 - [x] Stage L4: Cities, areas, categories, vendor directory, share buttons (read-only)
 - [x] Stage L5: Vendor self-serve onboarding, dashboard, official updates
-- [ ] Stage L6: Check-ins (full + one-tap pulse), image pipeline, live feed, points
+- [x] Stage L6: Check-ins (full + one-tap pulse), image pipeline, live feed, points
 - [ ] Stage L7: Crowd snapshots (pg_cron), Tonight view, heat map, forecast
 - [ ] Stage L8: Moderation pipeline, holds, reports, sanctions, labels
 - [ ] Stage L9: Events and the December in Nigeria calendar
@@ -235,6 +235,49 @@ Acceptance evidence:
 - RLS (`tests/rls/l5-vendor.test.ts`): owner edits / staff member and outsider can't; staff can post official, outsider can't; `vendor_posting_ban` blocks official posts; only managers+ change prices; verification RPCs are service-only; users see only their own requests; `verification-docs` is not readable or writable by users.
 - Moderation decision rules unit-tested (`tests/unit/moderation-decide.test.ts`): block / flag / holds for new and low-trust accounts / pulse and text never held / video always held.
 
+### Stage L6 — 2026-10-07
+```
+Running 26 tests using 6 workers
+
+  ✓   3 [smoke] › tests/smoke/auth.spec.ts:11:5 › home renders the branded shell with security headers (420ms)
+  ✓   1 [smoke] › tests/smoke/directory.spec.ts:9:5 › city directory lists published seed vendors with open-now status (657ms)
+  ✓   7 [smoke] › tests/smoke/auth.spec.ts:20:5 › protected pages send anonymous visitors to login with a safe next (371ms)
+  ✓   9 [smoke] › tests/smoke/auth.spec.ts:27:5 › signup form validates before calling the server (347ms)
+  ✓   8 [smoke] › tests/smoke/directory.spec.ts:19:5 › category chip, area and price filters narrow the list (2.7s)
+  ✓   4 [smoke] › tests/smoke/settings.spec.ts:26:5 › edit profile: username, home city, diaspora, location consent (3.7s)
+  ✓  11 [smoke] › tests/smoke/directory.spec.ts:45:5 › unknown city and unpublished vendor return 404 (624ms)
+  ✓   2 [smoke] › tests/smoke/admin-mfa.spec.ts:21:5 › admin without MFA is redirected to enrol, and gets in after verifying a TOTP code (4.0s)
+  ✓  10 [smoke] › tests/smoke/auth.spec.ts:36:5 › signup → verify → login (3.4s)
+  ✓  15 [smoke] › tests/smoke/auth.spec.ts:75:5 › used or invalid links land on login with a clear message (348ms)
+  ✓  13 [smoke] › tests/smoke/directory.spec.ts:50:5 › map loads only when toggled (2.0s)
+  ✓  14 [smoke] › tests/smoke/admin-mfa.spec.ts:42:5 › non-staff users get a 404 for admin pages (2.0s)
+  ✓  17 [smoke] › tests/smoke/directory.spec.ts:70:5 › vendor page: header, prices, hours, deep links and share (259ms)
+  ✓  16 [smoke] › tests/smoke/auth.spec.ts:81:5 › open redirects are refused after login (1.7s)
+  ✓  18 [smoke] › tests/smoke/directory.spec.ts:96:5 › search finds venues by partial name, with typeahead (1.4s)
+  ✓  20 [smoke] › tests/smoke/directory.spec.ts:105:5 › sitemap lists cities and vendors; OG image renders (501ms)
+  ✓  12 [smoke] › tests/smoke/settings.spec.ts:46:5 › avatar upload goes through the one-image pipeline (EXIF stripped, WebP) (5.3s)
+  ✓  19 [smoke] › tests/smoke/auth.spec.ts:93:5 › password reset: recovery link → choose new password → sign in with it (2.7s)
+  ✓  21 [smoke] › tests/smoke/settings.spec.ts:75:5 › delete account anonymises the profile and blocks sign-in (2.3s)
+  ✓   5 [smoke] › tests/smoke/vendor.spec.ts:27:5 › fresh account → submitted vendor in under 10 minutes (15.3s)
+  ✓   6 [smoke] › tests/smoke/feed.spec.ts:39:5 › one-tap pulse appears for a signed-in viewer within 2 s (Realtime) and an anonymous viewer within 30 s (18.5s)
+  ✓  22 [smoke] › tests/smoke/vendor.spec.ts:90:5 › admin (with MFA) approves the listing and it goes live (4.1s)
+  ✓  24 [smoke] › tests/smoke/vendor.spec.ts:112:5 › official update in two taps appears on the vendor page labelled Official (2.7s)
+  ✓  25 [smoke] › tests/smoke/vendor.spec.ts:135:5 › claim flow: claimant uploads ID, admin approves, claimant becomes owner (12.7s)
+  ✓  23 [smoke] › tests/smoke/feed.spec.ts:73:5 › 4-photo check-in: every request finishes in under 5 s (20.7s)
+  ✓  26 [smoke] › tests/smoke/feed.spec.ts:128:5 › my posts, public profile and leaderboard pages render (8.3s)
+
+  26 passed (55.5s)
+```
+Vitest in the same run: `Test Files  14 passed (14) Tests  96 passed (96)`
+
+Acceptance evidence:
+- **Two browsers, ≤ 2 s (auth) / ≤ 30 s (anon):** smoke `feed.spec.ts`. One user pulses, a second signed-in browser sees it via Supabase Realtime in **490 ms**, and an anonymous browser sees it via polling within the 30 s budget.
+- **Pulse is one tap:** the same test posts with a single click on "Pulse: Packed".
+- **4-image check-in with no request > 5 s:** four 2400×1800 noisy JPEGs, each signed-uploaded and processed in its own `/api/media/process` call. Every POST/upload is timed and the slowest was **1,955 ms**. The post publishes with 4 processed media rows; cards show "Community photo · Unverified" and "Unverified — posted by a community member".
+- **Points per rules + daily cap:** `tests/rls/l6-posts-points.test.ts` against DEV: pulse +1; first check-in of the day at a venue 3 + 5, the next person 3; awards are idempotent per post; the 60/day cap trims the last award (2 of 5 granted); a new account's photo check-in is held (pending, invisible to anon, P2 `hold` queue item, 0 points). `tests/unit/points.test.ts` covers the cap maths.
+- Also tested: likes toggle once per user; reports are unique per user per item; a post's `location` / `distance_from_venue_m` / moderation internals and `post_media.phash` are unreadable by anon and users (42501).
+- Lighthouse (vendor page, map closed) after L6: performance 88 (3 runs), accessibility 100.
+
 ## Notes / decisions
 (append here as you go)
 
@@ -317,6 +360,18 @@ Acceptance evidence:
 - Fix: guards in layouts didn't know the requested path, so post-MFA redirects went to `/admin`. Middleware now forwards `x-pathname`, and `requireRole()` uses it.
 - Auth pages now have a real `<h1>` (was `<h2>`); wizard chips no longer wrap.
 - Test hygiene: a failed smoke run left a pending claim on DEV. I closed it directly in SQL (DEV only), and the test now rejects anything it leaves pending.
+
+**L6 (2026-10-07)**
+- **Security fix found during L6:** `posts` had a table-wide SELECT grant, so a post's precise `location`, distance and moderation scores were readable through the Data API, and Realtime payloads carried them too. `0037` switches `posts` and `post_media` to column-level grants (Realtime honours them). A regression test was added.
+- Check-in flow: `createCheckin` inserts a pending post → each photo is signed-uploaded and processed in its own request (`/api/media/process`, purpose `post`, max 4) → `finalizeCheckin` runs the §8.5 decision (text + image scores, holds) and awards points on publish. Check-ins that are never finalised are removed by the daily purge after 24 h (`purge_abandoned_posts`, `0036`).
+- Location is a soft signal and only stored with consent. Ticking "Mark me as at the venue" in the check-in sheet counts as explicit consent and sets `profiles.location_consent` (revocable in Settings). Pulses only use location if the browser *already* granted it (no prompt). `is_at_venue` / distance are computed server-side (trigger).
+- Points (§1.6): pulse 1 (+1 at venue); check-in 3 (+2 photo, +2 at venue, +5 first check-in at that venue that Lagos day); vendor official update **5 vendor points, at most once per hour per venue** (amount is my choice; the PRD doesn't specify it). Daily cap 60/user/Lagos day. Awarded once per post, only when published; held posts earn points on human approval (L8 hook). Badges: Explorer (5 venues), Night Owl (5 posts between 00:00 and 04:00 Lagos), First-in (ever first at a venue that day). `FEATURE_POINTS=false` disables awarding and the leaderboard page.
+- **Likes: who-liked is kept in Upstash Redis sets** (`likes:{postId}`), because §6 has only `posts.like_count` and no likes table (adding one would change the schema). The count is written back to `posts.like_count`. If Redis data were ever lost, people could like again; that's acceptable for a vanity metric. Rate limit 120 likes/user/hour (my addition).
+- Live feed: the venue page server-renders the feed (ISR). Signed-in visitors subscribe to `postgres_changes` on `posts` filtered by venue and only count as live after Postgres confirms the subscription; supabase-js is dynamically imported for them only. Anonymous visitors poll `/api/live/v/[slug]` every 15 s (CDN `s-maxage=10`, 120/IP/min). After a user posts, the feed refreshes immediately.
+- Feed shows non-expired community posts (pulse/check-in/update) newest first; official updates are pinned on top for 24 h. Expired posts stay on `/u/[username]` and `/me/posts`. The cover strip shows the last 12 community photos labelled "Community photo · Unverified".
+- New pages: `/me/posts` (all own posts with status, including "Your photo is being reviewed — usually under an hour"; soft delete), `/u/[username]` (ISR), `/leaderboard/[city]` (monthly + December in Nigeria, from the hourly materialized views), `/leaderboard` → Lagos.
+- Bundle: the check-in and report sheets (Radix Dialog) load after the page is interactive (`components/feed/lazy.tsx`), and supabase-js loads only at upload time. Venue page first-load JS is 240 kB (it was 326 kB before these fixes).
+- Noted for L13: a report-only CSP `unsafe-eval` violation appears on the venue page; I'll trace its source before enforcing CSP.
 
 ## Open questions for Fola
 (write here when you need me)

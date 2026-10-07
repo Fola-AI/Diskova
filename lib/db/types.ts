@@ -937,6 +937,9 @@ isOneToOne: false
               "business_doc_path": string,"created_at": string,"docs_purged_at": string,"id": string,"id_doc_path": string,"is_claim": boolean,"note": string,"rejection_reason": string,"reviewed_at": string,"social_proof_url": string,"status": Database["public"]['Enums']["verification_status"],"submitted_by": string,"submitter_username": string,"vendor_claim_status": Database["public"]['Enums']["claim_status"],"vendor_id": string,"vendor_name": string,"vendor_slug": string
             }[]
                            },
+"admin_points_today":
+{ Args: { "p_profile_id": string }; Returns: number
+                           },
 "admin_record_profile_meta":
 { Args: { "p_ip"?: unknown,"p_is_signup"?: boolean,"p_profile_id": string,"p_user_agent"?: string }; Returns: undefined
                            },
