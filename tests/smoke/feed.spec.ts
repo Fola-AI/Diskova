@@ -78,6 +78,11 @@ test("4-photo check-in: every request finishes in under 5 s", async ({ page }) =
 
   const slow: string[] = [];
   const durations: number[] = [];
+  const serverMs: number[] = [];
+  page.on("response", (res) => {
+    const t = /process;dur=(\d+)/.exec(res.headers()["server-timing"] ?? "");
+    if (t) serverMs.push(Number(t[1]));
+  });
   page.on("requestfinished", (req) => {
     // responseEnd is relative to startTime (ms); -1 when unavailable.
     const ms = req.timing().responseEnd;
@@ -108,7 +113,10 @@ test("4-photo check-in: every request finishes in under 5 s", async ({ page }) =
   expect(slow).toEqual([]);
   expect(Math.min(...durations)).toBeGreaterThan(0); // the measurement is real
   expect(durations.length).toBeGreaterThanOrEqual(4 * 2 + 2); // 4 uploads + 4 process calls + create + finalize
-  test.info().annotations.push({ type: "max-request-ms", description: String(Math.round(Math.max(...durations))) });
+  test.info().annotations.push(
+    { type: "max-request-ms", description: String(Math.round(Math.max(...durations))) },
+    { type: "server-process-ms", description: serverMs.join(",") },
+  );
 
   const { data: post } = await admin()
     .from("posts")

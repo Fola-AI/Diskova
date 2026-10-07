@@ -74,6 +74,7 @@ export async function decideVendor(
     react: VendorDecisionEmail({ vendorName: before.name, slug: before.slug, approved: decision === "approve", reason }),
   });
   safeRevalidatePath(`/v/${before.slug}`);
+  safeRevalidatePath("/sitemap.xml");
 }
 
 export async function listVerificationRequests() {

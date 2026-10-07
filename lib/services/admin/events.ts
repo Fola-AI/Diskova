@@ -86,4 +86,5 @@ export async function decideEvent(session: SessionContext, eventId: string, acti
   safeRevalidatePath(`/events/${ev.slug}`);
   safeRevalidatePath("/events");
   safeRevalidatePath("/events/december");
+  safeRevalidatePath("/sitemap.xml");
 }

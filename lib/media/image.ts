@@ -50,7 +50,8 @@ export async function processImage(
     pipeline.resize({ width: maxEdge, height: maxEdge, fit: "inside", withoutEnlargement: true });
   }
   // sharp strips metadata unless .withMetadata() is called — we never call it.
-  const { data, info } = await pipeline.webp({ quality: 80 }).toBuffer({ resolveWithObject: true });
+  // effort 3 (default 4) encodes ~30 % faster at near-identical size/quality.
+  const { data, info } = await pipeline.webp({ quality: 80, effort: 3 }).toBuffer({ resolveWithObject: true });
 
   const [blurhash, phash] = await Promise.all([computeBlurhash(data), computeDHash(data)]);
   return { data, width: info.width, height: info.height, blurhash, phash };

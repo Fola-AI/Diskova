@@ -1,7 +1,7 @@
 # Build Progress
 
 ## Current stage
-Stage L10 — Guides, daytime layer, diaspora toolkit, blog (CMS)
+Stage L11 — Safety information section and private issue reports
 
 ## Launch stages (required before go-live)
 - [x] Stage L1: Project scaffold, tooling, `npm run verify`
@@ -13,7 +13,7 @@ Stage L10 — Guides, daytime layer, diaspora toolkit, blog (CMS)
 - [x] Stage L7: Crowd snapshots (pg_cron), Tonight view, heat map, forecast
 - [x] Stage L8: Moderation pipeline, holds, reports, sanctions, labels
 - [x] Stage L9: Events and the December in Nigeria calendar
-- [ ] Stage L10: Guides, daytime layer, diaspora toolkit, blog (CMS)
+- [x] Stage L10: Guides, daytime layer, diaspora toolkit, blog (CMS)
 - [ ] Stage L11: Safety information section and private issue reports
 - [ ] Stage L12: Super-admin back office
 - [ ] Stage L13: Security hardening and RLS matrix tests
@@ -419,6 +419,46 @@ Acceptance evidence:
 - **200 events render smoothly:** smoke `events.spec.ts`: 200 published events in Owerri; `/events?city=owerri` loads with all 200 cards in **652 ms** and scrolls to the end in **25 ms** (cards use `content-visibility: auto`). The month grid renders.
 - Also: `/events/december` countdown before 15 Nov; event page with venue card, external ticket link (`rel=nofollow noopener`), share, add-to-calendar; submit → pending (404 publicly) → admin (MFA) approves → public. Approve / reject (reason required) is audited.
 
+### Stage L10 — 2026-10-07
+```
+  ✓   3 [smoke] › tests/smoke/content.spec.ts:36:5 › paste markdown → preview → publish → live page, sitemap and valid JSON-LD (8.2s)
+  ✓  14 [smoke] › tests/smoke/content.spec.ts:95:5 › toolkit index and guides index render (204ms)
+  ✓  12 [smoke] › tests/smoke/directory.spec.ts:19:5 › category chip, area and price filters narrow the list (2.8s)
+  ✓  13 [smoke] › tests/smoke/events.spec.ts:51:5 › 200 events render smoothly in the list and month views (785ms)
+  ✓  16 [smoke] › tests/smoke/directory.spec.ts:45:5 › unknown city and unpublished vendor return 404 (269ms)
+  ✓  17 [smoke] › tests/smoke/events.spec.ts:73:5 › December in Nigeria page shows the countdown before the season (296ms)
+  ✓  19 [smoke] › tests/smoke/events.spec.ts:79:5 › event page: venue card, external ticket link, share, valid .ics (336ms)
+  ✓  18 [smoke] › tests/smoke/directory.spec.ts:50:5 › map loads only when toggled (1.9s)
+  ✓  21 [smoke] › tests/smoke/directory.spec.ts:70:5 › vendor page: header, prices, hours, deep links and share (243ms)
+  ✓  22 [smoke] › tests/smoke/directory.spec.ts:96:5 › search finds venues by partial name, with typeahead (1.1s)
+  ✓  23 [smoke] › tests/smoke/directory.spec.ts:105:5 › sitemap lists cities and vendors; OG image renders (336ms)
+  ✓  24 [smoke] › tests/smoke/moderation.spec.ts:37:5 › moderator (MFA) approves a held post from the queue and it goes live (3.7s)
+  ✓  20 [smoke] › tests/smoke/events.spec.ts:99:5 › submit an event → admin approves → it is public (7.2s)
+  ✓  25 [smoke] › tests/smoke/moderation.spec.ts:49:5 › community guidelines are linked from every page footer (246ms)
+  ✓  27 [smoke] › tests/smoke/tonight.spec.ts:41:5 › empty Tonight view invites the first pulse and vendor updates (359ms)
+  ✓  26 [smoke] › tests/smoke/settings.spec.ts:26:5 › edit profile: username, home city, diaspora, location consent (2.1s)
+  ✓  28 [smoke] › tests/smoke/tonight.spec.ts:49:5 › a pulse becomes a live venue: rail, hero count, polling API and crowd badge (2.9s)
+  ✓  30 [smoke] › tests/smoke/tonight.spec.ts:77:5 › heat map renders on toggle (1.7s)
+  ✓  31 [smoke] › tests/smoke/tonight.spec.ts:84:5 › forecast line shows once there are 4+ weeks of data (180ms)
+  ✓  29 [smoke] › tests/smoke/settings.spec.ts:46:5 › avatar upload goes through the one-image pipeline (EXIF stripped, WebP) (4.7s)
+  ✓  15 [smoke] › tests/smoke/feed.spec.ts:39:5 › one-tap pulse appears for a signed-in viewer within 2 s (Realtime) and an anonymous viewer within 30 s (17.4s)
+  ✓  33 [smoke] › tests/smoke/settings.spec.ts:75:5 › delete account anonymises the profile and blocks sign-in (2.5s)
+  ✓  32 [smoke] › tests/smoke/vendor.spec.ts:27:5 › fresh account → submitted vendor in under 10 minutes (11.3s)
+  ✓  35 [smoke] › tests/smoke/vendor.spec.ts:90:5 › admin (with MFA) approves the listing and it goes live (7.0s)
+  ✓  34 [smoke] › tests/smoke/feed.spec.ts:73:5 › 4-photo check-in: every request finishes in under 5 s (19.8s)
+  ✓  36 [smoke] › tests/smoke/vendor.spec.ts:112:5 › official update in two taps appears on the vendor page labelled Official (5.0s)
+  ✓  37 [smoke] › tests/smoke/feed.spec.ts:136:5 › my posts, public profile and leaderboard pages render (4.6s)
+  ✓  38 [smoke] › tests/smoke/vendor.spec.ts:135:5 › claim flow: claimant uploads ID, admin approves, claimant becomes owner (9.4s)
+
+  38 passed (59.0s)
+```
+Vitest in the same run: `Test Files  22 passed (22) Tests  132 passed (132)`
+
+Acceptance evidence:
+- **Paste markdown → preview → publish → in sitemap with valid JSON-LD:** smoke `content.spec.ts`. An admin with MFA pastes markdown (headings, bold, link, `<Callout>`, `<VendorCard>`, `<PriceTable>`, a list and a `<script>` tag) into `/admin/content/new`. The live preview renders it, shows embed placeholders and escapes the script (no `<script>` element). Saved as a draft → public URL 404 → the signed draft-preview link works (a forged token gives 404) → Publish → `/guides/lagos/<slug>` renders the h1, "Last updated", callout, venue card and price table (₦10,000), with no script in the body. JSON-LD parses: `@type: Article`, headline, valid `datePublished`/`dateModified`, Organization publisher, `mainEntityOfPage`, and `about` → `TouristAttraction` for the embedded venue. The URL appears in `/sitemap.xml`. The city hub's Nightlife tab lists it.
+- Markdown security: `tests/unit/markdown.test.ts` (10 XSS vectors: script, onerror, javascript: / data: / protocol-relative links, iframe, svg onload…; allowlist sanitizer; custom-tag parsing, including rejection of malformed slugs). Preview tokens: `tests/unit/preview-token.test.ts` (expiry, wrong guide, tampering).
+- Regression fixed and re-measured: once real image moderation was in the photo request (L8), the L6 "no request > 5 s" check failed under parallel load. Moderation now runs alongside the upload and WebP encoding is faster: the slowest of 4 photo requests is **3,377 ms** end-to-end (server-side 1.8–3.3 s, mostly laptop ↔ London storage transfer; Vercel `lhr1` sits next to Supabase London).
+
 ## Notes / decisions
 (append here as you go)
 
@@ -542,6 +582,14 @@ Acceptance evidence:
 - Public: `/events` (city + category chips, list grouped by Lagos date, month grid that shows counts on phones and titles on larger screens, prev/next month), `/events/december` (countdown before the season, season-only list), `/events/[slug]` (ISR 5 min, venue card, external ticket link, share, add to calendar, map, report, Event JSON-LD), `/events/[slug]/ics`, `/events/calendar.ics?city=&season=december`, per-event OG image. Cancelled events stay listed, marked "Cancelled". No tickets are sold here and the page says so.
 - Tonight view gains a "This week" events rail; `/vendor/events` lists a venue's events; the header has an Events link; events are in the sitemap.
 - Hand-written iCalendar writer (`lib/events/ical.ts`), no dependency. Default duration 3 h when no end time is given.
+
+**L10 (2026-10-07)**
+- **Markdown: no library.** `marked` is present in node_modules only as another package's transitive dependency and isn't approved (§4), so `lib/content/markdown.ts` is a small purpose-built renderer: ##–#### headings (a single # becomes h2), paragraphs, bold/italic/code, fenced code, links, images, lists, quotes, rules, line breaks. Raw HTML is escaped; only http(s), mailto, same-site and #anchor URLs survive; output then goes through `isomorphic-dompurify` with a strict tag/attribute allowlist (a hook adds `rel=nofollow noopener noreferrer target=_blank` to external links). Custom tags `<VendorCard slug>`, `<Map vendors>`, `<PriceTable vendor>`, `<Callout type>` are parsed into structured blocks **before** any HTML exists and rendered as React components; unpublished or unknown venues simply don't render.
+- Routes: `/guides`, `/guides/[city]` (hub with Daytime / Nightlife / Food tabs = tagged guides + venues from those category groups), `/guides/[city]/[slug]` (city_guide / area_guide / daytime), `/toolkit` + `/toolkit/[slug]`, `/blog` + `/blog/[slug]`. `safety_page` guides render on `/safety/[city]` (L11). All are ISR 5 min, with OG images and sitemap entries. JSON-LD: `Article` (`BlogPosting` for blog) plus `TouristAttraction` for embedded venues.
+- CMS (`/admin/content`, admin + aal2): list with type / status / search filters; editor with toolbar snippets for the custom tags, live preview (same parser; embeds as placeholders), Ctrl/⌘+S save, cover upload (one-image pipeline → `guides` bucket, admin + aal2 enforced in the route), SEO fields, tags, send to review / publish / archive (`published_at` set on first publish; publishing needs some body), revisions (trigger-created on every body change) with restore. Every action is audited.
+- Draft preview: HMAC-signed link (TOKEN_ENCRYPTION_KEY), valid 1 hour, `noindex`. Anyone with the link can view the draft during that hour, which is the point of a preview link.
+- Publishing guides, approving venues and approving events now also revalidate `/sitemap.xml`.
+- The 12 seeded toolkit drafts stay as drafts until real content is written (L15 content loader).
 
 ## Open questions for Fola
 (write here when you need me)

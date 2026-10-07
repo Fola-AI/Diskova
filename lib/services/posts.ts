@@ -119,9 +119,10 @@ export async function attachCheckinPhoto(session: SessionContext, postId: string
     if ((count ?? 0) >= MAX_CHECKIN_PHOTOS) throw new PostError(`Up to ${MAX_CHECKIN_PHOTOS} photos per check-in.`);
 
     const image = await processImage(await downloadIncoming(incomingPath));
-    const moderation = await moderateImage(image.data);
     const path = `posts/${postId}/${nanoid(12)}.webp`;
-    await putPublicWebp(path, image.data);
+    // Moderation and upload are independent: run them together. The object path is unguessable and the
+    // post stays unpublished until finalizeCheckin() decides, so a blocked image is never shown.
+    const [moderation] = await Promise.all([moderateImage(image.data), putPublicWebp(path, image.data)]);
     const { data, error } = await admin
       .from("post_media")
       .insert({

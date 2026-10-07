@@ -2,7 +2,9 @@ import * as Sentry from "@sentry/nextjs";
 import { NextResponse, type NextRequest } from "next/server";
 import { z } from "zod";
 
-import { getSession } from "@/lib/auth/guards";
+import { currentAal, getSession } from "@/lib/auth/guards";
+import { roleAtLeast } from "@/lib/auth/roles";
+import { GuideAssetError, processGuideCover } from "@/lib/services/guide-assets";
 import { isOwnIncomingPath } from "@/lib/media/uploads";
 import { rateLimit, retryAfterText } from "@/lib/ratelimit";
 import { AvatarError, processAvatar } from "@/lib/services/avatar";
@@ -15,13 +17,21 @@ export const maxDuration = 30;
 const bodySchema = z.object({
   path: z.string().min(10).max(200),
   // Official-update photos are processed inside their Server Action (still one image per invocation).
-  purpose: z.enum(["avatar", "vendor_cover", "vendor_logo", "vendor_gallery", "post"]),
+  purpose: z.enum(["avatar", "vendor_cover", "vendor_logo", "vendor_gallery", "post", "guide_cover"]),
   vendorId: z.uuid().optional(),
   postId: z.uuid().optional(),
 });
 
 /** Processes exactly ONE image per invocation (§7.6, CLAUDE.md). */
 export async function POST(request: NextRequest): Promise<NextResponse> {
+  const started = performance.now();
+  const res = await handle(request);
+  // Server-side processing time (excludes the client↔server network) for monitoring.
+  res.headers.set("Server-Timing", `process;dur=${Math.round(performance.now() - started)}`);
+  return res;
+}
+
+async function handle(request: NextRequest): Promise<NextResponse> {
   const session = await getSession();
   if (!session) return NextResponse.json({ error: "Please sign in." }, { status: 401 });
   if (!session.profile.email_verified_at || ["suspended", "banned"].includes(session.profile.status)) {
@@ -53,6 +63,13 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       if (error) throw error;
       return NextResponse.json({ avatarUrl });
     }
+    if (purpose === "guide_cover") {
+      // CMS only: admin role + MFA session.
+      if (!roleAtLeast(session.profile.role, "admin") || (await currentAal(session.supabase)).current !== "aal2") {
+        return NextResponse.json({ error: "Not allowed." }, { status: 403 });
+      }
+      return NextResponse.json({ url: await processGuideCover(path) });
+    }
     if (purpose === "post") {
       if (!postId) return NextResponse.json({ error: "Missing post." }, { status: 400 });
       const { mediaId } = await attachCheckinPhoto(session, postId, path);
@@ -63,7 +80,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const { url } = await processVendorAsset(session, vendorId, kind, path);
     return NextResponse.json({ url });
   } catch (err) {
-    if (err instanceof AvatarError || err instanceof VendorAssetError || err instanceof PostError) {
+    if (err instanceof AvatarError || err instanceof VendorAssetError || err instanceof PostError || err instanceof GuideAssetError) {
       return NextResponse.json({ error: err.message }, { status: 422 });
     }
     Sentry.captureException(err, { tags: { area: "media-process", purpose } });

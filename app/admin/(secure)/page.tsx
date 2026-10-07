@@ -32,6 +32,15 @@ export default function AdminHome() {
           <Link href="/admin/events" className="text-sm underline underline-offset-4">Open events</Link>
         </CardContent>
       </Card>
+      <Card>
+        <CardHeader>
+          <CardTitle>Content</CardTitle>
+          <CardDescription>Guides, diaspora toolkit, blog and safety pages.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Link href="/admin/content" className="text-sm underline underline-offset-4">Open content</Link>
+        </CardContent>
+      </Card>
     </div>
   );
 }
