@@ -1,7 +1,7 @@
 # Build Progress
 
 ## Current stage
-Stage P4 — Itineraries with running cost and ₦/£/$ toggle
+Stage P5 — In-app AI assistant (Groq)
 
 ## Launch stages (required before go-live)
 - [x] Stage L1: Project scaffold, tooling, `npm run verify`
@@ -24,7 +24,7 @@ Stage P4 — Itineraries with running cost and ₦/£/$ toggle
 - [x] Stage P1: Agent API endpoints (for future AI agent)
 - [x] Stage P2: Saved lists ("Plan my night") and public share pages
 - [x] Stage P3: Community Q&A
-- [ ] Stage P4: Itineraries with running cost and ₦/£/$ toggle
+- [x] Stage P4: Itineraries with running cost and ₦/£/$ toggle
 - [ ] Stage P5: In-app AI assistant (Groq)
 - [ ] Stage P6 (OPTIONAL, feature-flagged): Vendor Instagram feed via Meta Graph API
 - [ ] Stage P7 (OPTIONAL, feature-flagged): Video check-ins with mandatory human review
@@ -801,6 +801,46 @@ Acceptance evidence:
 - **Pinned renders:** an admin-written pinned seed renders first with its official, accepted answer (service test). In the browser (`qa.spec.ts`), an admin creates a seed in `/admin/qa` → a logged-out visitor follows "Questions about Lagos?" from the city page → the seed is first, with its Pinned badge and Official answer. A signed-in user asks on a venue page → it's visible after moderation and shows up in `/admin/qa`.
 - Also: venue-member answers get the Venue badge; votes count once and never on your own answer; only the asker can accept, and only an answer to their question.
 
+### Stage P4 — 2026-10-08
+```
+  ✓  31 [smoke] › tests/smoke/moderation.spec.ts:37:5 › moderator (MFA) approves a held post from the queue and it goes live (4.2s)
+  ✓  35 [smoke] › tests/smoke/moderation.spec.ts:49:5 › community guidelines are linked from every page footer @readonly (220ms)
+  ✓  36 [smoke] › tests/smoke/safety.spec.ts:10:5 › emergency numbers render per city with verification status @readonly (555ms)
+  ✓  27 [smoke] › tests/smoke/feed.spec.ts:39:5 › one-tap pulse appears for a signed-in viewer within 2 s (Realtime) and an anonymous viewer within 30 s (17.9s)
+  ✓  37 [smoke] › tests/smoke/safety.spec.ts:24:5 › anonymous private report → exact confirmation → visible only in admin triage (3.8s)
+  ✓  34 [smoke] › tests/smoke/qa.spec.ts:14:5 › admin writes a pinned seed in /admin/qa → it renders first on the city Q&A page, logged-out, with its official answer (5.2s)
+  ✓  39 [smoke] › tests/smoke/safety.spec.ts:48:5 › honeypot submissions are not stored (868ms)
+  ✓  40 [smoke] › tests/smoke/qa.spec.ts:39:5 › ask on a venue page → moderated → visible; it shows up in /admin/qa (6.3s)
+  ✓  42 [smoke] › tests/smoke/seo.spec.ts:11:5 › robots.txt blocks private areas and points at the sitemap @readonly (22ms)
+  ✓  43 [smoke] › tests/smoke/seo.spec.ts:17:5 › sitemap lists cities, venues, guides and safety pages @readonly (51ms)
+  ✓  44 [smoke] › tests/smoke/seo.spec.ts:22:5 › home: canonical + WebSite search action + Organization @readonly (139ms)
+  ✓  45 [smoke] › tests/smoke/seo.spec.ts:29:5 › venue page: canonical, specific LocalBusiness type with address + geo, breadcrumbs, no ratings @readonly (410ms)
+  ✓  46 [smoke] › tests/smoke/settings.spec.ts:26:5 › edit profile: username, home city, diaspora, location consent (1.7s)
+  ✓  41 [smoke] › tests/smoke/security.spec.ts:7:5 › CSP is enforced and key pages (incl. the map) raise no violations @readonly (8.7s)
+  ✓  48 [smoke] › tests/smoke/security.spec.ts:40:7 › cookie consent (analytics only) › first visit asks; 'Essential only' is remembered; footer reopens the choice @readonly (295ms)
+  ✓  49 [smoke] › tests/smoke/security.spec.ts:57:7 › cookie consent (analytics only) › privacy policy covers cookies, processors, retention and rights @readonly (134ms)
+  ✓  50 [smoke] › tests/smoke/tonight.spec.ts:41:5 › empty Tonight view invites the first pulse and vendor updates (643ms)
+  ✓  38 [smoke] › tests/smoke/feed.spec.ts:73:5 › 4-photo check-in: every request finishes in under 5 s (16.4s)
+  ✓  47 [smoke] › tests/smoke/settings.spec.ts:46:5 › avatar upload goes through the one-image pipeline (EXIF stripped, WebP) (5.4s)
+  ✓  51 [smoke] › tests/smoke/tonight.spec.ts:49:5 › a pulse becomes a live venue: rail, hero count, polling API and crowd badge (8.9s)
+  ✓  54 [smoke] › tests/smoke/tonight.spec.ts:77:5 › heat map renders on toggle (2.3s)
+  ✓  55 [smoke] › tests/smoke/tonight.spec.ts:84:5 › forecast line shows once there are 4+ weeks of data (154ms)
+  ✓  53 [smoke] › tests/smoke/settings.spec.ts:75:5 › delete account anonymises the profile and blocks sign-in (7.9s)
+  ✓  52 [smoke] › tests/smoke/feed.spec.ts:136:5 › my posts, public profile and leaderboard pages render (8.1s)
+  ✓  56 [smoke] › tests/smoke/vendor.spec.ts:27:5 › fresh account → submitted vendor in under 10 minutes (9.6s)
+  ✓  57 [smoke] › tests/smoke/vendor.spec.ts:90:5 › admin (with MFA) approves the listing and it goes live (4.2s)
+  ✓  58 [smoke] › tests/smoke/vendor.spec.ts:112:5 › official update in two taps appears on the vendor page labelled Official (2.8s)
+  ✓  59 [smoke] › tests/smoke/vendor.spec.ts:135:5 › claim flow: claimant uploads ID, admin approves, claimant becomes owner (7.6s)
+
+  59 passed (1.5m)
+```
+Vitest in the same run: `Test Files  41 passed (41) Tests  261 passed (261)`
+
+Acceptance evidence:
+- **Totals correct:** `tests/unit/itinerary-totals.test.ts`: per-day subtotal, running total, trip total, priced/unpriced counts (unpriced stops are counted, never guessed), stops beyond the day count ignored. `tests/rls/p4-itineraries.test.ts`: a saved itinerary with ₦15,000 + ₦3,500 on day 1 and ₦10,000 + an unpriced stop on day 2 → `[18,500 / 18,500]`, `[10,000 / 28,500]`, total ₦28,500, 1 unpriced. Smoke: the CMS editor's live preview shows "Trip total: ₦25,000"; the public page shows day 1 ₦15,000, then on the Day 2 tab ₦10,000 with a running total of ₦25,000.
+- **FX toggle works:** unit tests for conversion and formatting (`£31` / `$41` from ₦62,500; `<£1`; Free; only configured currencies offered). Smoke: switching to Pounds shows exactly round(25,000 × `fx_gbp_per_ngn`) and Dollars shows round(25,000 × `fx_usd_per_ngn`), using the live settings values.
+- **CMS + JSON-LD:** an admin builds and publishes in `/admin/itineraries` (validated: stops must fit the day count, venue slugs must exist, publishing needs at least one stop; audited). Drafts are invisible publicly (RLS). The page carries `TouristTrip` JSON-LD with an `ItemList` itinerary (+ BreadcrumbList).
+
 ## Notes / decisions
 (append here as you go)
 
@@ -1031,6 +1071,15 @@ Acceptance evidence:
 - Limits (PRD doesn't specify): ask 5/h, answer 20/h, vote 120/h per user.
 - **DEV auth rate limits:** DEV allows 30 token verifications (MFA verifies included) per 5 minutes per IP, and one full smoke run does about 16. Back-to-back `npm run verify` runs within 5 minutes can therefore fail on MFA/sign-in steps (stuck on `/admin/mfa`). Space runs ≥ 5 minutes apart; I haven't changed any Supabase auth setting.
 - **Test-harness note:** the smoke runner now clears `.next/cache/fetch-cache` first. Next.js caches Supabase GETs on disk per route revalidate window and keeps them across rebuilds, so one run's data could leak into the next.
+
+**P4 (2026-10-08)**
+- **Schema decision (open question 10, as for P3):** PRD P4 points at "v1.0 §6.19", which isn't in the repo. The tables are named as the PRD says.
+  - `itineraries (id, slug, title, city_id null, days 1–14, excerpt, intro_md, cover_image_url, status guide_status, seo_title, seo_description, published_at, created_by, updated_by, timestamps, deleted_at)`.
+  - `itinerary_items (id, itinerary_id, day, sort_order, time_label, title, vendor_id null, event_id null, description_md, cost_ngn null (per person), cost_note, timestamps)`.
+  - RLS: published only for API roles (admins with aal2 see drafts). All writes go through the admin CMS (service role, audited by trigger + explicit audit).
+- Money maths lives in one pure module (`lib/itineraries/totals.ts`) used by the public page, the CMS preview and the tests. Costs are per person in whole naira. £/$ use `fx_gbp_per_ngn` / `fx_usd_per_ngn` from Admin → Settings and are offered only when set; they're rounded to whole units, with a note that bank rates differ. The chosen currency is remembered per device.
+- Page: `/itineraries` index and `/itineraries/[slug]` (ISR 300 s, revalidated on save/publish): day tabs, stops with time, venue link, cost and note, a sticky totals bar (day subtotal, running total, whole trip), share buttons, OG image, TouristTrip JSON-LD. Linked from `/guides`; in the sitemap.
+- DEV only: sample FX rates (£0.00048 / $0.00065 per ₦) added to `dev-sample-content.sql` so the toggle can be QA'd. PROD sets real rates in Admin → Settings.
 
 ## Open questions for Fola
 (write here when you need me)

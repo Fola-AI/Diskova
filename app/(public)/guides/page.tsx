@@ -31,6 +31,9 @@ export default async function GuidesIndex() {
       <p className="flex items-center gap-2 text-sm text-muted-foreground">
         <BookOpen className="h-4 w-4" aria-hidden /> Visiting from abroad? Start with the <Link href="/toolkit" className="underline">diaspora toolkit</Link>.
       </p>
+      <p className="text-sm text-muted-foreground">
+        Planning a few days? See our <Link href="/itineraries" className="underline">day-by-day itineraries</Link> with costs in ₦, £ or $.
+      </p>
     </div>
   );
 }

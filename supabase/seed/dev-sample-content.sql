@@ -89,4 +89,7 @@ select 'city_guide', 'sample-lagos-first-weekend', 'Sample guide: a first weeken
        'Fictional DEV sample guide.'
  where not exists (select 1 from public.guides where slug = 'sample-lagos-first-weekend');
 
+-- Sample FX rates (DEV only) so the itinerary currency toggle can be QA'd. PROD sets real rates in Admin → Settings.
+update public.platform_settings set fx_gbp_per_ngn = coalesce(fx_gbp_per_ngn, 0.00048), fx_usd_per_ngn = coalesce(fx_usd_per_ngn, 0.00065) where id = 1;
+
 commit;

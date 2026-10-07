@@ -419,6 +419,88 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"itineraries": {
+                  Row: {
+                    "city_id": string | null,"cover_image_url": string | null,"created_at": string,"created_by": string | null,"days": number,"deleted_at": string | null,"excerpt": string | null,"id": string,"intro_md": string,"published_at": string | null,"seo_description": string | null,"seo_title": string | null,"slug": string,"status": Database["public"]['Enums']["guide_status"],"title": string,"updated_at": string,"updated_by": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "city_id"?: string | null,"cover_image_url"?: string | null,"created_at"?: string,"created_by"?: string | null,"days"?: number,"deleted_at"?: string | null,"excerpt"?: string | null,"id"?: string,"intro_md"?: string,"published_at"?: string | null,"seo_description"?: string | null,"seo_title"?: string | null,"slug": string,"status"?: Database["public"]['Enums']["guide_status"],"title": string,"updated_at"?: string,"updated_by"?: string | null
+                  }
+                  Update: {
+                    "city_id"?: string | null,"cover_image_url"?: string | null,"created_at"?: string,"created_by"?: string | null,"days"?: number,"deleted_at"?: string | null,"excerpt"?: string | null,"id"?: string,"intro_md"?: string,"published_at"?: string | null,"seo_description"?: string | null,"seo_title"?: string | null,"slug"?: string,"status"?: Database["public"]['Enums']["guide_status"],"title"?: string,"updated_at"?: string,"updated_by"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "itineraries_city_id_fkey"
+      columns: ["city_id"]
+isOneToOne: false
+      referencedRelation: "cities"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "itineraries_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "itineraries_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "v_public_profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "itineraries_updated_by_fkey"
+      columns: ["updated_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "itineraries_updated_by_fkey"
+      columns: ["updated_by"]
+isOneToOne: false
+      referencedRelation: "v_public_profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"itinerary_items": {
+                  Row: {
+                    "cost_ngn": number | null,"cost_note": string | null,"created_at": string,"day": number,"description_md": string | null,"event_id": string | null,"id": string,"itinerary_id": string,"sort_order": number,"time_label": string | null,"title": string,"updated_at": string,"vendor_id": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "cost_ngn"?: number | null,"cost_note"?: string | null,"created_at"?: string,"day": number,"description_md"?: string | null,"event_id"?: string | null,"id"?: string,"itinerary_id": string,"sort_order"?: number,"time_label"?: string | null,"title": string,"updated_at"?: string,"vendor_id"?: string | null
+                  }
+                  Update: {
+                    "cost_ngn"?: number | null,"cost_note"?: string | null,"created_at"?: string,"day"?: number,"description_md"?: string | null,"event_id"?: string | null,"id"?: string,"itinerary_id"?: string,"sort_order"?: number,"time_label"?: string | null,"title"?: string,"updated_at"?: string,"vendor_id"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "itinerary_items_event_id_fkey"
+      columns: ["event_id"]
+isOneToOne: false
+      referencedRelation: "events"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "itinerary_items_itinerary_id_fkey"
+      columns: ["itinerary_id"]
+isOneToOne: false
+      referencedRelation: "itineraries"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "itinerary_items_vendor_id_fkey"
+      columns: ["vendor_id"]
+isOneToOne: false
+      referencedRelation: "v_live_now"
+      referencedColumns: ["vendor_id"]
+    },{
+      foreignKeyName: "itinerary_items_vendor_id_fkey"
+      columns: ["vendor_id"]
+isOneToOne: false
+      referencedRelation: "vendors"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"list_items": {
                   Row: {
                     "created_at": string,"event_id": string | null,"id": string,"list_id": string,"note": string | null,"sort_order": number,"vendor_id": string | null

@@ -18,6 +18,7 @@ const ITEMS: Array<{ href: string; label: string; min: UserRole }> = [
   { href: "/admin/vendors", label: "Vendors", min: "admin" },
   { href: "/admin/events", label: "Events", min: "admin" },
   { href: "/admin/content", label: "Content", min: "admin" },
+  { href: "/admin/itineraries", label: "Itineraries", min: "admin" },
   { href: "/admin/safety", label: "Safety info", min: "admin" },
   { href: "/admin/issues", label: "Issues", min: "admin" },
   { href: "/admin/cities", label: "Cities", min: "admin" },
