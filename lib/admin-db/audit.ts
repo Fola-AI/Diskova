@@ -12,7 +12,7 @@ export interface AuditEntry {
   before?: Json;
   after?: Json;
   /** Required by policy for destructive actions (PRD §11). */
-  reason?: string;
+  reason?: string | null;
   actorId?: string | null;
   actorRole?: string;
   ip?: string | null;

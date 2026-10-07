@@ -6,13 +6,17 @@ import { getSession } from "@/lib/auth/guards";
 import { isOwnIncomingPath } from "@/lib/media/uploads";
 import { rateLimit, retryAfterText } from "@/lib/ratelimit";
 import { AvatarError, processAvatar } from "@/lib/services/avatar";
+import { processVendorAsset, VendorAssetError } from "@/lib/services/vendor-assets";
 
 export const runtime = "nodejs";
 export const maxDuration = 30;
 
 const bodySchema = z.object({
   path: z.string().min(10).max(200),
-  purpose: z.enum(["avatar"]), // "post" joins in Stage L6
+  // Community post photos join in Stage L6 ("post"); official-update photos are processed inside
+  // their Server Action (still one image per invocation).
+  purpose: z.enum(["avatar", "vendor_cover", "vendor_logo", "vendor_gallery"]),
+  vendorId: z.uuid().optional(),
 });
 
 /** Processes exactly ONE image per invocation (§7.6, CLAUDE.md). */
@@ -25,7 +29,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
   const parsed = bodySchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) return NextResponse.json({ error: "Invalid request." }, { status: 400 });
-  const { path, purpose } = parsed.data;
+  const { path, purpose, vendorId } = parsed.data;
   if (!isOwnIncomingPath(session.user.id, path)) {
     return NextResponse.json({ error: "Invalid upload." }, { status: 403 });
   }
@@ -48,9 +52,14 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       if (error) throw error;
       return NextResponse.json({ avatarUrl });
     }
-    return NextResponse.json({ error: "Unsupported purpose." }, { status: 400 });
+    if (!vendorId) return NextResponse.json({ error: "Missing venue." }, { status: 400 });
+    const kind = purpose === "vendor_cover" ? "cover" : purpose === "vendor_logo" ? "logo" : "gallery";
+    const { url } = await processVendorAsset(session, vendorId, kind, path);
+    return NextResponse.json({ url });
   } catch (err) {
-    if (err instanceof AvatarError) return NextResponse.json({ error: err.message }, { status: 422 });
+    if (err instanceof AvatarError || err instanceof VendorAssetError) {
+      return NextResponse.json({ error: err.message }, { status: 422 });
+    }
     Sentry.captureException(err, { tags: { area: "media-process", purpose } });
     return NextResponse.json({ error: "We couldn't process that image. Please try another." }, { status: 500 });
   }

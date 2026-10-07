@@ -17,3 +17,9 @@ export async function requestMeta(): Promise<{ ip: string | null; userAgent: str
   const h = await headers();
   return { ip: clientIpFrom(h), userAgent: h.get("user-agent")?.slice(0, 500) ?? null };
 }
+
+/** Path + query of the current request (set by middleware); used for post-login / post-MFA redirects. */
+export async function currentPath(): Promise<string | null> {
+  const value = (await headers()).get("x-pathname");
+  return value && value.startsWith("/") && !value.startsWith("//") ? value : null;
+}

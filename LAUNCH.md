@@ -47,3 +47,10 @@
     fictional sample vendors. On PROD the sample vendors don't exist at all (seed is DEV-only).
 14. **Mapbox**: the PROD token must be URL-restricted to `https://diskova.io/*` (and preview domains if wanted).
     The app uses GL JS (map toggle) *and* the Static Images API (map previews) — both count toward usage.
+
+## Vendors (from Stage L5)
+
+15. Set `EMAIL_ADMIN_TO` in Vercel (Production) — vendor submissions, claims and verification requests are
+    emailed there (falls back to `SUPER_ADMIN_EMAIL`).
+16. Vendor review lives at `/admin/vendors` (admin role + MFA). Verification documents are deleted 30 days after a
+    decision by the daily purge — this needs the Vault secrets in step 6.

@@ -86,3 +86,8 @@ export const BRAND_COLORS = {
   gold: "#F4B400",
   background: "#0B0F0D",
 } as const;
+
+/** Public URL for an object in a public Storage bucket (media / vendor-assets / guides). */
+export function publicStorageUrl(bucket: "media" | "vendor-assets" | "guides", path: string): string {
+  return `${SUPABASE_URL}/storage/v1/object/public/${bucket}/${path.split("/").map(encodeURIComponent).join("/")}`;
+}

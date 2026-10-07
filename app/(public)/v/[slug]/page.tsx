@@ -10,10 +10,11 @@ import { MapToggle } from "@/components/map/map-toggle";
 import { Badge } from "@/components/ui/badge";
 import { ActionRow } from "@/components/vendor/action-row";
 import { HoursTable } from "@/components/vendor/hours-table";
+import { OfficialUpdates } from "@/components/vendor/official-updates";
 import { Section } from "@/components/vendor/section";
 import { ShareButtons } from "@/components/vendor/share-buttons";
 import { BRAND_NAME, DEFAULT_TIMEZONE, MAPBOX_TOKEN, SITE_URL } from "@/lib/config";
-import { getVendorBySlug, listUpcomingEventsForVendor, listVendorPrices } from "@/lib/db/directory";
+import { getVendorBySlug, listRecentOfficialUpdates, listUpcomingEventsForVendor, listVendorPrices } from "@/lib/db/directory";
 import { FEATURES, formatNaira, priceBandSymbol, PRICE_BANDS } from "@/lib/directory/constants";
 import { instagramUrl, staticMapUrl } from "@/lib/directory/links";
 import { hasAnyHours, parseOpeningHours } from "@/lib/services/opening-hours";
@@ -49,7 +50,11 @@ export default async function VendorPage({ params }: { params: Params }) {
   const vendor = await getVendorBySlug((await params).slug);
   if (!vendor) notFound();
 
-  const [prices, events] = await Promise.all([listVendorPrices(vendor.id), listUpcomingEventsForVendor(vendor.id)]);
+  const [prices, events, officialUpdates] = await Promise.all([
+    listVendorPrices(vendor.id),
+    listUpcomingEventsForVendor(vendor.id),
+    listRecentOfficialUpdates(vendor.id),
+  ]);
   const timeZone = vendor.city?.timezone ?? DEFAULT_TIMEZONE;
   const hours = parseOpeningHours(vendor.opening_hours);
   const price = priceBandSymbol(vendor.price_band);
@@ -117,6 +122,9 @@ export default async function VendorPage({ params }: { params: Params }) {
           />
           <ShareButtons url={url} title={vendor.name} text={`${vendor.name} on ${BRAND_NAME}:`} />
         </div>
+
+        {/* 4. Live feed — official updates pinned for 24 h (community posts join in Stage L6) */}
+        <OfficialUpdates updates={officialUpdates} verified={vendor.verified} />
 
         {/* 5. Prices · dress code · age policy */}
         <Section title="Prices" id="prices">

@@ -919,9 +919,22 @@ isOneToOne: false
                 }
           }
           Functions: {
-            "admin_list_cron_jobs":
+            "admin_create_verification_request":
+{ Args: { "p_business_doc_path"?: string,"p_id_doc_path"?: string,"p_note"?: string,"p_social_proof_url"?: string,"p_submitted_by": string,"p_vendor_id": string }; Returns: string
+                           },
+"admin_decide_verification_request":
+{ Args: { "p_id": string,"p_reason"?: string,"p_reviewer": string,"p_status": Database["public"]['Enums']["verification_status"] }; Returns: {
+              "submitted_by": string,"vendor_id": string
+            }[]
+                           },
+"admin_list_cron_jobs":
 { Args: Record<PropertyKey, never>; Returns: {
               "active": boolean,"command": string,"jobname": string,"schedule": string
+            }[]
+                           },
+"admin_list_verification_requests":
+{ Args: { "p_status"?: Database["public"]['Enums']["verification_status"] }; Returns: {
+              "business_doc_path": string,"created_at": string,"docs_purged_at": string,"id": string,"id_doc_path": string,"is_claim": boolean,"note": string,"rejection_reason": string,"reviewed_at": string,"social_proof_url": string,"status": Database["public"]['Enums']["verification_status"],"submitted_by": string,"submitter_username": string,"vendor_claim_status": Database["public"]['Enums']["claim_status"],"vendor_id": string,"vendor_name": string,"vendor_slug": string
             }[]
                            },
 "admin_record_profile_meta":
@@ -970,6 +983,11 @@ isOneToOne: false
 { Args: { "r": Omit<Database["public"]['Tables']["events"]['Row'], Database["public"]['Tables']["events"]['ComputedFields']> }; Returns: { error: true } & "Could not choose the best candidate function between: public.lng(r => cities), public.lng(r => areas), public.lng(r => vendors), public.lng(r => events). Try renaming the parameters or the function itself in the database so function overloading can be resolved"
                            } |
 { Args: { "r": Omit<Database["public"]['Tables']["vendors"]['Row'], Database["public"]['Tables']["vendors"]['ComputedFields']> }; Returns: { error: true } & "Could not choose the best candidate function between: public.lng(r => cities), public.lng(r => areas), public.lng(r => vendors), public.lng(r => events). Try renaming the parameters or the function itself in the database so function overloading can be resolved"
+                           },
+"my_verification_requests":
+{ Args: { "p_vendor_id": string }; Returns: {
+              "created_at": string,"id": string,"rejection_reason": string,"reviewed_at": string,"status": Database["public"]['Enums']["verification_status"]
+            }[]
                            },
 "search_directory":
 { Args: { "p_city_id"?: string,"p_limit"?: number,"p_q": string }; Returns: {

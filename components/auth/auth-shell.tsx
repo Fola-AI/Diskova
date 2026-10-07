@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader } from "@/components/ui/card";
 
 export function AuthShell({
   title,
@@ -17,7 +17,7 @@ export function AuthShell({
     <div className="container flex max-w-md flex-col gap-4 px-4 py-8 sm:py-14">
       <Card>
         <CardHeader>
-          <CardTitle className="text-2xl">{title}</CardTitle>
+          <h1 className="text-2xl font-semibold leading-tight">{title}</h1>
           {description ? <CardDescription>{description}</CardDescription> : null}
         </CardHeader>
         <CardContent>{children}</CardContent>

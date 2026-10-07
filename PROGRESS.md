@@ -1,14 +1,14 @@
 # Build Progress
 
 ## Current stage
-Stage L5 — Vendor self-serve onboarding, dashboard, official updates
+Stage L6 — Check-ins (full + one-tap pulse), image pipeline, live feed, points
 
 ## Launch stages (required before go-live)
 - [x] Stage L1: Project scaffold, tooling, `npm run verify`
 - [x] Stage L2: Database schema, private schema, RLS, pg_cron jobs, seed (DEV only)
 - [x] Stage L3: Authentication, profiles, roles, MFA
 - [x] Stage L4: Cities, areas, categories, vendor directory, share buttons (read-only)
-- [ ] Stage L5: Vendor self-serve onboarding, dashboard, official updates
+- [x] Stage L5: Vendor self-serve onboarding, dashboard, official updates
 - [ ] Stage L6: Check-ins (full + one-tap pulse), image pipeline, live feed, points
 - [ ] Stage L7: Crowd snapshots (pg_cron), Tonight view, heat map, forecast
 - [ ] Stage L8: Moderation pipeline, holds, reports, sanctions, labels
@@ -192,6 +192,49 @@ Acceptance evidence:
 - **Lighthouse mobile (vendor page, map closed):** performance **90** (3 runs: 90/90/90), accessibility 100, best practices 100, SEO 100. LCP 3.6 s, TBT ≤ 40 ms, CLS 0.004. Before the font + header-JS fixes it was 82–87. Also measured: home 89/100/100/100, city page 83–89/100/100/100 (to be tuned in L14).
 - Deep links (Uber/Bolt/Directions/WhatsApp formats, `rel=nofollow noopener`), WhatsApp share + copy link, search with typeahead, sitemap entries and the per-vendor OG image are all covered by smoke tests.
 
+### Stage L5 — 2026-10-07
+```
+
+[verify] Playwright smoke: running 5 spec file(s)…
+
+Running 23 tests using 5 workers
+
+  ✓   3 [smoke] › tests/smoke/auth.spec.ts:11:5 › home renders the branded shell with security headers (423ms)
+  ✓   6 [smoke] › tests/smoke/auth.spec.ts:20:5 › protected pages send anonymous visitors to login with a safe next (268ms)
+  ✓   1 [smoke] › tests/smoke/directory.spec.ts:9:5 › city directory lists published seed vendors with open-now status (730ms)
+  ✓   7 [smoke] › tests/smoke/auth.spec.ts:27:5 › signup form validates before calling the server (345ms)
+  ✓   8 [smoke] › tests/smoke/directory.spec.ts:18:5 › category chip, area and price filters narrow the list (1.9s)
+  ✓  10 [smoke] › tests/smoke/directory.spec.ts:37:5 › unknown city and unpublished vendor return 404 (352ms)
+  ✓   4 [smoke] › tests/smoke/settings.spec.ts:26:5 › edit profile: username, home city, diaspora, location consent (3.7s)
+  ✓   2 [smoke] › tests/smoke/admin-mfa.spec.ts:21:5 › admin without MFA is redirected to enrol, and gets in after verifying a TOTP code (3.8s)
+  ✓   9 [smoke] › tests/smoke/auth.spec.ts:36:5 › signup → verify → login (3.4s)
+  ✓  14 [smoke] › tests/smoke/auth.spec.ts:75:5 › used or invalid links land on login with a clear message (532ms)
+  ✓  11 [smoke] › tests/smoke/directory.spec.ts:42:5 › map loads only when toggled (2.1s)
+  ✓  16 [smoke] › tests/smoke/directory.spec.ts:62:5 › vendor page: header, prices, hours, deep links and share (283ms)
+  ✓  13 [smoke] › tests/smoke/admin-mfa.spec.ts:42:5 › non-staff users get a 404 for admin pages (2.0s)
+  ✓  17 [smoke] › tests/smoke/directory.spec.ts:88:5 › search finds venues by partial name, with typeahead (1.3s)
+  ✓  15 [smoke] › tests/smoke/auth.spec.ts:81:5 › open redirects are refused after login (1.7s)
+  ✓  18 [smoke] › tests/smoke/directory.spec.ts:97:5 › sitemap lists cities and vendors; OG image renders (329ms)
+  ✓  12 [smoke] › tests/smoke/settings.spec.ts:46:5 › avatar upload goes through the one-image pipeline (EXIF stripped, WebP) (4.4s)
+  ✓  19 [smoke] › tests/smoke/auth.spec.ts:93:5 › password reset: recovery link → choose new password → sign in with it (3.0s)
+  ✓  20 [smoke] › tests/smoke/settings.spec.ts:75:5 › delete account anonymises the profile and blocks sign-in (3.3s)
+  ✓   5 [smoke] › tests/smoke/vendor.spec.ts:27:5 › fresh account → submitted vendor in under 10 minutes (13.7s)
+  ✓  21 [smoke] › tests/smoke/vendor.spec.ts:90:5 › admin (with MFA) approves the listing and it goes live (4.7s)
+  ✓  22 [smoke] › tests/smoke/vendor.spec.ts:112:5 › official update in two taps appears on the vendor page labelled Official (2.4s)
+  ✓  23 [smoke] › tests/smoke/vendor.spec.ts:135:5 › claim flow: claimant uploads ID, admin approves, claimant becomes owner (7.4s)
+
+  23 passed (30.3s)
+```
+Vitest in the same run: `Test Files  12 passed (12) Tests  85 passed (85)`
+
+Acceptance evidence:
+- **Fresh account → submitted vendor < 10 min:** smoke `vendor.spec.ts` goes through all six wizard steps (basics → contact → cover photo through the pipeline → hours/price band → prices → review → submit) in ~12 s of automation. A human doing the same is ~5 minutes. Checked: status `pending_review`, `claim_status` claimed, cover in `vendor-assets`, 1 price row. The free-listing notice shows at step 1.
+- **Admin approval:** admin with TOTP MFA approves on `/admin/vendors` → `published`, page returns 200. Rejecting without a reason is refused.
+- **Official update appears labelled Official:** the owner taps "Busy" then "Post official update" (two taps) → the venue page shows it pinned with the "Official" badge ("Official · Verified vendor" for verified venues) and the crowd level.
+- **Claim flow:** the claimant uploads a photo ID to the private bucket. Admin sees a 10-minute signed link and approves. Claimant becomes owner; vendor is claimed + verified.
+- RLS (`tests/rls/l5-vendor.test.ts`): owner edits / staff member and outsider can't; staff can post official, outsider can't; `vendor_posting_ban` blocks official posts; only managers+ change prices; verification RPCs are service-only; users see only their own requests; `verification-docs` is not readable or writable by users.
+- Moderation decision rules unit-tested (`tests/unit/moderation-decide.test.ts`): block / flag / holds for new and low-trust accounts / pulse and text never held / video always held.
+
 ## Notes / decisions
 (append here as you go)
 
@@ -259,6 +302,21 @@ Acceptance evidence:
 - Accessibility: buttons use brand green #0B7A3B (white text ≈ 5.5:1). A new `positive` colour token covers green text/icons on dark surfaces. Fixed definition-list structure and the header link's accessible name.
 - Lighthouse runs use `npx lighthouse@12` against the local production build with the installed Chrome. It's a one-off tool run, not a project dependency.
 - OG images: `next/og` (part of Next; `@vercel/og` approved). Shared card in `lib/og/card.tsx`; per-vendor and per-city images plus a site default. `robots.ts` disallows everything on Vercel Preview so DEV data is never indexed.
+
+**L5 (2026-10-07)**
+- Wizard: `/vendor/onboarding?step=basics|contact|photos|details|prices|review`. Step 1 creates the draft (slug = name + city, with a short suffix if taken; checked with the service role because drafts are invisible under RLS). Later steps autosave 800 ms after the last change and flush before "Next". The same editor (minus Review) powers `/vendor/profile`. Published listings stay live when edited; edits are audited, not re-reviewed (PRD is silent).
+- Location: defaults to the chosen area's centroid. Two ways to adjust: "I'm at the venue — use my location" (browser geolocation, only on request) or dragging a pin on a lazily-loaded map. No geocoding API.
+- Minimum to submit: area + at least one contact method. Completeness % comes from the `vendor_completeness` computed field, with optional suggestions on the review step.
+- Current vendor (members of several venues) is kept in an httpOnly `vendor_ctx` cookie and re-validated against membership on every request. Switcher on the dashboard.
+- Member roles: owner/manager edit the listing and prices; staff can only post official updates (RLS-enforced and tested).
+- Official update = crowd level (+ optional note ≤ 280, + optional ONE photo processed inside the Server Action). The post is inserted through the member's RLS client (`can_post_official`); the §8.5 decision then publishes, holds (media from accounts < 7 days or trust < 50) or hides it. With text/image moderation still stubbed (L8), photo-less updates publish immediately. Official update **points are awarded in L6** together with the rest of the points system.
+- Claims: a verification request from a non-member on an **unclaimed, published** vendor is treated as a claim (no extra column). Claims require a photo ID. Approval makes the claimant owner + `claimed` + `verified` (the same documents are reviewed). Verification and claim requests live in `private.vendor_verification_requests`, reached through service-only RPCs (`0035`). Members see their own request status via `my_verification_requests()`. Docs go to the private bucket via signed upload URLs (≤ 10 MB, PDF/JPEG/PNG/WebP); admins get 10-minute signed read URLs.
+- Emails (Resend + React Email): vendor submitted (with the free-listing notice), admin new submission / request, vendor approved / rejected (with reason), verification / claim decision. With `RESEND_API_KEY` empty they're skipped and logged, never failing the action. Admin recipients: `EMAIL_ADMIN_TO`, falling back to `SUPER_ADMIN_EMAIL`.
+- Minimal admin (`/admin/vendors`, `requireRole('admin')` + aal2): approve / reject (reason required, emailed, audited), verification / claim decisions, read-only preview of drafts at `/admin/vendors/[id]/preview`. Built as services in `lib/services/admin/vendors.ts` so L12 extends rather than rewrites it.
+- QR poster at `/vendor/qr`: SVG generated server-side with `qrcode`, linking to `/v/[slug]?pulse=1`; printable (print CSS hides the chrome).
+- Fix: guards in layouts didn't know the requested path, so post-MFA redirects went to `/admin`. Middleware now forwards `x-pathname`, and `requireRole()` uses it.
+- Auth pages now have a real `<h1>` (was `<h2>`); wizard chips no longer wrap.
+- Test hygiene: a failed smoke run left a pending claim on DEV. I closed it directly in SQL (DEV only), and the test now rejects anything it leaves pending.
 
 ## Open questions for Fola
 (write here when you need me)

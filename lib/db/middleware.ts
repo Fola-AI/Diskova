@@ -28,11 +28,16 @@ export async function updateSession(request: NextRequest): Promise<NextResponse>
   const hasAuthCookie = request.cookies.getAll().some((c) => c.name.startsWith("sb-") && c.name.includes("auth-token"));
   const protectedPath = isProtectedPath(request.nextUrl.pathname);
 
+  // Forward the requested path so server guards in layouts can build an accurate `next` redirect.
+  const forwarded = new Headers(request.headers);
+  forwarded.set("x-pathname", request.nextUrl.pathname + request.nextUrl.search);
+  const next = () => NextResponse.next({ request: { headers: forwarded } });
+
   if (!hasAuthCookie) {
-    return protectedPath ? loginRedirect(request) : NextResponse.next({ request });
+    return protectedPath ? loginRedirect(request) : next();
   }
 
-  let response = NextResponse.next({ request });
+  let response = next();
   const supabase = createServerClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, {
     cookieOptions: authCookieOptions(),
     cookies: {
@@ -41,7 +46,8 @@ export async function updateSession(request: NextRequest): Promise<NextResponse>
       },
       setAll(cookiesToSet) {
         for (const { name, value } of cookiesToSet) request.cookies.set(name, value);
-        response = NextResponse.next({ request });
+        forwarded.set("cookie", request.cookies.toString());
+        response = next();
         for (const { name, value, options } of cookiesToSet) response.cookies.set(name, value, options);
       },
     },
