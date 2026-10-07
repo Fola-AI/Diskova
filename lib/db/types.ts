@@ -1263,6 +1263,9 @@ isOneToOne: false
               "business_doc_path": string,"created_at": string,"docs_purged_at": string,"id": string,"id_doc_path": string,"is_claim": boolean,"note": string,"rejection_reason": string,"reviewed_at": string,"social_proof_url": string,"status": Database["public"]['Enums']["verification_status"],"submitted_by": string,"submitter_username": string,"vendor_claim_status": Database["public"]['Enums']["claim_status"],"vendor_id": string,"vendor_name": string,"vendor_slug": string
             }[]
                            },
+"admin_log_assistant":
+{ Args: { "p_answer": string,"p_city_id": string,"p_latency_ms": number,"p_model": string,"p_outcome": string,"p_profile_id": string,"p_question": string,"p_venues_linked": (string)[],"p_venues_offered": number }; Returns: undefined
+                           },
 "admin_moderation_stats":
 { Args: Record<PropertyKey, never>; Returns: Json
                            },

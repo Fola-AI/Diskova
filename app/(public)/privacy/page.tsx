@@ -49,6 +49,7 @@ export default function PrivacyPage() {
         <li>Sentry (error monitoring — EU; emails, IP addresses and tokens are stripped before sending)</li>
         <li>Upstash (rate limiting — stores short-lived counters, not your content)</li>
         <li>OpenAI (automated content moderation of posts and photos; not used to train their models via the API)</li>
+        <li>Groq (runs the optional AI assistant: your question and the venue/event data we pass it; not used to train models)</li>
         <li>Mapbox (maps), Resend (emails)</li>
       </ul>
       <p>Some providers process data outside Nigeria. Where they do, we rely on contractual safeguards as the NDPA and UK GDPR require.</p>
@@ -57,6 +58,7 @@ export default function PrivacyPage() {
       <ul>
         <li>Accounts: until you delete your account. On deletion your profile is anonymised immediately; photos and avatars are removed within 24 hours.</li>
         <li>Unfinished uploads: deleted after 24 hours.</li>
+        <li>Questions asked to the AI assistant (and its answers): kept 30 days to check quality and prevent abuse, then deleted.</li>
         <li>Vendor verification documents: deleted 30 days after a decision.</li>
         <li>Crowd statistics: kept 70 days in aggregate form.</li>
         <li>Activity and security logs: up to 13 months. Our audit log of staff actions is kept for accountability.</li>

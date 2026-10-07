@@ -45,7 +45,9 @@
 ## D. Keys & third parties — 30 min
 
 15. [ ] **Rotate** the OpenAI and Groq keys used during the build. Create PROD keys: OpenAI restricted to
-        `/v1/moderations`; Groq for P5. The DEV keys have been in `.env.local` for weeks.
+        `/v1/moderations`; Groq for P5. The DEV keys have been in `.env.local` for weeks. Set
+        `GROQ_MODEL=openai/gpt-oss-120b`: Groq retired `llama-3.3-70b-versatile` on 16 Aug 2026 (the code maps
+        the old ID anyway), and check Groq's deprecations page before launch.
 16. [ ] **Mapbox PROD token**, URL-restricted to `https://diskova.io/*`. Map previews are fetched server-side
         by `/api/map/city/*` and `/api/map/vendor/*` with `Referer: https://diskova.io/`, so keep the
         production URL in the allow-list. Previews are cached 30 days (about one Static Images call per

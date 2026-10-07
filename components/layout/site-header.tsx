@@ -4,7 +4,7 @@ import { Search } from "lucide-react";
 
 import { AuthNav } from "@/components/layout/auth-nav";
 
-import { BRAND_NAME } from "@/lib/config";
+import { BRAND_NAME, FEATURES } from "@/lib/config";
 
 export function SiteHeader() {
   return (
@@ -25,6 +25,7 @@ export function SiteHeader() {
             Live
           </span>
           <Link href="/events" className="rounded-md px-2 py-1.5 hover:bg-secondary hover:text-foreground">Events</Link>
+          {FEATURES.aiAssistant ? <Link href="/assistant" prefetch={false} className="rounded-md px-2 py-1.5 hover:bg-secondary hover:text-foreground">Ask</Link> : null}
           <Link href="/search" aria-label="Search" className="grid h-9 w-9 place-items-center rounded-md hover:bg-secondary">
             <Search className="h-4 w-4" aria-hidden />
           </Link>

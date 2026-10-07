@@ -1,7 +1,7 @@
 # Build Progress
 
 ## Current stage
-Stage P5 — In-app AI assistant (Groq)
+All stages complete: L1–L15 and P1–P5. P6 and P7 are skipped (feature flags `FEATURE_INSTAGRAM_FEED` / `FEATURE_VIDEO` are false). Waiting on the open questions below.
 
 ## Launch stages (required before go-live)
 - [x] Stage L1: Project scaffold, tooling, `npm run verify`
@@ -25,9 +25,9 @@ Stage P5 — In-app AI assistant (Groq)
 - [x] Stage P2: Saved lists ("Plan my night") and public share pages
 - [x] Stage P3: Community Q&A
 - [x] Stage P4: Itineraries with running cost and ₦/£/$ toggle
-- [ ] Stage P5: In-app AI assistant (Groq)
-- [ ] Stage P6 (OPTIONAL, feature-flagged): Vendor Instagram feed via Meta Graph API
-- [ ] Stage P7 (OPTIONAL, feature-flagged): Video check-ins with mandatory human review
+- [x] Stage P5: In-app AI assistant (Groq)
+- [ ] Stage P6 (OPTIONAL, feature-flagged): Vendor Instagram feed via Meta Graph API — **skipped: `FEATURE_INSTAGRAM_FEED=false`**
+- [ ] Stage P7 (OPTIONAL, feature-flagged): Video check-ins with mandatory human review — **skipped: `FEATURE_VIDEO=false`**
 
 ## Verify output per stage
 (paste the last 30 lines of `npm run verify` under each stage heading below as you complete it)
@@ -841,6 +841,49 @@ Acceptance evidence:
 - **FX toggle works:** unit tests for conversion and formatting (`£31` / `$41` from ₦62,500; `<£1`; Free; only configured currencies offered). Smoke: switching to Pounds shows exactly round(25,000 × `fx_gbp_per_ngn`) and Dollars shows round(25,000 × `fx_usd_per_ngn`), using the live settings values.
 - **CMS + JSON-LD:** an admin builds and publishes in `/admin/itineraries` (validated: stops must fit the day count, venue slugs must exist, publishing needs at least one stop; audited). Drafts are invisible publicly (RLS). The page carries `TouristTrip` JSON-LD with an `ItemList` itinerary (+ BreadcrumbList).
 
+### Stage P5 — 2026-10-08
+```
+  ✓  35 [smoke] › tests/smoke/pwa.spec.ts:29:5 › PWA: the service worker never caches signed-in or admin pages @readonly (6ms)
+  ✓  31 [smoke] › tests/smoke/lists.spec.ts:16:5 › plan my night: add from a venue → make public → share link renders logged-out (map, cost, WhatsApp, OG) (6.7s)
+  ✓  37 [smoke] › tests/smoke/safety.spec.ts:10:5 › emergency numbers render per city with verification status @readonly (386ms)
+  ✓  26 [smoke] › tests/smoke/feed.spec.ts:39:5 › one-tap pulse appears for a signed-in viewer within 2 s (Realtime) and an anonymous viewer within 30 s (20.3s)
+  ✓  38 [smoke] › tests/smoke/safety.spec.ts:24:5 › anonymous private report → exact confirmation → visible only in admin triage (3.9s)
+  ✓  40 [smoke] › tests/smoke/safety.spec.ts:48:5 › honeypot submissions are not stored (425ms)
+  ✓  36 [smoke] › tests/smoke/qa.spec.ts:14:5 › admin writes a pinned seed in /admin/qa → it renders first on the city Q&A page, logged-out, with its official answer (5.5s)
+  ✓  42 [smoke] › tests/smoke/qa.spec.ts:39:5 › ask on a venue page → moderated → visible; it shows up in /admin/qa (5.3s)
+  ✓  43 [smoke] › tests/smoke/seo.spec.ts:11:5 › robots.txt blocks private areas and points at the sitemap @readonly (8ms)
+  ✓  44 [smoke] › tests/smoke/seo.spec.ts:17:5 › sitemap lists cities, venues, guides and safety pages @readonly (60ms)
+  ✓  45 [smoke] › tests/smoke/seo.spec.ts:22:5 › home: canonical + WebSite search action + Organization @readonly (163ms)
+  ✓  46 [smoke] › tests/smoke/seo.spec.ts:29:5 › venue page: canonical, specific LocalBusiness type with address + geo, breadcrumbs, no ratings @readonly (435ms)
+  ✓  47 [smoke] › tests/smoke/settings.spec.ts:26:5 › edit profile: username, home city, diaspora, location consent (1.7s)
+  ✓  41 [smoke] › tests/smoke/security.spec.ts:7:5 › CSP is enforced and key pages (incl. the map) raise no violations @readonly (8.4s)
+  ✓  49 [smoke] › tests/smoke/security.spec.ts:40:7 › cookie consent (analytics only) › first visit asks; 'Essential only' is remembered; footer reopens the choice @readonly (359ms)
+  ✓  50 [smoke] › tests/smoke/security.spec.ts:57:7 › cookie consent (analytics only) › privacy policy covers cookies, processors, retention and rights @readonly (128ms)
+  ✓  51 [smoke] › tests/smoke/tonight.spec.ts:41:5 › empty Tonight view invites the first pulse and vendor updates (1.4s)
+  ✓  39 [smoke] › tests/smoke/feed.spec.ts:73:5 › 4-photo check-in: every request finishes in under 5 s (16.9s)
+  ✓  48 [smoke] › tests/smoke/settings.spec.ts:46:5 › avatar upload goes through the one-image pipeline (EXIF stripped, WebP) (7.0s)
+  ✓  52 [smoke] › tests/smoke/tonight.spec.ts:49:5 › a pulse becomes a live venue: rail, hero count, polling API and crowd badge (5.5s)
+  ✓  55 [smoke] › tests/smoke/tonight.spec.ts:77:5 › heat map renders on toggle (2.0s)
+  ✓  56 [smoke] › tests/smoke/tonight.spec.ts:84:5 › forecast line shows once there are 4+ weeks of data (148ms)
+  ✓  54 [smoke] › tests/smoke/settings.spec.ts:75:5 › delete account anonymises the profile and blocks sign-in (3.5s)
+  ✓  53 [smoke] › tests/smoke/feed.spec.ts:136:5 › my posts, public profile and leaderboard pages render (3.8s)
+  ✓  57 [smoke] › tests/smoke/vendor.spec.ts:27:5 › fresh account → submitted vendor in under 10 minutes (9.2s)
+  ✓  58 [smoke] › tests/smoke/vendor.spec.ts:90:5 › admin (with MFA) approves the listing and it goes live (4.4s)
+  ✓  59 [smoke] › tests/smoke/vendor.spec.ts:112:5 › official update in two taps appears on the vendor page labelled Official (2.8s)
+  ✓  60 [smoke] › tests/smoke/vendor.spec.ts:135:5 › claim flow: claimant uploads ID, admin approves, claimant becomes owner (6.9s)
+
+  60 passed (1.5m)
+```
+Vitest in the same run: `Test Files  43 passed (43) Tests  269 passed (269)`
+
+Acceptance evidence (`tests/rls/p5-assistant.test.ts` runs against **real Groq** on DEV):
+- **Answers "where is busy in Lekki now" with vendor links:** a Lekki Phase 1 lounge is made live with four recent pulses and a snapshot refresh. The question's context includes it ("Lekki" matched to the area), and the streamed answer contains its `[[slug]]` token, which the UI renders as a link to `/v/<slug>`. Every token the model wrote was an offered venue (no invented venues).
+- **Refuses a road-safety question with a safety link:** "Is the Lekki-Epe expressway safe to drive at night?" → `mode: safety` without calling the model; the reply links `/safety/lagos` and mentions 112 (service test + browser smoke `assistant.spec.ts` via the header's "Ask" link).
+- **Limits + logging:** the 21st question from one user within the hour is refused (20/user/h; 200/IP/h also applied). Each question is logged privately with outcome and linked venues (`answered`, `safety_redirect` asserted), and the logs aren't reachable through the API.
+- Unit (`tests/unit/assistant-guardrails.test.ts`): safety classifier (positive and negative cases), safety reply (no promise of action), token segmentation (unknown slugs stay plain text), and the retired-model mapping.
+
+**P6 / P7 skipped:** `FEATURE_INSTAGRAM_FEED` and `FEATURE_VIDEO` are false in `.env.local` (and default to false), so per the build instructions these optional stages weren't built.
+
 ## Notes / decisions
 (append here as you go)
 
@@ -1080,6 +1123,18 @@ Acceptance evidence:
 - Money maths lives in one pure module (`lib/itineraries/totals.ts`) used by the public page, the CMS preview and the tests. Costs are per person in whole naira. £/$ use `fx_gbp_per_ngn` / `fx_usd_per_ngn` from Admin → Settings and are offered only when set; they're rounded to whole units, with a note that bank rates differ. The chosen currency is remembered per device.
 - Page: `/itineraries` index and `/itineraries/[slug]` (ISR 300 s, revalidated on save/publish): day tabs, stops with time, venue link, cost and note, a sticky totals bar (day subtotal, running total, whole trip), share buttons, OG image, TouristTrip JSON-LD. Linked from `/guides`; in the sitemap.
 - DEV only: sample FX rates (£0.00048 / $0.00065 per ₦) added to `dev-sample-content.sql` so the toggle can be QA'd. PROD sets real rates in Admin → Settings.
+
+**P5 (2026-10-08)**
+- **Groq model:** `llama-3.3-70b-versatile` is **retired** (Groq deprecations: shutdown 16 Aug 2026, replacement `openai/gpt-oss-120b` or `qwen/qwen3.6-27b`; the Qwen one was itself retired on 14 Sep 2026, and the live `/models` list no longer has the Llama model). I use **`openai/gpt-oss-120b`** with low reasoning effort. `resolveGroqModel()` maps the retired ID still in `GROQ_MODEL` to the replacement, so nothing breaks; set `GROQ_MODEL=openai/gpt-oss-120b` on PROD (LAUNCH step 15).
+- Wiring: `ai` + `@ai-sdk/openai` (both approved) with `createOpenAI({{ baseURL: "https://api.groq.com/openai/v1" }}).chat(model)`, which is Groq's OpenAI-compatible endpoint (no OpenAI call is made, and the OpenAI key stays moderation-only). Streaming: the route returns a plain text stream, read by a small client (no `@ai-sdk/react`, which isn't approved).
+- **Context assembly:** city (picked, or named in the question), live summary (crowd label, confidence, post counts), per-keyword full-text search top 15, category intent from the question (rooftop / club / suya / beach / …), venues in areas named in the question, a fallback to the city's most active listings, listed prices (up to 3 per venue) and this week's events. Capped at 25 venues.
+- **Guardrails:**
+  - The model must name venues only as `[[slug]]` tokens from the context. The UI links a token only if the server offered that slug (sent in a header), and unknown tokens render as plain text, so invented venues can never become links.
+  - No prices outside the context.
+  - Safety, road, crime and health questions never reach the model: a fixed reply links `/safety/[city]` + 112, and the system prompt repeats the rule as a backstop.
+  - Questions are text-moderated first (blocklist + OpenAI). Never promises action by anyone.
+- **Logging:** `private.assistant_logs` (`0055`; service role only; question ≤ 500 chars, answer ≤ 4000, outcome, venues linked, model, latency), purged after 30 days by the daily purge job. The privacy policy now lists Groq as a processor and the 30-day retention.
+- UI: `/assistant` ("Ask" in the header when `FEATURE_AI_ASSISTANT` is on): city picker, example questions, streamed answers, and a disclaimer (AI can be wrong; community data; not for emergencies — 112). `noindex`.
 
 ## Open questions for Fola
 (write here when you need me)
