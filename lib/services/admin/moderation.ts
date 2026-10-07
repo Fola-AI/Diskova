@@ -11,6 +11,7 @@ import { safeRevalidatePath } from "@/lib/http/revalidate";
 import { assertServerOnly } from "@/lib/server-only";
 import { awardForPost } from "@/lib/services/points";
 import { AdminActionError, type StaffMeta } from "@/lib/services/admin/vendors";
+import { decideQaItem } from "@/lib/services/admin/qa";
 
 assertServerOnly("lib/services/admin/moderation");
 
@@ -47,6 +48,8 @@ export interface QueueItem {
   } | null;
   reports: Array<{ reason: string; details: string | null }>;
   heuristics: Heuristics | null;
+  /** P3: question / answer text for qa_* items. */
+  qa: { kind: "question" | "answer"; title: string | null; body: string | null; status: string; author: string | null; questionId: string } | null;
 }
 
 export async function listModerationQueue(opts: { source?: string; limit?: number } = {}): Promise<QueueItem[]> {
@@ -63,14 +66,24 @@ export async function listModerationQueue(opts: { source?: string; limit?: numbe
   if (error) throw error;
 
   const postIds = (items ?? []).filter((i) => i.entity_type === "post").map((i) => i.entity_id);
-  const [{ data: posts }, { data: reports }] = await Promise.all([
+  const qIds = (items ?? []).filter((i) => i.entity_type === "qa_question").map((i) => i.entity_id);
+  const aIds = (items ?? []).filter((i) => i.entity_type === "qa_answer").map((i) => i.entity_id);
+  const reportIds = (items ?? []).map((i) => i.entity_id);
+  const [{ data: posts }, { data: reports }, { data: qaQs }, { data: qaAs }] = await Promise.all([
     postIds.length
       ? admin
           .from("posts")
           .select("id, kind, body, crowd_level, status, hold_reason, moderation_decision, moderation_score, report_count, created_at, vendor:vendors(id, slug, name), author:profiles!posts_author_id_fkey(id, username, trust_score, created_at, status, post_count, is_shadowbanned), media:post_media(storage_path)")
           .in("id", postIds)
       : Promise.resolve({ data: [] }),
-    postIds.length ? admin.from("reports").select("entity_id, reason, details").in("entity_id", postIds) : Promise.resolve({ data: [] }),
+    reportIds.length ? admin.from("reports").select("entity_id, reason, details").in("entity_id", reportIds) : Promise.resolve({ data: [] }),
+    qIds.length ? admin.from("qa_questions").select("id, title, body, status, author:profiles!qa_questions_author_id_fkey(username)").in("id", qIds) : Promise.resolve({ data: [] }),
+    aIds.length ? admin.from("qa_answers").select("id, body, status, question_id, author:profiles!qa_answers_author_id_fkey(username)").in("id", aIds) : Promise.resolve({ data: [] }),
+  ]);
+  type QaRow = { id: string; title?: string; body: string | null; status: string; question_id?: string; author: { username: string } | null };
+  const qaById = new Map<string, QueueItem["qa"]>([
+    ...((qaQs ?? []) as unknown as QaRow[]).map((q) => [q.id, { kind: "question" as const, title: q.title ?? null, body: q.body, status: q.status, author: q.author?.username ?? null, questionId: q.id }] as const),
+    ...((qaAs ?? []) as unknown as QaRow[]).map((a) => [a.id, { kind: "answer" as const, title: null, body: a.body, status: a.status, author: a.author?.username ?? null, questionId: a.question_id! }] as const),
   ]);
   const postById = new Map(((posts ?? []) as unknown as NonNullable<QueueItem["post"]>[]).map((p) => [p.id, p]));
   return Promise.all(
@@ -79,6 +92,7 @@ export async function listModerationQueue(opts: { source?: string; limit?: numbe
       post: postById.get(i.entity_id) ?? null,
       reports: ((reports ?? []) as Array<{ entity_id: string; reason: string; details: string | null }>).filter((r) => r.entity_id === i.entity_id),
       heuristics: i.entity_type === "post" && postById.has(i.entity_id) ? await computeHeuristics(i.entity_id).catch(() => null) : null,
+      qa: qaById.get(i.entity_id) ?? null,
     })),
   );
 }
@@ -93,7 +107,7 @@ async function closeItems(entityType: string, entityId: string, outcome: string)
 }
 
 /**
- * Apply a moderator decision to a queue item (posts; other entity types can be dismissed until L12).
+ * Apply a moderator decision to a queue item: posts and Q&A (P3); other entity types can be dismissed.
  * Every outcome is audited with the moderator, reason and before/after.
  */
 export async function decideModerationItem(session: SessionContext, raw: unknown, meta: StaffMeta): Promise<void> {
@@ -104,6 +118,9 @@ export async function decideModerationItem(session: SessionContext, raw: unknown
   const destructive = input.action.startsWith("remove") || input.action === "shadowban";
   if (destructive && !input.reason) throw new AdminActionError("A reason is required for this action.");
 
+  if (input.action !== "dismiss" && (item.entity_type === "qa_question" || item.entity_type === "qa_answer")) {
+    return decideQaItem(session, item, input, meta);
+  }
   if (input.action === "dismiss" || item.entity_type !== "post") {
     await closeItems(item.entity_type, item.entity_id, `dismissed${input.reason ? `: ${input.reason}` : ""}`);
     await writeAudit({ action: "moderation.dismiss", entityType: item.entity_type, entityId: item.entity_id, reason: input.reason, actorId: session.user.id, actorRole: session.profile.role, ...meta });

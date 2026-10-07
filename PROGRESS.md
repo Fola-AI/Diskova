@@ -1,7 +1,7 @@
 # Build Progress
 
 ## Current stage
-Stage P3 — Community Q&A
+Stage P4 — Itineraries with running cost and ₦/£/$ toggle
 
 ## Launch stages (required before go-live)
 - [x] Stage L1: Project scaffold, tooling, `npm run verify`
@@ -23,7 +23,7 @@ Stage P3 — Community Q&A
 ## Post-launch stages (continue automatically after L15)
 - [x] Stage P1: Agent API endpoints (for future AI agent)
 - [x] Stage P2: Saved lists ("Plan my night") and public share pages
-- [ ] Stage P3: Community Q&A
+- [x] Stage P3: Community Q&A
 - [ ] Stage P4: Itineraries with running cost and ₦/£/$ toggle
 - [ ] Stage P5: In-app AI assistant (Groq)
 - [ ] Stage P6 (OPTIONAL, feature-flagged): Vendor Instagram feed via Meta Graph API
@@ -761,6 +761,46 @@ Vitest in the same run: `Test Files  38 passed (38) Tests  246 passed (246)`
 
 Acceptance evidence — **share link renders logged-out:** smoke `lists.spec.ts`. A signed-in user taps "Add to my night" on a city-page card → creates "Smoke night out" in the sheet → `/me/lists` → toggles "Anyone with the link can view" → a fresh logged-out browser opens `/l/<token>` (200): title, the venue, the cost estimate, the WhatsApp share link, `noindex`, and an OG image (PNG). Making it private again → the link returns 404. Visitors who tap "Add to my night" are sent to sign in. `tests/rls/p2-lists.test.ts` (7): RLS (other users and anon can't read or write lists or items), server-generated token (clients can't set it), private → no share data, public → logged-out RPC returns title/owner/items with min/max prices and no owner id or email, per-IP view counting without audit noise, blocked wording refused, the 20-lists limit enforced in the DB, and the cost-estimate maths. Lighthouse after P2: 92 / 91 / 92 / 93 perf, 100 a11y / BP / SEO.
 
+### Stage P3 — 2026-10-07
+```
+  ✓  30 [smoke] › tests/smoke/moderation.spec.ts:37:5 › moderator (MFA) approves a held post from the queue and it goes live (5.2s)
+  ✓  34 [smoke] › tests/smoke/moderation.spec.ts:49:5 › community guidelines are linked from every page footer @readonly (241ms)
+  ✓  35 [smoke] › tests/smoke/safety.spec.ts:10:5 › emergency numbers render per city with verification status @readonly (527ms)
+  ✓  33 [smoke] › tests/smoke/qa.spec.ts:14:5 › admin writes a pinned seed in /admin/qa → it renders first on the city Q&A page, logged-out, with its official answer (4.9s)
+  ✓  27 [smoke] › tests/smoke/feed.spec.ts:39:5 › one-tap pulse appears for a signed-in viewer within 2 s (Realtime) and an anonymous viewer within 30 s (19.2s)
+  ✓  36 [smoke] › tests/smoke/safety.spec.ts:24:5 › anonymous private report → exact confirmation → visible only in admin triage (5.1s)
+  ✓  39 [smoke] › tests/smoke/safety.spec.ts:48:5 › honeypot submissions are not stored (606ms)
+  ✓  37 [smoke] › tests/smoke/qa.spec.ts:39:5 › ask on a venue page → moderated → visible; it shows up in /admin/qa (5.5s)
+  ✓  41 [smoke] › tests/smoke/seo.spec.ts:11:5 › robots.txt blocks private areas and points at the sitemap @readonly (9ms)
+  ✓  42 [smoke] › tests/smoke/seo.spec.ts:17:5 › sitemap lists cities, venues, guides and safety pages @readonly (47ms)
+  ✓  43 [smoke] › tests/smoke/seo.spec.ts:22:5 › home: canonical + WebSite search action + Organization @readonly (162ms)
+  ✓  44 [smoke] › tests/smoke/seo.spec.ts:29:5 › venue page: canonical, specific LocalBusiness type with address + geo, breadcrumbs, no ratings @readonly (450ms)
+  ✓  45 [smoke] › tests/smoke/settings.spec.ts:26:5 › edit profile: username, home city, diaspora, location consent (2.6s)
+  ✓  40 [smoke] › tests/smoke/security.spec.ts:7:5 › CSP is enforced and key pages (incl. the map) raise no violations @readonly (8.1s)
+  ✓  47 [smoke] › tests/smoke/security.spec.ts:40:7 › cookie consent (analytics only) › first visit asks; 'Essential only' is remembered; footer reopens the choice @readonly (303ms)
+  ✓  48 [smoke] › tests/smoke/security.spec.ts:57:7 › cookie consent (analytics only) › privacy policy covers cookies, processors, retention and rights @readonly (130ms)
+  ✓  46 [smoke] › tests/smoke/settings.spec.ts:46:5 › avatar upload goes through the one-image pipeline (EXIF stripped, WebP) (3.9s)
+  ✓  49 [smoke] › tests/smoke/tonight.spec.ts:41:5 › empty Tonight view invites the first pulse and vendor updates (364ms)
+  ✓  50 [smoke] › tests/smoke/settings.spec.ts:75:5 › delete account anonymises the profile and blocks sign-in (4.6s)
+  ✓  38 [smoke] › tests/smoke/feed.spec.ts:73:5 › 4-photo check-in: every request finishes in under 5 s (16.9s)
+  ✓  51 [smoke] › tests/smoke/tonight.spec.ts:49:5 › a pulse becomes a live venue: rail, hero count, polling API and crowd badge (6.6s)
+  ✓  54 [smoke] › tests/smoke/tonight.spec.ts:77:5 › heat map renders on toggle (1.9s)
+  ✓  55 [smoke] › tests/smoke/tonight.spec.ts:84:5 › forecast line shows once there are 4+ weeks of data (159ms)
+  ✓  53 [smoke] › tests/smoke/feed.spec.ts:136:5 › my posts, public profile and leaderboard pages render (4.0s)
+  ✓  52 [smoke] › tests/smoke/vendor.spec.ts:27:5 › fresh account → submitted vendor in under 10 minutes (11.7s)
+  ✓  56 [smoke] › tests/smoke/vendor.spec.ts:90:5 › admin (with MFA) approves the listing and it goes live (4.1s)
+  ✓  57 [smoke] › tests/smoke/vendor.spec.ts:112:5 › official update in two taps appears on the vendor page labelled Official (2.8s)
+  ✓  58 [smoke] › tests/smoke/vendor.spec.ts:135:5 › claim flow: claimant uploads ID, admin approves, claimant becomes owner (7.1s)
+
+  58 passed (1.4m)
+```
+Vitest in the same run: `Test Files  39 passed (39) Tests  254 passed (254)`
+
+Acceptance evidence:
+- **Moderation applies:** `tests/rls/p3-qa.test.ts` (8): a clean question is published and readable logged-out. A question with blocklisted wording is hidden, queued as P1 `auto_block`, invisible to others (visible to its author), and published by a moderator's "approve" from the queue. API callers can't publish, pin or mark answers official. Three reports auto-hide an answer, and the admin "remove" needs a reason and is audited. Shadowbanned askers are hidden from others.
+- **Pinned renders:** an admin-written pinned seed renders first with its official, accepted answer (service test). In the browser (`qa.spec.ts`), an admin creates a seed in `/admin/qa` → a logged-out visitor follows "Questions about Lagos?" from the city page → the seed is first, with its Pinned badge and Official answer. A signed-in user asks on a venue page → it's visible after moderation and shows up in `/admin/qa`.
+- Also: venue-member answers get the Venue badge; votes count once and never on your own answer; only the asker can accept, and only an answer to their question.
+
 ## Notes / decisions
 (append here as you go)
 
@@ -979,6 +1019,19 @@ Acceptance evidence — **share link renders logged-out:** smoke `lists.spec.ts`
 - UI: "Add to my night" on venue and event pages and on every venue and event card (a compact button *outside* the card link — no nested interactive elements). The sheet loads only when opened; visitors are sent to sign in. `/me/lists` (create, open) and `/me/lists/[id]` (rename, public toggle with optimistic UI, share URL + WhatsApp/native/copy, notes, move up/down, remove, delete). `/l/[token]`: ISR 60 s (revalidated on every edit), map of venues, **cost estimate** (sum of each venue's cheapest–dearest listed price plus event ticket prices; free events count as priced; unpriced items counted and called out; "check with venues"), WhatsApp share, OG image, `noindex,follow`. Robots doesn't block `/l/`, so WhatsApp/Facebook previews still work.
 - Analytics: `list_created`, `list_item_added`, `list_shared`.
 
+**P3 (2026-10-07)**
+- **Schema decision (flag for review):** PRD P3 says the tables are "as v1.0 §6.20", but v1.0 isn't in the repo (the current §6.20 is `point_events`). The tables are named exactly as the PRD says, and the columns are my design, built around the listed features (ask / answer / upvote / accept, venue badge, pinned seeds, moderation). See open question 10.
+  - `qa_questions (id, vendor_id null, city_id, author_id, title 10–140, body ≤ 1000, status post_status, moderation_decision, moderation_score, is_pinned, accepted_answer_id, answer_count, report_count, created_at, updated_at, deleted_at)`. `city_id` is derived from the venue when one is given.
+  - `qa_answers (id, question_id, author_id, body 2–1000, status, moderation_decision, moderation_score, is_vendor_answer, is_official, vote_count, report_count, …)`.
+  - `qa_votes (answer_id, voter_id)`: upvote only, never on your own answer.
+- **Moderation applies:** rows are inserted `pending` by the user's own client (verified users, RLS). The server then runs the same text moderation as posts (blocklist + OpenAI): pass → published; flag → published + P3 queue item; block → hidden + P1 queue item; moderation unavailable → treated as a flag. Q&A items in `/admin/moderation` now show their text and get the full action set: approve publishes; remove ± warn/suspend/ban removes, resolves reports and sanctions; shadowban works too. Q&A can be reported (`0051` adds `qa_question` / `qa_answer` to `report_entity`). Three open reports auto-hide and bump the item to P1. Shadowbanned authors' Q&A is invisible to others (same as posts).
+- **Badges and integrity:** `is_vendor_answer` is computed by trigger (author is an accepted member of the question's venue) and shows a "Venue" badge. `is_official` and `is_pinned` are staff-only. Column grants stop API callers from setting status, pins, badges or authors (`0053` removed a redundant trigger guard that wrongly reverted trigger-driven auto-hides). Only the asker can accept, and only a published answer to that question. Answers sort accepted → official → venue → votes. Community answers carry the "Unverified — posted by a community member" label.
+- **Pinned seeds:** admins write them in `/admin/qa` (question + optional official answer, auto-accepted). They render first on the city or venue Q&A.
+- **Pages:** a Q&A section on every venue page; `/c/[city]/questions` (linked from the city page); `/q/[id]` (shareable, with schema.org `QAPage` JSON-LD, noindex until answered). All ISR 60 s and revalidated on writes; viewer state (your votes, accept buttons) loads after hydration. `/admin/qa` (moderator+; seeds admin+): status tabs, publish / hide / remove (reason required) / pin, all audited. Feature-flagged by `FEATURE_QA`.
+- Limits (PRD doesn't specify): ask 5/h, answer 20/h, vote 120/h per user.
+- **DEV auth rate limits:** DEV allows 30 token verifications (MFA verifies included) per 5 minutes per IP, and one full smoke run does about 16. Back-to-back `npm run verify` runs within 5 minutes can therefore fail on MFA/sign-in steps (stuck on `/admin/mfa`). Space runs ≥ 5 minutes apart; I haven't changed any Supabase auth setting.
+- **Test-harness note:** the smoke runner now clears `.next/cache/fetch-cache` first. Next.js caches Supabase GETs on disk per route revalidate window and keeps them across rebuilds, so one run's data could leak into the next.
+
 ## Open questions for Fola
 (write here when you need me)
 
@@ -991,4 +1044,5 @@ Acceptance evidence — **share link renders logged-out:** smoke `lists.spec.ts`
 7. **[content needed before launch] Verified safety information.** The safety pages only show the national numbers (112, FRSC 122) and LASEMA 767 from the PRD, all marked "not yet verified". Hospitals with 24 h A&E, police stations, embassies, travel advice, area notes and scam-awareness text need real, checked information per city. I won't invent emergency contacts. Add them in **Admin → Safety info** (`/admin/safety`, built in L12) or via the L15 content loader, ticking "checked against the official source today" when verified.
 8. **[before launch — legal] Privacy policy and terms are templates.** I rewrote them in L13 to match exactly what the product does (processors, retention, NDPA/UK rights, cookies), but they need a lawyer's review. Two product points to confirm: (a) the service is **18+** (I assumed this for a nightlife product), and (b) the contact address. Set `NEXT_PUBLIC_CONTACT_EMAIL` in Vercel; it defaults to `hello@` the production domain.
 9. **[needed for one L15 check] Vercel preview bypass for automated tests.** Preview deployments are behind Vercel Authentication (they redirect to Vercel SSO), so Playwright can't reach them. To run the full smoke suite on a Preview against DEV, enable **Vercel → Project → Settings → Deployment Protection → Protection Bypass for Automation** and add the generated value to `.env.local` as `VERCEL_AUTOMATION_BYPASS_SECRET`. Then `PLAYWRIGHT_BASE_URL=<preview-url> npm run smoke:remote`. Everything else is in place, and the same suite is green against a local production build on DEV. (Alternatively, turn deployment protection off for Previews; I haven't changed any Vercel security setting.)
+10. **[review, non-blocking] Q&A columns.** PRD P3 says the Q&A tables are "as v1.0 §6.20", but v1.0 isn't in the repo (the current §6.20 is `point_events`). I named the tables exactly as the PRD says and designed the columns around the features it lists (details in Notes → P3). If v1.0 had a different shape you want kept, send it and I'll write a follow-up migration. P4 itineraries reference "v1.0 §6.19" the same way, and I'll handle it the same way.
 

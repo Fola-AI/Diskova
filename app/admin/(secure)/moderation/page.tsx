@@ -125,6 +125,15 @@ export default async function ModerationPage({ searchParams }: { searchParams: P
                       </div>
                     ) : null}
                   </>
+                ) : item.qa ? (
+                  <div className="space-y-1" data-testid="moderation-qa">
+                    <p className="text-xs text-muted-foreground">
+                      Q&amp;A {item.qa.kind} by @{item.qa.author ?? "deleted"} · status <strong>{item.qa.status}</strong> ·{" "}
+                      <Link href={`/q/${item.qa.questionId}`} className="underline">open question</Link>
+                    </p>
+                    {item.qa.title ? <p className="font-medium">{item.qa.title}</p> : null}
+                    {item.qa.body ? <p className="whitespace-pre-line rounded-md bg-secondary p-2">{item.qa.body}</p> : null}
+                  </div>
                 ) : (
                   <p className="text-muted-foreground">Entity {item.entity_id}</p>
                 )}
@@ -133,7 +142,7 @@ export default async function ModerationPage({ searchParams }: { searchParams: P
                     {item.reports.map((r, i) => <li key={i}>{r.reason}{r.details ? `: ${r.details}` : ""}</li>)}
                   </ul>
                 ) : null}
-                <ModerationForm itemId={item.id} isPost={item.entity_type === "post"} />
+                <ModerationForm itemId={item.id} isPost={item.entity_type === "post" || item.qa !== null} />
               </CardContent>
             </Card>
           );

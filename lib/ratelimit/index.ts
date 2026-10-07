@@ -33,7 +33,10 @@ export const LIMITS = {
   apiIp: { tokens: 300, window: "1 m" },
   agentKey: { tokens: 120, window: "1 m" }, // §12: 120 req/min/key
   listWriteUser: { tokens: 120, window: "1 h" }, // decision: P2 list edits (PRD doesn't specify)
-  listViewIp: { tokens: 1, window: "1 h" }, // one counted view per IP per list per hour // decision: public API reads (§9 doesn't specify); generous for CGNAT // decision: admin CSV exports (PRD doesn't specify)
+  listViewIp: { tokens: 1, window: "1 h" }, // one counted view per IP per list per hour
+  qaAskUser: { tokens: 5, window: "1 h" }, // decision: P3 (PRD doesn't specify)
+  qaAnswerUser: { tokens: 20, window: "1 h" },
+  qaVoteUser: { tokens: 120, window: "1 h" }, // decision: public API reads (§9 doesn't specify); generous for CGNAT // decision: admin CSV exports (PRD doesn't specify)
   eventSubmitUser: { tokens: 10, window: "1 d" }, // decision: PRD doesn't specify one
   assistantUser: { tokens: 20, window: "1 h" },
   assistantIp: { tokens: 200, window: "1 h" },

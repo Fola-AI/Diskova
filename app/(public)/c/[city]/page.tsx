@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { FilterBar } from "@/components/directory/filter-bar";
@@ -6,7 +7,7 @@ import { VendorCard } from "@/components/directory/vendor-card";
 import type { MapPoint } from "@/components/map/vendor-map";
 import { CitySwitcher } from "@/components/tonight/city-switcher";
 import { TonightView } from "@/components/tonight/tonight-view";
-import { BRAND_NAME } from "@/lib/config";
+import { BRAND_NAME, FEATURES } from "@/lib/config";
 import { getCityBySlug, listCities } from "@/lib/db/directory";
 import { getCityLive } from "@/lib/db/live";
 import { getCityDirectory } from "@/lib/services/directory";
@@ -43,6 +44,13 @@ export default async function CityPage({ params, searchParams }: { params: Param
     <div className="container max-w-6xl space-y-8 px-4 py-4">
       <CitySwitcher cities={cities} current={city.slug} />
       <TonightView city={city} mapPoints={mapPoints} />
+
+      {FEATURES.qa ? (
+        <Link href={`/c/${city.slug}/questions`} className="flex items-center justify-between rounded-xl border bg-card p-4 text-sm transition-colors hover:border-primary/60" data-testid="city-qa-link">
+          <span><span className="font-medium">Questions about {city.name}?</span> <span className="text-muted-foreground">Ask locals and venues.</span></span>
+          <span aria-hidden>→</span>
+        </Link>
+      ) : null}
 
       <section id="places" aria-labelledby="places-heading" className="scroll-mt-20 space-y-4">
         <div>

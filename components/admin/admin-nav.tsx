@@ -12,6 +12,7 @@ const ITEMS: Array<{ href: string; label: string; min: UserRole }> = [
   { href: "/admin/moderation", label: "Moderation", min: "moderator" },
   { href: "/admin/posts", label: "Posts", min: "moderator" },
   { href: "/admin/reports", label: "Reports", min: "moderator" },
+  { href: "/admin/qa", label: "Q&A", min: "moderator" },
   { href: "/admin/users", label: "Users", min: "moderator" },
   { href: "/admin/tasks", label: "Tasks", min: "moderator" },
   { href: "/admin/vendors", label: "Vendors", min: "admin" },

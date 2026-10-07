@@ -663,6 +663,120 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"qa_answers": {
+                  Row: {
+                    "author_id": string | null,"body": string,"created_at": string,"deleted_at": string | null,"id": string,"is_official": boolean,"is_vendor_answer": boolean,"moderation_decision": Database["public"]['Enums']["moderation_decision"] | null,"moderation_score": Json | null,"question_id": string,"report_count": number,"status": Database["public"]['Enums']["post_status"],"updated_at": string,"vote_count": number
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "author_id"?: string | null,"body": string,"created_at"?: string,"deleted_at"?: string | null,"id"?: string,"is_official"?: boolean,"is_vendor_answer"?: boolean,"moderation_decision"?: Database["public"]['Enums']["moderation_decision"] | null,"moderation_score"?: Json | null,"question_id": string,"report_count"?: number,"status"?: Database["public"]['Enums']["post_status"],"updated_at"?: string,"vote_count"?: number
+                  }
+                  Update: {
+                    "author_id"?: string | null,"body"?: string,"created_at"?: string,"deleted_at"?: string | null,"id"?: string,"is_official"?: boolean,"is_vendor_answer"?: boolean,"moderation_decision"?: Database["public"]['Enums']["moderation_decision"] | null,"moderation_score"?: Json | null,"question_id"?: string,"report_count"?: number,"status"?: Database["public"]['Enums']["post_status"],"updated_at"?: string,"vote_count"?: number
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "qa_answers_author_id_fkey"
+      columns: ["author_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "qa_answers_author_id_fkey"
+      columns: ["author_id"]
+isOneToOne: false
+      referencedRelation: "v_public_profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "qa_answers_question_id_fkey"
+      columns: ["question_id"]
+isOneToOne: false
+      referencedRelation: "qa_questions"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"qa_questions": {
+                  Row: {
+                    "accepted_answer_id": string | null,"answer_count": number,"author_id": string | null,"body": string | null,"city_id": string,"created_at": string,"deleted_at": string | null,"id": string,"is_pinned": boolean,"moderation_decision": Database["public"]['Enums']["moderation_decision"] | null,"moderation_score": Json | null,"report_count": number,"status": Database["public"]['Enums']["post_status"],"title": string,"updated_at": string,"vendor_id": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "accepted_answer_id"?: string | null,"answer_count"?: number,"author_id"?: string | null,"body"?: string | null,"city_id": string,"created_at"?: string,"deleted_at"?: string | null,"id"?: string,"is_pinned"?: boolean,"moderation_decision"?: Database["public"]['Enums']["moderation_decision"] | null,"moderation_score"?: Json | null,"report_count"?: number,"status"?: Database["public"]['Enums']["post_status"],"title": string,"updated_at"?: string,"vendor_id"?: string | null
+                  }
+                  Update: {
+                    "accepted_answer_id"?: string | null,"answer_count"?: number,"author_id"?: string | null,"body"?: string | null,"city_id"?: string,"created_at"?: string,"deleted_at"?: string | null,"id"?: string,"is_pinned"?: boolean,"moderation_decision"?: Database["public"]['Enums']["moderation_decision"] | null,"moderation_score"?: Json | null,"report_count"?: number,"status"?: Database["public"]['Enums']["post_status"],"title"?: string,"updated_at"?: string,"vendor_id"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "qa_questions_accepted_fk"
+      columns: ["accepted_answer_id"]
+isOneToOne: false
+      referencedRelation: "qa_answers"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "qa_questions_author_id_fkey"
+      columns: ["author_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "qa_questions_author_id_fkey"
+      columns: ["author_id"]
+isOneToOne: false
+      referencedRelation: "v_public_profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "qa_questions_city_id_fkey"
+      columns: ["city_id"]
+isOneToOne: false
+      referencedRelation: "cities"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "qa_questions_vendor_id_fkey"
+      columns: ["vendor_id"]
+isOneToOne: false
+      referencedRelation: "v_live_now"
+      referencedColumns: ["vendor_id"]
+    },{
+      foreignKeyName: "qa_questions_vendor_id_fkey"
+      columns: ["vendor_id"]
+isOneToOne: false
+      referencedRelation: "vendors"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"qa_votes": {
+                  Row: {
+                    "answer_id": string,"created_at": string,"voter_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "answer_id": string,"created_at"?: string,"voter_id"?: string
+                  }
+                  Update: {
+                    "answer_id"?: string,"created_at"?: string,"voter_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "qa_votes_answer_id_fkey"
+      columns: ["answer_id"]
+isOneToOne: false
+      referencedRelation: "qa_answers"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "qa_votes_voter_id_fkey"
+      columns: ["voter_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "qa_votes_voter_id_fkey"
+      columns: ["voter_id"]
+isOneToOne: false
+      referencedRelation: "v_public_profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"reports": {
                   Row: {
                     "assigned_to": string | null,"created_at": string,"details": string | null,"entity_id": string,"entity_type": Database["public"]['Enums']["report_entity"],"id": string,"reason": Database["public"]['Enums']["report_reason"],"reporter_id": string,"resolution_note": string | null,"resolved_at": string | null,"resolved_by": string | null,"status": Database["public"]['Enums']["report_status"],"updated_at": string
@@ -1166,7 +1280,7 @@ isOneToOne: false
                            }
           }
           Enums: {
-            "category_group": "nightlife"|"food_drink"|"daytime"|"culture"|"events"|"stay_adjacent","claim_status": "unclaimed"|"claimed","crowd_confidence": "low"|"medium"|"high","event_category": "concert"|"festival"|"party"|"beach_party"|"boat_cruise"|"comedy"|"art"|"food"|"sport"|"conference"|"community"|"other","event_status": "draft"|"pending_review"|"published"|"cancelled"|"rejected","guide_status": "draft"|"review"|"published"|"archived","guide_type": "city_guide"|"area_guide"|"daytime"|"toolkit"|"blog"|"safety_page","hold_reason": "none"|"media_new_account"|"media_low_trust"|"video","issue_category": "safety"|"scam"|"harassment"|"infrastructure"|"vendor_conduct"|"other","issue_status": "new"|"triaged"|"escalated"|"closed","media_kind": "image"|"video","moderation_decision": "auto_pass"|"auto_flag"|"auto_block"|"human_pass"|"human_remove","moderation_source": "auto_flag"|"auto_block"|"hold"|"user_report"|"vendor_dispute"|"random_sample","moderation_status": "open"|"in_review"|"done","post_kind": "checkin"|"pulse"|"update"|"official","post_status": "pending"|"published"|"hidden"|"removed","price_band": "free"|"budget"|"mid"|"premium"|"luxury","profile_status": "active"|"warned"|"suspended"|"banned","report_entity": "post"|"vendor"|"event"|"profile","report_reason": "fake"|"spam"|"abuse"|"dangerous"|"wrong_venue"|"rival_sabotage"|"copyright"|"other","report_status": "open"|"reviewing"|"resolved_removed"|"resolved_kept"|"dismissed","safety_section": "emergency_numbers"|"hospitals"|"police_stations"|"embassies"|"travel_advice"|"area_notes"|"scam_awareness","sanction_kind": "warning"|"shadowban"|"suspension"|"ban"|"vendor_posting_ban","task_priority": "low"|"normal"|"high"|"urgent","task_status": "todo"|"doing"|"done","user_role": "user"|"vendor_member"|"moderator"|"admin"|"super_admin","vendor_member_role": "owner"|"manager"|"staff","vendor_status": "draft"|"pending_review"|"published"|"suspended"|"rejected","verification_status": "pending"|"approved"|"rejected"
+            "category_group": "nightlife"|"food_drink"|"daytime"|"culture"|"events"|"stay_adjacent","claim_status": "unclaimed"|"claimed","crowd_confidence": "low"|"medium"|"high","event_category": "concert"|"festival"|"party"|"beach_party"|"boat_cruise"|"comedy"|"art"|"food"|"sport"|"conference"|"community"|"other","event_status": "draft"|"pending_review"|"published"|"cancelled"|"rejected","guide_status": "draft"|"review"|"published"|"archived","guide_type": "city_guide"|"area_guide"|"daytime"|"toolkit"|"blog"|"safety_page","hold_reason": "none"|"media_new_account"|"media_low_trust"|"video","issue_category": "safety"|"scam"|"harassment"|"infrastructure"|"vendor_conduct"|"other","issue_status": "new"|"triaged"|"escalated"|"closed","media_kind": "image"|"video","moderation_decision": "auto_pass"|"auto_flag"|"auto_block"|"human_pass"|"human_remove","moderation_source": "auto_flag"|"auto_block"|"hold"|"user_report"|"vendor_dispute"|"random_sample","moderation_status": "open"|"in_review"|"done","post_kind": "checkin"|"pulse"|"update"|"official","post_status": "pending"|"published"|"hidden"|"removed","price_band": "free"|"budget"|"mid"|"premium"|"luxury","profile_status": "active"|"warned"|"suspended"|"banned","report_entity": "post"|"vendor"|"event"|"profile"|"qa_question"|"qa_answer","report_reason": "fake"|"spam"|"abuse"|"dangerous"|"wrong_venue"|"rival_sabotage"|"copyright"|"other","report_status": "open"|"reviewing"|"resolved_removed"|"resolved_kept"|"dismissed","safety_section": "emergency_numbers"|"hospitals"|"police_stations"|"embassies"|"travel_advice"|"area_notes"|"scam_awareness","sanction_kind": "warning"|"shadowban"|"suspension"|"ban"|"vendor_posting_ban","task_priority": "low"|"normal"|"high"|"urgent","task_status": "todo"|"doing"|"done","user_role": "user"|"vendor_member"|"moderator"|"admin"|"super_admin","vendor_member_role": "owner"|"manager"|"staff","vendor_status": "draft"|"pending_review"|"published"|"suspended"|"rejected","verification_status": "pending"|"approved"|"rejected"
           }
           CompositeTypes: {
             [_ in never]: never
@@ -1282,7 +1396,7 @@ export type CompositeTypes<
 export const Constants = {
   "public": {
           Enums: {
-            "category_group": ["nightlife", "food_drink", "daytime", "culture", "events", "stay_adjacent"],"claim_status": ["unclaimed", "claimed"],"crowd_confidence": ["low", "medium", "high"],"event_category": ["concert", "festival", "party", "beach_party", "boat_cruise", "comedy", "art", "food", "sport", "conference", "community", "other"],"event_status": ["draft", "pending_review", "published", "cancelled", "rejected"],"guide_status": ["draft", "review", "published", "archived"],"guide_type": ["city_guide", "area_guide", "daytime", "toolkit", "blog", "safety_page"],"hold_reason": ["none", "media_new_account", "media_low_trust", "video"],"issue_category": ["safety", "scam", "harassment", "infrastructure", "vendor_conduct", "other"],"issue_status": ["new", "triaged", "escalated", "closed"],"media_kind": ["image", "video"],"moderation_decision": ["auto_pass", "auto_flag", "auto_block", "human_pass", "human_remove"],"moderation_source": ["auto_flag", "auto_block", "hold", "user_report", "vendor_dispute", "random_sample"],"moderation_status": ["open", "in_review", "done"],"post_kind": ["checkin", "pulse", "update", "official"],"post_status": ["pending", "published", "hidden", "removed"],"price_band": ["free", "budget", "mid", "premium", "luxury"],"profile_status": ["active", "warned", "suspended", "banned"],"report_entity": ["post", "vendor", "event", "profile"],"report_reason": ["fake", "spam", "abuse", "dangerous", "wrong_venue", "rival_sabotage", "copyright", "other"],"report_status": ["open", "reviewing", "resolved_removed", "resolved_kept", "dismissed"],"safety_section": ["emergency_numbers", "hospitals", "police_stations", "embassies", "travel_advice", "area_notes", "scam_awareness"],"sanction_kind": ["warning", "shadowban", "suspension", "ban", "vendor_posting_ban"],"task_priority": ["low", "normal", "high", "urgent"],"task_status": ["todo", "doing", "done"],"user_role": ["user", "vendor_member", "moderator", "admin", "super_admin"],"vendor_member_role": ["owner", "manager", "staff"],"vendor_status": ["draft", "pending_review", "published", "suspended", "rejected"],"verification_status": ["pending", "approved", "rejected"]
+            "category_group": ["nightlife", "food_drink", "daytime", "culture", "events", "stay_adjacent"],"claim_status": ["unclaimed", "claimed"],"crowd_confidence": ["low", "medium", "high"],"event_category": ["concert", "festival", "party", "beach_party", "boat_cruise", "comedy", "art", "food", "sport", "conference", "community", "other"],"event_status": ["draft", "pending_review", "published", "cancelled", "rejected"],"guide_status": ["draft", "review", "published", "archived"],"guide_type": ["city_guide", "area_guide", "daytime", "toolkit", "blog", "safety_page"],"hold_reason": ["none", "media_new_account", "media_low_trust", "video"],"issue_category": ["safety", "scam", "harassment", "infrastructure", "vendor_conduct", "other"],"issue_status": ["new", "triaged", "escalated", "closed"],"media_kind": ["image", "video"],"moderation_decision": ["auto_pass", "auto_flag", "auto_block", "human_pass", "human_remove"],"moderation_source": ["auto_flag", "auto_block", "hold", "user_report", "vendor_dispute", "random_sample"],"moderation_status": ["open", "in_review", "done"],"post_kind": ["checkin", "pulse", "update", "official"],"post_status": ["pending", "published", "hidden", "removed"],"price_band": ["free", "budget", "mid", "premium", "luxury"],"profile_status": ["active", "warned", "suspended", "banned"],"report_entity": ["post", "vendor", "event", "profile", "qa_question", "qa_answer"],"report_reason": ["fake", "spam", "abuse", "dangerous", "wrong_venue", "rival_sabotage", "copyright", "other"],"report_status": ["open", "reviewing", "resolved_removed", "resolved_kept", "dismissed"],"safety_section": ["emergency_numbers", "hospitals", "police_stations", "embassies", "travel_advice", "area_notes", "scam_awareness"],"sanction_kind": ["warning", "shadowban", "suspension", "ban", "vendor_posting_ban"],"task_priority": ["low", "normal", "high", "urgent"],"task_status": ["todo", "doing", "done"],"user_role": ["user", "vendor_member", "moderator", "admin", "super_admin"],"vendor_member_role": ["owner", "manager", "staff"],"vendor_status": ["draft", "pending_review", "published", "suspended", "rejected"],"verification_status": ["pending", "approved", "rejected"]
           }
         }
 } as const

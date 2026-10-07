@@ -28,6 +28,8 @@ import { crowdLabel } from "@/lib/directory/crowd";
 import { formatTime } from "@/lib/services/opening-hours";
 import { hasAnyHours, parseOpeningHours } from "@/lib/services/opening-hours";
 import { AddToNight } from "@/components/lists/add-to-night";
+import { QaList } from "@/components/qa/qa-list";
+import { listQuestions } from "@/lib/services/qa";
 
 export const revalidate = 60;
 export async function generateStaticParams() {
@@ -60,7 +62,7 @@ export default async function VendorPage({ params }: { params: Params }) {
   const vendor = await getVendorBySlug((await params).slug);
   if (!vendor) notFound();
 
-  const [prices, events, officialUpdates, feed, communityPhotos, liveNow, forecast] = await Promise.all([
+  const [prices, events, officialUpdates, feed, communityPhotos, liveNow, forecast, questions] = await Promise.all([
     listVendorPrices(vendor.id),
     listUpcomingEventsForVendor(vendor.id),
     listRecentOfficialUpdates(vendor.id),
@@ -68,6 +70,7 @@ export default async function VendorPage({ params }: { params: Params }) {
     listCommunityPhotos(vendor.id),
     getVendorLive(vendor.id),
     FEATURE_FLAGS.crowdForecast ? getVendorForecast(vendor.id) : Promise.resolve(null),
+    FEATURE_FLAGS.qa ? listQuestions({ vendorId: vendor.id }, 10) : Promise.resolve([]),
   ]);
   const timeZone = vendor.city?.timezone ?? DEFAULT_TIMEZONE;
   const hours = parseOpeningHours(vendor.opening_hours);
@@ -284,6 +287,12 @@ export default async function VendorPage({ params }: { params: Params }) {
                 </li>
               ))}
             </ul>
+          </Section>
+        ) : null}
+
+        {FEATURE_FLAGS.qa ? (
+          <Section title="Questions & answers" id="questions">
+            <QaList questions={questions} scope={{ vendorId: vendor.id }} path={`/v/${vendor.slug}`} askLabel={`Ask about ${vendor.name}`} />
           </Section>
         ) : null}
 

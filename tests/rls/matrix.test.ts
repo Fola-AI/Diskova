@@ -18,9 +18,9 @@ const d = hasPsql ? describe : describe.skip;
 const STAFF_AAL1 = ["moderator", "admin", "super_admin"];
 const STAFF_AAL2 = ["moderator_aal2", "admin_aal2", "super_admin_aal2"];
 /** Tables nobody but the API's own row owner may write, and the only ones with API write grants. */
-const API_WRITABLE = { insert: ["events", "list_items", "lists", "posts", "reports", "vendor_prices", "vendors"], update: ["events", "list_items", "lists", "posts", "profiles", "vendor_prices", "vendors"], delete: ["list_items", "lists", "vendor_prices"] };
+const API_WRITABLE = { insert: ["events", "list_items", "lists", "posts", "qa_answers", "qa_questions", "qa_votes", "reports", "vendor_prices", "vendors"], update: ["events", "list_items", "lists", "posts", "profiles", "qa_answers", "qa_questions", "vendor_prices", "vendors"], delete: ["list_items", "lists", "qa_votes", "vendor_prices"] };
 /** Staff-only / owner-only tables anon must not even be able to query. */
-const ANON_DENIED = ["activity_events", "admin_tasks", "guide_revisions", "list_items", "lists", "moderation_items", "point_events", "reports", "user_sanctions", "vendor_members"];
+const ANON_DENIED = ["activity_events", "admin_tasks", "guide_revisions", "list_items", "lists", "moderation_items", "point_events", "qa_votes", "reports", "user_sanctions", "vendor_members"];
 
 const touched = (v: string | undefined) => Boolean(v && /^\d+$/.test(v) && Number(v) > 0);
 const count = (v: string | undefined) => (v && /^\d+$/.test(v) ? Number(v) : -1);

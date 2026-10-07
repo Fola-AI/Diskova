@@ -39,7 +39,7 @@ export const checkinSchema = z.object({
 });
 
 export const reportSchema = z.object({
-  entityType: z.enum(["post", "vendor", "event", "profile"]),
+  entityType: z.enum(["post", "vendor", "event", "profile", "qa_question", "qa_answer"]),
   entityId: z.uuid(),
   reason: z.enum(REPORT_REASON_VALUES),
   details: z.string().trim().max(1000).optional().transform((v) => v || null),

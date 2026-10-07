@@ -18,7 +18,7 @@ export function ReportButton({
   presetReason,
   title = "Report this",
 }: {
-  entityType: "post" | "vendor" | "event" | "profile";
+  entityType: "post" | "vendor" | "event" | "profile" | "qa_question" | "qa_answer";
   entityId: string;
   label?: string;
   /** Vendor disputes: "wrong_venue" pre-selected (a report from venue staff becomes a P2 vendor dispute). */
