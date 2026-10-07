@@ -1,4 +1,4 @@
-# PRD.md — DiscoverNigeria (working name) · Web Platform v1
+# PRD.md — Diskova (working name) · Web Platform v1
 
 Owner: Fola (Algoscape Innovations Ltd)
 Builder: Claude Code, auto mode, following CLAUDE.md
@@ -40,7 +40,7 @@ A real-time "what's happening right now" platform for anyone going out in, or tr
 Lagos, Ibadan, Abuja, Port Harcourt, Aba, Owerri. Each city has named areas. The data model supports adding cities/areas from the admin without code changes.
 
 ### 1.5 Brand
-- `BRAND_NAME` read from `NEXT_PUBLIC_BRAND_NAME` (default `DiscoverNigeria`). All copy, metadata, emails and OG images read from it.
+- `BRAND_NAME` read from `NEXT_PUBLIC_BRAND_NAME` (default `Diskova`). All copy, metadata, emails and OG images read from it.
 - Season naming: always "December in Nigeria". Never "Detty December" (third-party trademark).
 - Visual direction: photo-first, dark-mode default, high contrast, Nigerian-green accent `#0B7A3B`, warm gold `#F4B400`. `Inter` for UI, `Fraunces` for display headings. Must look premium in a phone screenshot.
 
