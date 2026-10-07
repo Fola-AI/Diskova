@@ -27,11 +27,21 @@ export async function listTasks() {
   return data ?? [];
 }
 
+/** Who performs an admin write: a signed-in staff member, or an agent key acting for its creator. */
+export interface Actor {
+  id: string | null;
+  role: string;
+}
+
 export async function createTask(session: SessionContext, raw: unknown, meta: StaffMeta): Promise<string> {
+  return createTaskAs({ id: session.user.id, role: session.profile.role }, raw, meta);
+}
+
+export async function createTaskAs(actor: Actor, raw: unknown, meta: StaffMeta, auditAfter: Record<string, string> = {}): Promise<string> {
   const input = taskSchema.parse(raw);
-  const { data, error } = await getAdminSupabase().from("admin_tasks").insert({ ...input, created_by: session.user.id }).select("id").single();
+  const { data, error } = await getAdminSupabase().from("admin_tasks").insert({ ...input, created_by: actor.id }).select("id").single();
   if (error || !data) throw new Error("Couldn't create the task.");
-  await writeAudit({ action: "task.created", entityType: "public.admin_tasks", entityId: data.id, after: { title: input.title }, actorId: session.user.id, actorRole: session.profile.role, ...meta });
+  await writeAudit({ action: "task.created", entityType: "public.admin_tasks", entityId: data.id, after: { title: input.title, ...auditAfter }, actorId: actor.id, actorRole: actor.role, ...meta });
   return data.id;
 }
 

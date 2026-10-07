@@ -1,7 +1,7 @@
 # Build Progress
 
 ## Current stage
-Stage P1 — Agent API endpoints
+Stage P2 — Saved lists ("Plan my night") and public share pages
 
 ## Launch stages (required before go-live)
 - [x] Stage L1: Project scaffold, tooling, `npm run verify`
@@ -21,7 +21,7 @@ Stage P1 — Agent API endpoints
 - [x] Stage L15: Final QA, content loader, LAUNCH.md (production promotion steps for Fola) — *smoke on the protected Vercel Preview waits on open question 9; the same suite is green locally against DEV*
 
 ## Post-launch stages (continue automatically after L15)
-- [ ] Stage P1: Agent API endpoints (for future AI agent)
+- [x] Stage P1: Agent API endpoints (for future AI agent)
 - [ ] Stage P2: Saved lists ("Plan my night") and public share pages
 - [ ] Stage P3: Community Q&A
 - [ ] Stage P4: Itineraries with running cost and ₦/£/$ toggle
@@ -682,6 +682,48 @@ Acceptance evidence:
 - **LAUNCH.md complete:** ordered runbook A–H (accounts, DB promotion, Auth, keys, Vercel env, deploy + super admin + content, DNS, smoke) plus a known-limitations list. `tests/unit/launch-docs.test.ts` guards the PRD-required items.
 - **All L stages ticked with evidence:** L1–L15 above.
 
+### Stage P1 — 2026-10-07
+```
+  ✓  29 [smoke] › tests/smoke/pwa.spec.ts:5:5 › PWA: a guide read online opens offline; other pages fall back to /offline listing saved guides @readonly (370ms)
+  ✓  30 [smoke] › tests/smoke/pwa.spec.ts:29:5 › PWA: the service worker never caches signed-in or admin pages @readonly (6ms)
+  ✓  28 [smoke] › tests/smoke/moderation.spec.ts:37:5 › moderator (MFA) approves a held post from the queue and it goes live (4.1s)
+  ✓  31 [smoke] › tests/smoke/safety.spec.ts:10:5 › emergency numbers render per city with verification status @readonly (348ms)
+  ✓  32 [smoke] › tests/smoke/moderation.spec.ts:49:5 › community guidelines are linked from every page footer @readonly (263ms)
+  ✓  33 [smoke] › tests/smoke/safety.spec.ts:24:5 › anonymous private report → exact confirmation → visible only in admin triage (3.9s)
+  ✓  35 [smoke] › tests/smoke/safety.spec.ts:48:5 › honeypot submissions are not stored (427ms)
+  ✓  36 [smoke] › tests/smoke/seo.spec.ts:11:5 › robots.txt blocks private areas and points at the sitemap @readonly (8ms)
+  ✓  37 [smoke] › tests/smoke/seo.spec.ts:17:5 › sitemap lists cities, venues, guides and safety pages @readonly (60ms)
+  ✓  38 [smoke] › tests/smoke/seo.spec.ts:22:5 › home: canonical + WebSite search action + Organization @readonly (137ms)
+  ✓  39 [smoke] › tests/smoke/seo.spec.ts:29:5 › venue page: canonical, specific LocalBusiness type with address + geo, breadcrumbs, no ratings @readonly (450ms)
+  ✓  40 [smoke] › tests/smoke/settings.spec.ts:26:5 › edit profile: username, home city, diaspora, location consent (1.8s)
+  ✓  34 [smoke] › tests/smoke/security.spec.ts:7:5 › CSP is enforced and key pages (incl. the map) raise no violations @readonly (8.0s)
+  ✓  42 [smoke] › tests/smoke/security.spec.ts:40:7 › cookie consent (analytics only) › first visit asks; 'Essential only' is remembered; footer reopens the choice @readonly (289ms)
+  ✓  43 [smoke] › tests/smoke/security.spec.ts:57:7 › cookie consent (analytics only) › privacy policy covers cookies, processors, retention and rights @readonly (126ms)
+  ✓  44 [smoke] › tests/smoke/tonight.spec.ts:41:5 › empty Tonight view invites the first pulse and vendor updates (313ms)
+  ✓  41 [smoke] › tests/smoke/settings.spec.ts:46:5 › avatar upload goes through the one-image pipeline (EXIF stripped, WebP) (3.8s)
+  ✓  27 [smoke] › tests/smoke/feed.spec.ts:39:5 › one-tap pulse appears for a signed-in viewer within 2 s (Realtime) and an anonymous viewer within 30 s (20.4s)
+  ✓  45 [smoke] › tests/smoke/tonight.spec.ts:49:5 › a pulse becomes a live venue: rail, hero count, polling API and crowd badge (3.7s)
+  ✓  46 [smoke] › tests/smoke/settings.spec.ts:75:5 › delete account anonymises the profile and blocks sign-in (3.3s)
+  ✓  48 [smoke] › tests/smoke/tonight.spec.ts:77:5 › heat map renders on toggle (2.0s)
+  ✓  50 [smoke] › tests/smoke/tonight.spec.ts:84:5 › forecast line shows once there are 4+ weeks of data (172ms)
+  ✓  49 [smoke] › tests/smoke/vendor.spec.ts:27:5 › fresh account → submitted vendor in under 10 minutes (13.9s)
+  ✓  47 [smoke] › tests/smoke/feed.spec.ts:73:5 › 4-photo check-in: every request finishes in under 5 s (16.3s)
+  ✓  51 [smoke] › tests/smoke/vendor.spec.ts:90:5 › admin (with MFA) approves the listing and it goes live (5.6s)
+  ✓  52 [smoke] › tests/smoke/feed.spec.ts:136:5 › my posts, public profile and leaderboard pages render (4.3s)
+  ✓  53 [smoke] › tests/smoke/vendor.spec.ts:112:5 › official update in two taps appears on the vendor page labelled Official (3.3s)
+  ✓  54 [smoke] › tests/smoke/vendor.spec.ts:135:5 › claim flow: claimant uploads ID, admin approves, claimant becomes owner (8.3s)
+
+  54 passed (1.3m)
+```
+Vitest in the same run: `Test Files  37 passed (37) Tests  238 passed (238)`
+
+Acceptance evidence (`tests/rls/p1-agent-api.test.ts`, 10 tests, plus smoke `admin-backoffice.spec.ts` "super admin creates an agent key…"):
+- **Valid key → summary:** 200 with the `{ data, error, meta }` envelope (KPIs, moderation, daily series), `Cache-Control: no-store`.
+- **Revoked / expired / wrong-IP → 401 / 403:** missing → `401 missing_key`; unknown → `401 invalid_key`; revoked → `401 key_revoked`; expired → `401 key_expired`; IP outside the allowlist (`203.0.113.0/24`) → `403 ip_not_allowed`; an IP inside it → 200. In the browser: create in Settings → key shown once → works → never shown again after reload → revoke → 401.
+- **Scope enforcement:** a `read` key POSTing `/tasks` or `/notes` → `403 insufficient_scope`; `tasks:write` creates the task attributed to the key's owner; `notes:write` adds an append-only note (audit `actor_role = agent`); `/issues` needs `pii:read`; `/users/{id}` and `/search` hide email without `pii:read` and show it with it. Vendor detail never exposes verification documents. Only a super admin can create keys.
+- **openapi.json validates:** OpenAPI 3.1.0, one operation per registry endpoint, unique operationIds, declared path parameters, every `$ref` resolves, an `apiKey` security scheme on `X-Agent-Key`, and **a route file exists for every documented path**.
+- **Audit:** every authenticated call (including refusals for known keys) writes `agent.get` / `agent.post` with `actor_role = 'agent'`, the key id, path, query and status.
+
 ## Notes / decisions
 (append here as you go)
 
@@ -883,6 +925,14 @@ Acceptance evidence:
 - Small parsers with no new dependencies: front matter (`lib/content/frontmatter.ts`), RFC 4180 CSV (`lib/content/csv.ts`), opening-hours syntax such as `mon-fri 18:00-02:00; sat,sun 12:00-04:00; sun closed` (`lib/content/hours-syntax.ts`).
 - **Remote smoke:** `tests/smoke/global-setup.ts` writes the storage state (consent pre-chosen, plus Vercel's preview-bypass cookie, fetched once via the documented query parameters so the secret is never sent as a header to Supabase or Mapbox). Consent tests keep the bypass cookie. `npm run smoke:remote` (full, Preview + DEV) and `npm run smoke:readonly` / `--grep @readonly` (PROD-safe).
 - `scripts/promote-migrations.md`: exact PROD DB steps (link, dry run, push, reference data, verification SQL for cron jobs, buckets, the Realtime policy, RLS and exposed schemas).
+
+**P1 (2026-10-07)**
+- `0047`: `private.agent_api_keys` exactly as §6.24 (scopes checked against the four allowed values; `ip_allowlist cidr[]`; `expires_at` default now() + 90 days). Service-role-only RPCs `admin_create_agent_key`, `admin_list_agent_keys`, `admin_revoke_agent_key`, `admin_verify_agent_key(hash, ip)`. The last does the CIDR match in Postgres (`inet <<= any(cidr[])`) and stamps `last_used_at` only on a usable call.
+- Keys look like `dk_<8 hex>_<32 base64url>`. Only the SHA-256 and the `dk_<8 hex>` prefix are stored, and the plaintext is shown once in Settings. Creating or revoking needs super_admin **plus a fresh MFA code (≤ 5 min)**, the same as role changes. `read` is always granted, and `pii:read` is off by default with a warning beside it.
+- Pipeline (`lib/agent/handler.ts`): header → verify → 401/403 → **120 req/min/key** (`agentKey`) → scope → handler → envelope. Every call is audited (`agent.get` / `agent.post`, `actor_role = 'agent'`, `actor_id` null, key id and owner in `after`). Tasks and notes go through new `createTaskAs` / `addNoteAs` (the session versions delegate to them, so behaviour is unchanged) and are attributed to the key's creator.
+- One endpoint registry (`lib/agent/registry.ts`) generates both `/schema` (which also says what *this* key may call) and `/openapi.json` (OpenAPI 3.1, returned bare so tools can load it).
+- Data rules: verification documents are never returned (only `has_business_doc` / `has_id_doc`); IP/UA are stripped from audit timelines; email + `network_informational` only with `pii:read`. No moderation, sanction, publish or settings writes exist on this API.
+- Docs: `docs/agent-api.md` (scopes, errors, every endpoint, curl examples, what an agent can't do).
 
 ## Open questions for Fola
 (write here when you need me)

@@ -17,6 +17,7 @@ describe("rate limit configuration matches PRD §7.5", () => {
     ["issueReportIp", 50, "1 h"],
     ["mediaUser", 12, "1 h"],
     ["liveIp", 120, "1 m"],
+    ["agentKey", 120, "1 m"],
   ] as const)("%s = %i per %s", (name, tokens, window) => {
     expect(LIMITS[name]).toEqual({ tokens, window });
   });

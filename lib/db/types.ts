@@ -927,6 +927,9 @@ isOneToOne: false
               "est_rows": number,"schema_name": string,"table_name": string
             }[]
                            },
+"admin_create_agent_key":
+{ Args: { "p_created_by": string,"p_expires_at": string,"p_ip_allowlist": (unknown)[],"p_key_hash": string,"p_key_prefix": string,"p_name": string,"p_scopes": (string)[] }; Returns: string
+                           },
 "admin_create_issue_report":
 { Args: { "p_area_id"?: string,"p_category": Database["public"]['Enums']["issue_category"],"p_city_id"?: string,"p_description": string,"p_lat"?: number,"p_lng"?: number,"p_reporter_email"?: string,"p_reporter_id"?: string }; Returns: string
                            },
@@ -954,6 +957,11 @@ isOneToOne: false
 "admin_list_activity":
 { Args: { "p_city_id"?: string,"p_kind_prefix"?: string,"p_limit"?: number,"p_profile_id"?: string,"p_vendor_id"?: string }; Returns: {
               "at": string,"city_id": string,"city_name": string,"id": number,"kind": string,"meta": Json,"profile_id": string,"username": string,"vendor_id": string,"vendor_name": string
+            }[]
+                           },
+"admin_list_agent_keys":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "created_at": string,"created_by_username": string,"expires_at": string,"id": string,"ip_allowlist": (string)[],"key_prefix": string,"last_used_at": string,"name": string,"revoked_at": string,"scopes": (string)[]
             }[]
                            },
 "admin_list_audit":
@@ -1007,12 +1015,20 @@ isOneToOne: false
 "admin_refresh_leaderboards":
 { Args: Record<PropertyKey, never>; Returns: undefined
                            },
+"admin_revoke_agent_key":
+{ Args: { "p_id": string }; Returns: boolean
+                           },
 "admin_update_issue_report":
 { Args: { "p_handled_by": string,"p_id": string,"p_internal_note"?: string,"p_status": Database["public"]['Enums']["issue_status"] }; Returns: undefined
                            },
 "admin_user_network":
 { Args: { "p_profile_id": string }; Returns: {
               "accounts_sharing_ip": number,"device_hash": string,"last_ip": string,"signup_ip": string,"signup_ua": string
+            }[]
+                           },
+"admin_verify_agent_key":
+{ Args: { "p_ip": unknown,"p_key_hash": string }; Returns: {
+              "created_by": string,"expired": boolean,"id": string,"ip_allowed": boolean,"name": string,"revoked": boolean,"scopes": (string)[]
             }[]
                            },
 "admin_write_audit":

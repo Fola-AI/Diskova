@@ -77,3 +77,26 @@ test("admin: vendor table filters + posts bulk hide needs a reason", async ({ pa
   await form.getByRole("button", { name: "Hide selected" }).click();
   await expect(form.getByRole("alert")).toContainText(/Select at least one post|reason/i);
 });
+
+test("super admin creates an agent key (shown once), the key works, then is revoked", async ({ page }) => {
+  const sup = await signIn(page, "bo-agentkey", { role: "super_admin", next: "/admin/settings" });
+  created.push(sup.id);
+  await completeMfa(page);
+  await expect(page).toHaveURL(/\/admin\/settings/);
+  const form = page.getByTestId("agent-key-form");
+  await form.getByLabel("Name").fill("Smoke agent");
+  await form.getByRole("button", { name: "Create key" }).click();
+  const key = (await page.getByTestId("agent-key-once").locator("code").textContent())!.trim();
+  expect(key).toMatch(/^dk_[0-9a-f]{8}_/);
+
+  const ok = await page.request.get("/api/agent/v1/summary", { headers: { "x-agent-key": key } });
+  expect(ok.status()).toBe(200);
+
+  await page.reload();
+  await expect(page.getByTestId("agent-key-once")).toHaveCount(0); // never shown again
+  const row = page.getByTestId("agent-keys").locator("li", { hasText: key.slice(0, 11) });
+  await row.getByRole("button", { name: "Revoke" }).click();
+  await expect(row).toContainText(/revoked/i);
+  const revoked = await page.request.get("/api/agent/v1/summary", { headers: { "x-agent-key": key } });
+  expect(revoked.status()).toBe(401);
+});

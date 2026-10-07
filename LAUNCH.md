@@ -142,5 +142,7 @@
   actions still usable at 375 px.
 - **Dev-tooling `npm audit` advisories** (open question 1) affect build tooling only; the production
   dependency tree is clean.
+- **Agent API keys are per environment.** Keys created on DEV don't work on PROD: create PROD keys in PROD
+  Admin → Settings (super admin + fresh MFA). See `docs/agent-api.md`.
 - **Post-launch stages P1–P5** (Agent API, saved lists, Q&A, itineraries, AI assistant) are built after
   L15 on `develop` and ship in later releases. P6/P7 (Instagram feed, video) are off by feature flag.

@@ -1,20 +1,23 @@
 import Link from "next/link";
 
+import { CreateAgentKeyForm, RevokeAgentKeyButton } from "@/components/admin/agent-keys";
 import { ExportButton, SettingsForm } from "@/components/admin/settings-form";
 import { Badge } from "@/components/ui/badge";
 import { getAdminSupabase } from "@/lib/admin-db/client";
 import { requireRole } from "@/lib/auth/guards";
 import { FEATURES } from "@/lib/config";
+import { listAgentKeys } from "@/lib/services/admin/agent-keys";
 import { listPlatformExports } from "@/lib/services/admin/exports";
 
 /** §11.14 settings — super_admin only (moderators and admins get a 404). */
 export default async function AdminSettingsPage() {
   await requireRole("super_admin", "/admin/settings");
   const admin = getAdminSupabase();
-  const [{ data: s }, { data: staff }, exportsList] = await Promise.all([
+  const [{ data: s }, { data: staff }, exportsList, keys] = await Promise.all([
     admin.from("platform_settings").select("*").eq("id", 1).single(),
     admin.from("profiles").select("id, username, role").in("role", ["moderator", "admin", "super_admin"]).is("deleted_at", null).order("role"),
     listPlatformExports(),
+    listAgentKeys(),
   ]);
   if (!s) throw new Error("platform_settings row missing");
   return (
@@ -51,9 +54,33 @@ export default async function AdminSettingsPage() {
         </ul>
       </section>
 
-      <section className="space-y-1 rounded-xl border p-4">
+      <section id="agent-keys" className="space-y-3 rounded-xl border p-4">
         <h2 className="font-semibold">Agent API keys</h2>
-        <p className="text-sm text-muted-foreground">Arrives with Stage P1.</p>
+        <p className="text-xs text-muted-foreground">
+          For an AI agent reading the back office (<code>/api/agent/v1</code>, see <code>docs/agent-api.md</code>). Keys are shown once, expire
+          (default 90 days), can be limited to IPs, and every call is audited. No moderation or sanction actions are exposed.
+        </p>
+        <ul className="divide-y text-sm" data-testid="agent-keys">
+          {keys.map((k) => {
+            const state = k.revoked_at ? "revoked" : new Date(k.expires_at) < new Date() ? "expired" : "active";
+            return (
+              <li key={k.id} className="flex flex-wrap items-center gap-2 py-2">
+                <span className="font-medium">{k.name}</span>
+                <code className="text-xs text-muted-foreground">{k.key_prefix}…</code>
+                <Badge variant={state === "active" ? "secondary" : "outline"}>{state}</Badge>
+                <span className="text-xs text-muted-foreground">
+                  {k.scopes.join(", ")} · expires {k.expires_at.slice(0, 10)}
+                  {k.ip_allowlist?.length ? ` · IPs ${k.ip_allowlist.join(", ")}` : ""}
+                  {k.last_used_at ? ` · last used ${k.last_used_at.slice(0, 16).replace("T", " ")}` : " · never used"}
+                  {k.created_by_username ? ` · by @${k.created_by_username}` : ""}
+                </span>
+                {state === "active" ? <span className="ml-auto"><RevokeAgentKeyButton id={k.id} /></span> : null}
+              </li>
+            );
+          })}
+          {!keys.length ? <li className="py-2 text-muted-foreground">No keys yet.</li> : null}
+        </ul>
+        <div className="border-t pt-3"><CreateAgentKeyForm /></div>
       </section>
     </div>
   );
