@@ -1,7 +1,7 @@
 # Build Progress
 
 ## Current stage
-Stage P2 — Saved lists ("Plan my night") and public share pages
+Stage P3 — Community Q&A
 
 ## Launch stages (required before go-live)
 - [x] Stage L1: Project scaffold, tooling, `npm run verify`
@@ -22,7 +22,7 @@ Stage P2 — Saved lists ("Plan my night") and public share pages
 
 ## Post-launch stages (continue automatically after L15)
 - [x] Stage P1: Agent API endpoints (for future AI agent)
-- [ ] Stage P2: Saved lists ("Plan my night") and public share pages
+- [x] Stage P2: Saved lists ("Plan my night") and public share pages
 - [ ] Stage P3: Community Q&A
 - [ ] Stage P4: Itineraries with running cost and ₦/£/$ toggle
 - [ ] Stage P5: In-app AI assistant (Groq)
@@ -724,6 +724,43 @@ Acceptance evidence (`tests/rls/p1-agent-api.test.ts`, 10 tests, plus smoke `adm
 - **openapi.json validates:** OpenAPI 3.1.0, one operation per registry endpoint, unique operationIds, declared path parameters, every `$ref` resolves, an `apiKey` security scheme on `X-Agent-Key`, and **a route file exists for every documented path**.
 - **Audit:** every authenticated call (including refusals for known keys) writes `agent.get` / `agent.post` with `actor_role = 'agent'`, the key id, path, query and status.
 
+### Stage P2 — 2026-10-07
+```
+  ✓  31 [smoke] › tests/smoke/moderation.spec.ts:49:5 › community guidelines are linked from every page footer @readonly (243ms)
+  ✓  32 [smoke] › tests/smoke/pwa.spec.ts:5:5 › PWA: a guide read online opens offline; other pages fall back to /offline listing saved guides @readonly (373ms)
+  ✓  33 [smoke] › tests/smoke/pwa.spec.ts:29:5 › PWA: the service worker never caches signed-in or admin pages @readonly (6ms)
+  ✓  29 [smoke] › tests/smoke/lists.spec.ts:16:5 › plan my night: add from a venue → make public → share link renders logged-out (map, cost, WhatsApp, OG) (6.5s)
+  ✓  34 [smoke] › tests/smoke/safety.spec.ts:10:5 › emergency numbers render per city with verification status @readonly (409ms)
+  ✓  36 [smoke] › tests/smoke/safety.spec.ts:24:5 › anonymous private report → exact confirmation → visible only in admin triage (3.9s)
+  ✓  37 [smoke] › tests/smoke/safety.spec.ts:48:5 › honeypot submissions are not stored (652ms)
+  ✓  38 [smoke] › tests/smoke/seo.spec.ts:11:5 › robots.txt blocks private areas and points at the sitemap @readonly (9ms)
+  ✓  27 [smoke] › tests/smoke/feed.spec.ts:39:5 › one-tap pulse appears for a signed-in viewer within 2 s (Realtime) and an anonymous viewer within 30 s (17.6s)
+  ✓  39 [smoke] › tests/smoke/seo.spec.ts:17:5 › sitemap lists cities, venues, guides and safety pages @readonly (82ms)
+  ✓  41 [smoke] › tests/smoke/seo.spec.ts:22:5 › home: canonical + WebSite search action + Organization @readonly (130ms)
+  ✓  42 [smoke] › tests/smoke/seo.spec.ts:29:5 › venue page: canonical, specific LocalBusiness type with address + geo, breadcrumbs, no ratings @readonly (376ms)
+  ✓  43 [smoke] › tests/smoke/settings.spec.ts:26:5 › edit profile: username, home city, diaspora, location consent (2.6s)
+  ✓  35 [smoke] › tests/smoke/security.spec.ts:7:5 › CSP is enforced and key pages (incl. the map) raise no violations @readonly (8.0s)
+  ✓  45 [smoke] › tests/smoke/security.spec.ts:40:7 › cookie consent (analytics only) › first visit asks; 'Essential only' is remembered; footer reopens the choice @readonly (321ms)
+  ✓  46 [smoke] › tests/smoke/security.spec.ts:57:7 › cookie consent (analytics only) › privacy policy covers cookies, processors, retention and rights @readonly (129ms)
+  ✓  47 [smoke] › tests/smoke/tonight.spec.ts:41:5 › empty Tonight view invites the first pulse and vendor updates (478ms)
+  ✓  44 [smoke] › tests/smoke/settings.spec.ts:46:5 › avatar upload goes through the one-image pipeline (EXIF stripped, WebP) (4.7s)
+  ✓  48 [smoke] › tests/smoke/tonight.spec.ts:49:5 › a pulse becomes a live venue: rail, hero count, polling API and crowd badge (5.5s)
+  ✓  50 [smoke] › tests/smoke/tonight.spec.ts:77:5 › heat map renders on toggle (1.8s)
+  ✓  49 [smoke] › tests/smoke/settings.spec.ts:75:5 › delete account anonymises the profile and blocks sign-in (4.0s)
+  ✓  51 [smoke] › tests/smoke/tonight.spec.ts:84:5 › forecast line shows once there are 4+ weeks of data (162ms)
+  ✓  40 [smoke] › tests/smoke/feed.spec.ts:73:5 › 4-photo check-in: every request finishes in under 5 s (16.3s)
+  ✓  53 [smoke] › tests/smoke/feed.spec.ts:136:5 › my posts, public profile and leaderboard pages render (3.6s)
+  ✓  52 [smoke] › tests/smoke/vendor.spec.ts:27:5 › fresh account → submitted vendor in under 10 minutes (10.5s)
+  ✓  54 [smoke] › tests/smoke/vendor.spec.ts:90:5 › admin (with MFA) approves the listing and it goes live (4.9s)
+  ✓  55 [smoke] › tests/smoke/vendor.spec.ts:112:5 › official update in two taps appears on the vendor page labelled Official (3.2s)
+  ✓  56 [smoke] › tests/smoke/vendor.spec.ts:135:5 › claim flow: claimant uploads ID, admin approves, claimant becomes owner (6.9s)
+
+  56 passed (1.3m)
+```
+Vitest in the same run: `Test Files  38 passed (38) Tests  246 passed (246)`
+
+Acceptance evidence — **share link renders logged-out:** smoke `lists.spec.ts`. A signed-in user taps "Add to my night" on a city-page card → creates "Smoke night out" in the sheet → `/me/lists` → toggles "Anyone with the link can view" → a fresh logged-out browser opens `/l/<token>` (200): title, the venue, the cost estimate, the WhatsApp share link, `noindex`, and an OG image (PNG). Making it private again → the link returns 404. Visitors who tap "Add to my night" are sent to sign in. `tests/rls/p2-lists.test.ts` (7): RLS (other users and anon can't read or write lists or items), server-generated token (clients can't set it), private → no share data, public → logged-out RPC returns title/owner/items with min/max prices and no owner id or email, per-IP view counting without audit noise, blocked wording refused, the 20-lists limit enforced in the DB, and the cost-estimate maths. Lighthouse after P2: 92 / 91 / 92 / 93 perf, 100 a11y / BP / SEO.
+
 ## Notes / decisions
 (append here as you go)
 
@@ -933,6 +970,14 @@ Acceptance evidence (`tests/rls/p1-agent-api.test.ts`, 10 tests, plus smoke `adm
 - One endpoint registry (`lib/agent/registry.ts`) generates both `/schema` (which also says what *this* key may call) and `/openapi.json` (OpenAPI 3.1, returned bare so tools can load it).
 - Data rules: verification documents are never returned (only `has_business_doc` / `has_id_doc`); IP/UA are stripped from audit timelines; email + `network_informational` only with `pii:read`. No moderation, sanction, publish or settings writes exist on this API.
 - Docs: `docs/agent-api.md` (scopes, errors, every endpoint, curl examples, what an agent can't do).
+
+**P2 (2026-10-07)**
+- `0048`: `lists (id, owner_id, title, city_id, is_public, share_token, view_count, …)` and `list_items (id, list_id, vendor_id null, event_id null, note, sort_order, …)` as specified, with exactly one of venue/event per item, no duplicates per list, **20 lists/user and 50 items/list enforced by trigger**, and audit triggers. `share_token` = 12 URL-safe random characters generated by the database (`gen_random_bytes`): nanoid-equivalent, and since it's not in the column grants, clients can't choose or change it.
+- RLS: lists and items are owner-only (verified users can create). Nothing about other people's lists is selectable, not even public ones. The share page reads through `get_shared_list(token)` (SECURITY DEFINER; public lists only, exact token, only published venues/events, owner username/display name only), so public lists can't be enumerated. Views are counted server-side through a service-role RPC, at most once per IP per list per hour; view-only updates don't touch `updated_at` or the audit log (`0049`).
+- **`0050` security fix found by the RLS matrix:** the project's default privileges still gave `anon`/`authenticated` TRUNCATE/REFERENCES/TRIGGER on every new `public` table (and on future pg_partman partitions). The defaults are removed for `postgres`-owned tables, existing tables are cleaned, and the matrix now asserts that no API role holds those privileges and that no default grants exist.
+- Titles and notes can become public, so they go through the same text moderation as posts (blocklist + OpenAI) and are refused at the auto-block threshold. Making a list public re-checks everything that becomes visible. New `listWriteUser` limit 120/h.
+- UI: "Add to my night" on venue and event pages and on every venue and event card (a compact button *outside* the card link — no nested interactive elements). The sheet loads only when opened; visitors are sent to sign in. `/me/lists` (create, open) and `/me/lists/[id]` (rename, public toggle with optimistic UI, share URL + WhatsApp/native/copy, notes, move up/down, remove, delete). `/l/[token]`: ISR 60 s (revalidated on every edit), map of venues, **cost estimate** (sum of each venue's cheapest–dearest listed price plus event ticket prices; free events count as priced; unpriced items counted and called out; "check with venues"), WhatsApp share, OG image, `noindex,follow`. Robots doesn't block `/l/`, so WhatsApp/Facebook previews still work.
+- Analytics: `list_created`, `list_item_added`, `list_shared`.
 
 ## Open questions for Fola
 (write here when you need me)

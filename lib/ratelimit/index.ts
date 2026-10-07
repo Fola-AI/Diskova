@@ -31,7 +31,9 @@ export const LIMITS = {
   likeUser: { tokens: 120, window: "1 h" }, // decision: likes are cheap but shouldn't be scriptable
   exportUser: { tokens: 30, window: "1 h" },
   apiIp: { tokens: 300, window: "1 m" },
-  agentKey: { tokens: 120, window: "1 m" }, // §12: 120 req/min/key // decision: public API reads (§9 doesn't specify); generous for CGNAT // decision: admin CSV exports (PRD doesn't specify)
+  agentKey: { tokens: 120, window: "1 m" }, // §12: 120 req/min/key
+  listWriteUser: { tokens: 120, window: "1 h" }, // decision: P2 list edits (PRD doesn't specify)
+  listViewIp: { tokens: 1, window: "1 h" }, // one counted view per IP per list per hour // decision: public API reads (§9 doesn't specify); generous for CGNAT // decision: admin CSV exports (PRD doesn't specify)
   eventSubmitUser: { tokens: 10, window: "1 d" }, // decision: PRD doesn't specify one
   assistantUser: { tokens: 20, window: "1 h" },
   assistantIp: { tokens: 200, window: "1 h" },

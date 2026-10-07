@@ -15,6 +15,7 @@ import { getEventBySlug } from "@/lib/db/events";
 import { staticMapUrl } from "@/lib/directory/links";
 import { eventDateParts, eventPrice } from "@/lib/events/format";
 import { EVENT_CATEGORIES } from "@/lib/validation/events";
+import { AddToNight } from "@/components/lists/add-to-night";
 
 export const revalidate = 300;
 export async function generateStaticParams() {
@@ -86,7 +87,10 @@ export default async function EventPage({ params }: { params: Params }) {
             </Button>
           </TrackClick>
         </div>
-        <ShareButtons url={url} title={e.title} text={`${e.title} on ${BRAND_NAME}:`} />
+        <div className="flex flex-wrap items-center gap-2">
+          <AddToNight target={{ eventId: e.id, name: e.title }} />
+          <ShareButtons url={url} title={e.title} text={`${e.title} on ${BRAND_NAME}:`} />
+        </div>
         <p className="text-xs text-muted-foreground">{BRAND_NAME} doesn&apos;t sell tickets. Ticket links go to the organiser&apos;s own site.</p>
 
         {e.description_md ? <div className="space-y-3 whitespace-pre-line text-[15px] leading-7 text-muted-foreground">{e.description_md}</div> : null}

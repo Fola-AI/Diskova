@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Award, ListChecks, Settings, ShieldCheck, Store, Trophy } from "lucide-react";
+import { Award, ListChecks, ListPlus, Settings, ShieldCheck, Store, Trophy } from "lucide-react";
 import Link from "next/link";
 
 import { FormAlert } from "@/components/forms/form-alert";
@@ -67,6 +67,9 @@ export default async function MePage({
       <div className="grid gap-3 sm:grid-cols-2">
         <Button asChild variant="secondary" className="justify-start">
           <Link href="/me/posts"><ListChecks aria-hidden /> My posts</Link>
+        </Button>
+        <Button asChild variant="secondary" className="justify-start">
+          <Link href="/me/lists"><ListPlus aria-hidden /> My lists</Link>
         </Button>
         <Button asChild variant="secondary" className="justify-start">
           <Link href="/me/settings"><Settings aria-hidden /> Settings</Link>

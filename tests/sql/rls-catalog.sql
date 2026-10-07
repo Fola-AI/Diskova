@@ -31,6 +31,18 @@ select json_build_object(
     cross join (values ('anon'), ('authenticated')) r(rolname)
     where n.nspname = 'public' and p.proname like 'admin\_%' and has_function_privilege(r.rolname, p.oid, 'execute')
   ),
+  'api_truncate_or_trigger', (
+    select coalesce(json_agg(c.relname || ':' || r.rolname), '[]'::json)
+    from pg_class c join pg_namespace n on n.oid = c.relnamespace
+    cross join (values ('anon'), ('authenticated')) r(rolname)
+    where n.nspname = 'public' and c.relkind in ('r', 'p')
+      and (has_table_privilege(r.rolname, c.oid, 'truncate') or has_table_privilege(r.rolname, c.oid, 'trigger') or has_table_privilege(r.rolname, c.oid, 'references'))
+  ),
+  'default_privileges_api', (
+    select coalesce(json_agg(d.defaclacl::text), '[]'::json) from pg_default_acl d
+     where d.defaclnamespace = 'public'::regnamespace and d.defaclrole = 'postgres'::regrole and d.defaclobjtype = 'r'
+       and (d.defaclacl::text like '%anon=%' or d.defaclacl::text like '%authenticated=%')
+  ),
   'partitions_reachable', (
     select coalesce(json_agg(i.inhrelid::regclass::text), '[]'::json)
     from pg_inherits i

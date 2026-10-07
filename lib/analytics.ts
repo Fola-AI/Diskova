@@ -18,7 +18,10 @@ export type AnalyticsEvent =
   | "vendor_submitted"
   | "signup_completed"
   | "report_submitted"
-  | "search_performed";
+  | "search_performed"
+  | "list_created"
+  | "list_item_added"
+  | "list_shared";
 
 type Props = Record<string, string | number | boolean | null>;
 

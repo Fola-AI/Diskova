@@ -419,6 +419,76 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"list_items": {
+                  Row: {
+                    "created_at": string,"event_id": string | null,"id": string,"list_id": string,"note": string | null,"sort_order": number,"vendor_id": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"event_id"?: string | null,"id"?: string,"list_id": string,"note"?: string | null,"sort_order"?: number,"vendor_id"?: string | null
+                  }
+                  Update: {
+                    "created_at"?: string,"event_id"?: string | null,"id"?: string,"list_id"?: string,"note"?: string | null,"sort_order"?: number,"vendor_id"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "list_items_event_id_fkey"
+      columns: ["event_id"]
+isOneToOne: false
+      referencedRelation: "events"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "list_items_list_id_fkey"
+      columns: ["list_id"]
+isOneToOne: false
+      referencedRelation: "lists"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "list_items_vendor_id_fkey"
+      columns: ["vendor_id"]
+isOneToOne: false
+      referencedRelation: "v_live_now"
+      referencedColumns: ["vendor_id"]
+    },{
+      foreignKeyName: "list_items_vendor_id_fkey"
+      columns: ["vendor_id"]
+isOneToOne: false
+      referencedRelation: "vendors"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"lists": {
+                  Row: {
+                    "city_id": string | null,"created_at": string,"id": string,"is_public": boolean,"owner_id": string,"share_token": string,"title": string,"updated_at": string,"view_count": number
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "city_id"?: string | null,"created_at"?: string,"id"?: string,"is_public"?: boolean,"owner_id"?: string,"share_token"?: string,"title": string,"updated_at"?: string,"view_count"?: number
+                  }
+                  Update: {
+                    "city_id"?: string | null,"created_at"?: string,"id"?: string,"is_public"?: boolean,"owner_id"?: string,"share_token"?: string,"title"?: string,"updated_at"?: string,"view_count"?: number
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "lists_city_id_fkey"
+      columns: ["city_id"]
+isOneToOne: false
+      referencedRelation: "cities"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "lists_owner_id_fkey"
+      columns: ["owner_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "lists_owner_id_fkey"
+      columns: ["owner_id"]
+isOneToOne: false
+      referencedRelation: "v_public_profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"moderation_items": {
                   Row: {
                     "assigned_to": string | null,"closed_at": string | null,"created_at": string,"entity_id": string,"entity_type": string,"id": string,"opened_at": string,"outcome": string | null,"priority": number,"source": Database["public"]['Enums']["moderation_source"],"status": Database["public"]['Enums']["moderation_status"],"updated_at": string
@@ -954,6 +1024,9 @@ isOneToOne: false
 "admin_force_logout":
 { Args: { "p_profile_id": string }; Returns: number
                            },
+"admin_increment_list_view":
+{ Args: { "p_token": string }; Returns: undefined
+                           },
 "admin_list_activity":
 { Args: { "p_city_id"?: string,"p_kind_prefix"?: string,"p_limit"?: number,"p_profile_id"?: string,"p_vendor_id"?: string }; Returns: {
               "at": string,"city_id": string,"city_name": string,"id": number,"kind": string,"meta": Json,"profile_id": string,"username": string,"vendor_id": string,"vendor_name": string
@@ -1047,6 +1120,9 @@ isOneToOne: false
 { Args: Record<PropertyKey, never>; Returns: {
               "avatar_url": string,"badges": (string)[],"bio": string,"created_at": string,"display_name": string,"email_verified_at": string,"home_city_id": string,"id": string,"is_diaspora": boolean,"location_consent": boolean,"points": number,"post_count": number,"role": Database["public"]['Enums']["user_role"],"status": Database["public"]['Enums']["profile_status"],"status_reason": string,"status_until": string,"username": string
             }[]
+                           },
+"get_shared_list":
+{ Args: { "p_token": string }; Returns: Json
                            },
 "has_staff_role":
 { Args: { "min_role"?: Database["public"]['Enums']["user_role"] }; Returns: boolean

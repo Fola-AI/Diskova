@@ -27,6 +27,7 @@ import { CrowdBadge } from "@/components/tonight/crowd-badge";
 import { crowdLabel } from "@/lib/directory/crowd";
 import { formatTime } from "@/lib/services/opening-hours";
 import { hasAnyHours, parseOpeningHours } from "@/lib/services/opening-hours";
+import { AddToNight } from "@/components/lists/add-to-night";
 
 export const revalidate = 60;
 export async function generateStaticParams() {
@@ -161,7 +162,10 @@ export default async function VendorPage({ params }: { params: Params }) {
             websiteUrl={vendor.website_url}
             bookingUrl={vendor.booking_url}
           />
-          <ShareButtons url={url} title={vendor.name} text={`${vendor.name} on ${BRAND_NAME}:`} />
+          <div className="flex flex-wrap items-center gap-2">
+            <AddToNight target={{ vendorId: vendor.id, name: vendor.name }} />
+            <ShareButtons url={url} title={vendor.name} text={`${vendor.name} on ${BRAND_NAME}:`} />
+          </div>
         </div>
 
         {/* Pulse (one tap) + check-in */}
