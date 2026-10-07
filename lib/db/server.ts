@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 
 import { SUPABASE_ANON_KEY, SUPABASE_URL } from "@/lib/config";
 import { authCookieOptions } from "@/lib/db/cookie-options";
+import type { Database } from "@/lib/db/types";
 import { assertServerOnly } from "@/lib/server-only";
 
 assertServerOnly("lib/db/server");
@@ -13,7 +14,7 @@ assertServerOnly("lib/db/server");
  */
 export async function getServerSupabase() {
   const cookieStore = await cookies();
-  return createServerClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  return createServerClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, {
     cookieOptions: authCookieOptions(),
     cookies: {
       getAll() {

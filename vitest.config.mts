@@ -9,8 +9,11 @@ export default defineConfig({
     environment: "node",
     include: ["tests/unit/**/*.test.ts", "tests/rls/**/*.test.ts"],
     exclude: ["tests/smoke/**", "node_modules/**"],
-    testTimeout: 20_000,
-    hookTimeout: 30_000,
+    setupFiles: ["tests/setup/load-env.ts"],
+    // RLS tests share DEV fixtures; run files one at a time to avoid auth rate limits.
+    fileParallelism: false,
+    testTimeout: 30_000,
+    hookTimeout: 120_000,
     env: { NODE_ENV: "test" },
   },
 });

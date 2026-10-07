@@ -17,7 +17,11 @@
     "format:check": "prettier --check .",
     "verify": "next build && next lint && tsc --noEmit && vitest run && node scripts/run-smoke.mjs",
     "icons": "dotenv -e .env.local -- tsx scripts/generate-icons.ts",
-    "sentry:test": "dotenv -e .env.local -- tsx scripts/sentry-test.ts"
+    "sentry:test": "dotenv -e .env.local -- tsx scripts/sentry-test.ts",
+    "db:push": "dotenv -e .env.local -- node scripts/dev-db.mjs push",
+    "db:seed": "dotenv -e .env.local -- node scripts/dev-db.mjs seed",
+    "db:types": "dotenv -e .env.local -- node scripts/dev-db.mjs types",
+    "create-super-admin": "dotenv -e .env.local -- tsx scripts/create-super-admin.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "5.9.1",
