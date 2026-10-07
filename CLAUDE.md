@@ -85,8 +85,8 @@ Never redo completed stages.
 ## Environment notes (from setup, 7 Oct 2026) — binding
 
 ### Brand and domain
-- Brand is **Diskova**, domain **diskova.io** (supersedes "DiscoverNigeria" / discovernigeria.ng
-  anywhere in PRD.md or SETUP.md). Brand still comes only from `NEXT_PUBLIC_BRAND_NAME`.
+- Brand is **Diskova**, domain **diskova.io** (applies everywhere in PRD.md and SETUP.md).
+  Brand still comes only from `NEXT_PUBLIC_BRAND_NAME`.
 - `NEXT_PUBLIC_SITE_URL` is unset on Vercel Preview. Fall back to `https://${VERCEL_URL}`, then
   `http://localhost:3000`.
 

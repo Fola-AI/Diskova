@@ -1,6 +1,6 @@
 # Paste everything below this line into Claude Code (auto mode)
 
-You are the sole engineer building DiscoverNigeria, a real-time "what's happening right now" tourism and nightlife platform for Nigeria. You are working autonomously. I am not watching the session.
+You are the sole engineer building Diskova, a real-time "what's happening right now" tourism and nightlife platform for Nigeria. You are working autonomously. I am not watching the session.
 
 ## Read first, in this order
 1. `CLAUDE.md` — the working agreement. Treat every rule in it as binding.

@@ -1,0 +1,49 @@
+# LAUNCH.md — production promotion (manual steps for Fola)
+
+> Running checklist. Items are appended as each stage lands; Stage L15 turns this into the final,
+> ordered runbook. Nothing here is executed by Claude Code — PROD credentials never leave Fola.
+
+## Database (from Stage L2)
+
+1. From a clean checkout of the release commit: `npx supabase link --project-ref <PROD_REF>` then
+   `npx supabase db push` (applies `supabase/migrations/0001…` in order). Do **not** run
+   `supabase/seed/seed.sql` on PROD — it contains fictional sample vendors. Real content is loaded in L15.
+2. **Exposed schemas** (Dashboard → Project Settings → Data API → Exposed schemas): must be exactly
+   `public, graphql_public`. If `private` is ever listed, remove it. Verify with
+   `GET https://api.supabase.com/v1/projects/<PROD_REF>/postgrest` → `db_schema` has no `private`.
+3. Confirm pg_cron jobs exist: `select jobname, schedule from cron.job order by 1;` → `crowd-snapshots`,
+   `crowd-forecast`, `leaderboards`, `sanctions-expiry`, `daily-purges`, `partman-maintenance`,
+   `cron-history-cleanup`.
+4. Platform settings: set the December in Nigeria season dates (15 Nov → 10 Jan) and the free-listing
+   notice in Admin → Settings (or `update public.platform_settings set december_season_start = …`).
+5. Super admin: set `SUPER_ADMIN_EMAIL` and run `npm run create-super-admin` against PROD env, then sign
+   in with a magic link and enrol TOTP MFA at `/admin/mfa`.
+6. Storage purges (pending decision — see PROGRESS.md "Open questions"): if approved, store Vault
+   secrets `app_project_url` and `app_service_role_key` on PROD so pg_cron can delete expired uploads,
+   verification documents (30 days) and deleted-account media through the Storage API.
+
+## Auth (from Stage L3)
+
+7. **Custom SMTP (Resend)** on PROD *and* DEV — Dashboard → Authentication → SMTP Settings (SETUP.md §3a.9).
+   Without it Supabase only emails project team members: on DEV today, signups from any other address are
+   rejected with `email_address_invalid`.
+8. **Email templates** (Authentication → Email Templates). Point links at the app so verification works across
+   devices (open on phone after signing up on a laptop):
+   - Confirm signup: `{{ .SiteURL }}/auth/callback?token_hash={{ .TokenHash }}&type=signup&next=/me?welcome=1`
+   - Magic link: `{{ .SiteURL }}/auth/callback?token_hash={{ .TokenHash }}&type=magiclink&next=/me`
+   - Reset password: `{{ .SiteURL }}/auth/callback?token_hash={{ .TokenHash }}&type=recovery&next=/reset/update`
+   - Change email: `{{ .SiteURL }}/auth/callback?token_hash={{ .TokenHash }}&type=email_change&next=/me/settings`
+   (The default `{{ .ConfirmationURL }}` templates also work, but only in the same browser that started the flow.)
+9. **URL configuration**: Site URL `https://diskova.io`; redirect URLs `https://diskova.io/**` (PROD) — DEV keeps
+   `http://localhost:3000/**` and `https://*.vercel.app/**`.
+10. **Google OAuth**: publish the consent screen (DEV is in Testing mode — only listed test users can sign in).
+11. Keep **Confirm email ON**, **TOTP MFA ON**, password policy = lower + upper + digit, min 8 (matches the app's validation).
+12. **MFA recovery:** enrol two TOTP factors on the super-admin account (phone app + password manager). Supabase
+    TOTP has no backup codes; a lost factor is removed in Dashboard → Authentication → Users → MFA.
+
+## Content (from Stage L4)
+
+13. **Never run `npm run db:samples` (or `supabase/seed/dev-sample-content.sql`) on PROD** — it publishes the
+    fictional sample vendors. On PROD the sample vendors don't exist at all (seed is DEV-only).
+14. **Mapbox**: the PROD token must be URL-restricted to `https://diskova.io/*` (and preview domains if wanted).
+    The app uses GL JS (map toggle) *and* the Static Images API (map previews) — both count toward usage.
