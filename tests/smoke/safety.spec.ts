@@ -7,7 +7,7 @@ test.afterAll(async () => {
   for (const id of users) await admin().auth.admin.deleteUser(id);
 });
 
-test("emergency numbers render per city with verification status", async ({ page }) => {
+test("emergency numbers render per city with verification status", { tag: "@readonly" }, async ({ page }) => {
   await page.goto("/safety/lagos");
   await expect(page.getByTestId("emergency-banner")).toContainText("call 112");
   const blocks = page.getByTestId("safety-block");

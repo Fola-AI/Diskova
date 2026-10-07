@@ -6,6 +6,7 @@ const PORT = Number(process.env.PLAYWRIGHT_PORT ?? 3100);
 const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? `http://localhost:${PORT}`;
 
 export default defineConfig({
+  globalSetup: "./tests/smoke/global-setup.ts",
   testDir: "./tests/smoke",
   fullyParallel: false,
   // Every spec talks to the shared DEV Supabase project; 3 workers keeps latency realistic.
@@ -19,12 +20,8 @@ export default defineConfig({
   use: {
     baseURL,
     trace: "retain-on-failure",
-    // Most specs aren't about cookie consent: start with "essential only" chosen so the banner
-    // doesn't cover controls. security.spec.ts clears it to test the banner itself.
-    storageState: {
-      cookies: [{ name: "consent", value: "essential", domain: new URL(baseURL).hostname, path: "/", expires: -1, httpOnly: false, secure: false, sameSite: "Lax" }],
-      origins: [],
-    },
+    // Built by global-setup: consent pre-chosen (banner tested in security.spec) + Vercel preview bypass.
+    storageState: "playwright/.auth/state.json",
   },
   projects: [
     {

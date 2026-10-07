@@ -23,7 +23,11 @@
     "db:types": "dotenv -e .env.local -- node scripts/dev-db.mjs types",
     "create-super-admin": "dotenv -e .env.local -- tsx scripts/create-super-admin.ts",
     "db:samples": "dotenv -e .env.local -- node scripts/dev-db.mjs samples",
-    "bench:snapshots": "dotenv -e .env.local -- sh -c 'psql \"$SUPABASE_DB_URL\" -X -q -f scripts/bench/crowd-snapshots.sql'"
+    "bench:snapshots": "dotenv -e .env.local -- sh -c 'psql \"$SUPABASE_DB_URL\" -X -q -f scripts/bench/crowd-snapshots.sql'",
+    "content:check": "dotenv -e .env.local -- tsx scripts/seed-content.ts --dry-run",
+    "content:load": "dotenv -e .env.local -- tsx scripts/seed-content.ts",
+    "smoke:remote": "dotenv -e .env.local -- playwright test",
+    "smoke:readonly": "dotenv -e .env.local -- playwright test --grep @readonly"
   },
   "dependencies": {
     "@hookform/resolvers": "5.9.1",

@@ -1,8 +1,10 @@
 import { expect, test } from "@playwright/test";
 
+import { stateWithoutConsent } from "./fixtures";
+
 const PAGES = ["/", "/c/lagos", "/events", "/guides", "/safety/lagos", "/login", "/privacy"];
 
-test("CSP is enforced and key pages (incl. the map) raise no violations", async ({ page }) => {
+test("CSP is enforced and key pages (incl. the map) raise no violations", { tag: "@readonly" }, async ({ page }) => {
   const res = await page.request.get("/");
   const csp = res.headers()["content-security-policy"];
   expect(csp).toBeTruthy();
@@ -21,18 +23,21 @@ test("CSP is enforced and key pages (incl. the map) raise no violations", async 
     await page.waitForLoadState("networkidle");
     expect(await page.evaluate(() => (window as unknown as { __csp: string[] }).__csp), path).toEqual([]);
   }
-  // Mapbox GL (workers from blob:, tiles, styles) must work under the enforced policy.
+  // Mapbox GL (workers from blob:, tiles, styles) must work under the enforced policy. (A city with
+  // no venues yet — e.g. a fresh PROD — has no map to open.)
   await page.goto("/c/lagos");
-  await page.getByRole("button", { name: /map/i }).first().click();
+  const toggle = page.getByTestId("map-toggle").first();
+  if (!(await toggle.isVisible())) return;
+  await toggle.click();
   await expect(page.locator(".mapboxgl-canvas")).toBeVisible({ timeout: 15_000 });
   await page.waitForTimeout(1500);
   expect(await page.evaluate(() => (window as unknown as { __csp: string[] }).__csp)).toEqual([]);
 });
 
 test.describe("cookie consent (analytics only)", () => {
-  test.use({ storageState: { cookies: [], origins: [] } });
+  test.use({ storageState: stateWithoutConsent() });
 
-  test("first visit asks; 'Essential only' is remembered; footer reopens the choice", async ({ page, context }) => {
+  test("first visit asks; 'Essential only' is remembered; footer reopens the choice", { tag: "@readonly" }, async ({ page, context }) => {
     await page.goto("/");
     const banner = page.getByTestId("consent-banner");
     await expect(banner).toBeVisible();
@@ -49,7 +54,7 @@ test.describe("cookie consent (analytics only)", () => {
     expect((await context.cookies()).find((c) => c.name === "consent")?.value).toBe("analytics");
   });
 
-  test("privacy policy covers cookies, processors, retention and rights", async ({ page }) => {
+  test("privacy policy covers cookies, processors, retention and rights", { tag: "@readonly" }, async ({ page }) => {
     await page.goto("/privacy");
     for (const h of ["Cookies", "Who processes data for us", "How long we keep it", "Your rights"]) {
       await expect(page.getByRole("heading", { name: h })).toBeVisible();

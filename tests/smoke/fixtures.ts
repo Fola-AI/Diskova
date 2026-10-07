@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import type { Page } from "@playwright/test";
 import { createHmac, randomBytes } from "node:crypto";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
@@ -58,4 +59,14 @@ export async function completeMfa(page: Page) {
   const secret = (await page.getByTestId("totp-secret").textContent())!.trim();
   await page.getByLabel("Authentication code").fill(totp(secret));
   await page.getByRole("button", { name: "Verify" }).click();
+}
+
+/** Storage state with everything except the cookie-consent choice (keeps the Vercel preview bypass). */
+export function stateWithoutConsent(): { cookies: Array<{ name: string; value: string; domain: string; path: string; expires: number; httpOnly: boolean; secure: boolean; sameSite: "Strict" | "Lax" | "None" }>; origins: [] } {
+  try {
+    const state = JSON.parse(readFileSync("playwright/.auth/state.json", "utf8")) as { cookies: Array<{ name: string; value: string; domain: string; path: string; expires: number; httpOnly: boolean; secure: boolean; sameSite: "Strict" | "Lax" | "None" }> };
+    return { cookies: state.cookies.filter((c) => c.name !== "consent"), origins: [] };
+  } catch {
+    return { cookies: [], origins: [] };
+  }
 }

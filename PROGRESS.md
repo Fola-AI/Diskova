@@ -1,7 +1,7 @@
 # Build Progress
 
 ## Current stage
-Stage L15 — Final QA, content loader, LAUNCH.md
+Stage P1 — Agent API endpoints
 
 ## Launch stages (required before go-live)
 - [x] Stage L1: Project scaffold, tooling, `npm run verify`
@@ -18,7 +18,7 @@ Stage L15 — Final QA, content loader, LAUNCH.md
 - [x] Stage L12: Super-admin back office
 - [x] Stage L13: Security hardening and RLS matrix tests
 - [x] Stage L14: SEO, performance, PWA, analytics
-- [ ] Stage L15: Final QA, content loader, LAUNCH.md (production promotion steps for Fola)
+- [x] Stage L15: Final QA, content loader, LAUNCH.md (production promotion steps for Fola) — *smoke on the protected Vercel Preview waits on open question 9; the same suite is green locally against DEV*
 
 ## Post-launch stages (continue automatically after L15)
 - [ ] Stage P1: Agent API endpoints (for future AI agent)
@@ -640,6 +640,48 @@ Acceptance evidence — **Lighthouse mobile** (`npx lighthouse@12`, default mobi
 
 Other evidence: `seo.spec.ts` (robots, sitemap, canonical, WebSite/Organization and LocalBusiness/BreadcrumbList JSON-LD, no ratings); `pwa.spec.ts` (a guide read online opens offline; uncached pages redirect to `/offline`, which lists saved guides; SW headers and exclusions); `tests/rls/l14-api.test.ts` (8 API tests: envelope, CORS, filters, 400/401/403/404, writes via Bearer token through RLS); `tests/unit/blur-jsonld.test.ts`, `tests/unit/analytics.test.ts`.
 
+### Stage L15 — 2026-10-07
+```
+  ✓  28 [smoke] › tests/smoke/moderation.spec.ts:49:5 › community guidelines are linked from every page footer @readonly (233ms)
+  ✓  29 [smoke] › tests/smoke/pwa.spec.ts:5:5 › PWA: a guide read online opens offline; other pages fall back to /offline listing saved guides @readonly (382ms)
+  ✓  30 [smoke] › tests/smoke/pwa.spec.ts:29:5 › PWA: the service worker never caches signed-in or admin pages @readonly (6ms)
+  ✓  31 [smoke] › tests/smoke/safety.spec.ts:10:5 › emergency numbers render per city with verification status @readonly (1.0s)
+  ✓  25 [smoke] › tests/smoke/events.spec.ts:99:5 › submit an event → admin approves → it is public (8.6s)
+  ✓  32 [smoke] › tests/smoke/safety.spec.ts:24:5 › anonymous private report → exact confirmation → visible only in admin triage (4.5s)
+  ✓  34 [smoke] › tests/smoke/safety.spec.ts:48:5 › honeypot submissions are not stored (792ms)
+  ✓  35 [smoke] › tests/smoke/seo.spec.ts:11:5 › robots.txt blocks private areas and points at the sitemap @readonly (13ms)
+  ✓  36 [smoke] › tests/smoke/seo.spec.ts:17:5 › sitemap lists cities, venues, guides and safety pages @readonly (67ms)
+  ✓  37 [smoke] › tests/smoke/seo.spec.ts:22:5 › home: canonical + WebSite search action + Organization @readonly (147ms)
+  ✓  38 [smoke] › tests/smoke/seo.spec.ts:29:5 › venue page: canonical, specific LocalBusiness type with address + geo, breadcrumbs, no ratings @readonly (571ms)
+  ✓  39 [smoke] › tests/smoke/settings.spec.ts:26:5 › edit profile: username, home city, diaspora, location consent (3.3s)
+  ✓  33 [smoke] › tests/smoke/security.spec.ts:7:5 › CSP is enforced and key pages (incl. the map) raise no violations @readonly (9.1s)
+  ✓  41 [smoke] › tests/smoke/security.spec.ts:40:7 › cookie consent (analytics only) › first visit asks; 'Essential only' is remembered; footer reopens the choice @readonly (294ms)
+  ✓  42 [smoke] › tests/smoke/security.spec.ts:57:7 › cookie consent (analytics only) › privacy policy covers cookies, processors, retention and rights @readonly (124ms)
+  ✓  24 [smoke] › tests/smoke/feed.spec.ts:39:5 › one-tap pulse appears for a signed-in viewer within 2 s (Realtime) and an anonymous viewer within 30 s (19.6s)
+  ✓  43 [smoke] › tests/smoke/tonight.spec.ts:41:5 › empty Tonight view invites the first pulse and vendor updates (458ms)
+  ✓  40 [smoke] › tests/smoke/settings.spec.ts:46:5 › avatar upload goes through the one-image pipeline (EXIF stripped, WebP) (4.5s)
+  ✓  45 [smoke] › tests/smoke/tonight.spec.ts:49:5 › a pulse becomes a live venue: rail, hero count, polling API and crowd badge (4.4s)
+  ✓  46 [smoke] › tests/smoke/settings.spec.ts:75:5 › delete account anonymises the profile and blocks sign-in (4.0s)
+  ✓  47 [smoke] › tests/smoke/tonight.spec.ts:77:5 › heat map renders on toggle (2.1s)
+  ✓  49 [smoke] › tests/smoke/tonight.spec.ts:84:5 › forecast line shows once there are 4+ weeks of data (140ms)
+  ✓  44 [smoke] › tests/smoke/feed.spec.ts:73:5 › 4-photo check-in: every request finishes in under 5 s (15.8s)
+  ✓  48 [smoke] › tests/smoke/vendor.spec.ts:27:5 › fresh account → submitted vendor in under 10 minutes (12.2s)
+  ✓  50 [smoke] › tests/smoke/feed.spec.ts:136:5 › my posts, public profile and leaderboard pages render (4.4s)
+  ✓  51 [smoke] › tests/smoke/vendor.spec.ts:90:5 › admin (with MFA) approves the listing and it goes live (4.8s)
+  ✓  52 [smoke] › tests/smoke/vendor.spec.ts:112:5 › official update in two taps appears on the vendor page labelled Official (2.9s)
+  ✓  53 [smoke] › tests/smoke/vendor.spec.ts:135:5 › claim flow: claimant uploads ID, admin approves, claimant becomes owner (6.9s)
+
+  53 passed (1.2m)
+```
+Vitest in the same run: `Test Files  36 passed (36) Tests  227 passed (227)`
+
+Acceptance evidence:
+- **Smoke (signup, onboard, approve, official update, pulse, check-in, moderate, share):** all green in the run above (53 tests), against a production build on DEV: `auth.spec` signup → verify → login, `vendor.spec` onboarding in under 10 minutes, admin approval, official update in two taps and the claim flow, `feed.spec` pulse (Realtime ≤ 2 s) and the 4-photo check-in, `moderation.spec` held post approved, `directory.spec`/`events.spec` share links and .ics. **On the Vercel Preview:** the L14 preview built successfully on Vercel, but it sits behind Vercel Authentication (302 → SSO), so automated tests need a bypass secret that isn't in `.env.local` (**open question 9**). `tests/smoke/global-setup.ts` is ready for it, so one command runs the whole suite there.
+- **Read-only PROD smoke:** 15 tests tagged `@readonly` (`npm run smoke:readonly`, or `--grep @readonly` with `PLAYWRIGHT_BASE_URL`). They create no data and skip what needs venues: 15/15 green locally.
+- **Content loader:** `tests/rls/l15-content-loader.test.ts`: one bad row stops the whole load (nothing written, `file:line — reason`); the examples load venues (hours syntax, features, cover image through the image pipeline), prices, events (venue-local time → UTC), guides and dated safety entries, with an audit entry; re-runs are idempotent; claimed venues are never overwritten. `tests/unit/content-parsers.test.ts` covers front matter, CSV and hours syntax. `npm run content:check -- --dir=content/_examples` → all 7 example files valid.
+- **LAUNCH.md complete:** ordered runbook A–H (accounts, DB promotion, Auth, keys, Vercel env, deploy + super admin + content, DNS, smoke) plus a known-limitations list. `tests/unit/launch-docs.test.ts` guards the PRD-required items.
+- **All L stages ticked with evidence:** L1–L15 above.
+
 ## Notes / decisions
 (append here as you go)
 
@@ -835,6 +877,13 @@ Other evidence: `seo.spec.ts` (robots, sitemap, canonical, WebSite/Organization 
 - A DEV-only published sample guide (`sample-lagos-first-weekend`) was added to `dev-sample-content.sql` for QA and Lighthouse. It never goes to PROD (LAUNCH step 13).
 - The RLS matrix test was renamed to `tests/rls/matrix.test.ts` to match the PRD's L13 acceptance path.
 
+**L15 (2026-10-07)**
+- **Launch gap fixed:** PROD would have had no cities, areas or categories. That reference data only lived in `seed.sql`, which also adds fictional venues and is (correctly) banned on PROD. The seed is now split into `supabase/seed/reference.sql` (PROD-safe and idempotent: settings defaults, categories, 6 cities, 40 areas, toolkit drafts, national emergency numbers; **no venues**) and `seed.sql`, which is `\ir reference.sql` + the sample venues (DEV). DEV re-seeded with identical results. A test guards that `reference.sql` never contains venues.
+- **/content loader** (`scripts/seed-content.ts` → `lib/services/content-loader.ts`): CSVs for venues / prices / events, markdown with front matter for guides / toolkit / blog / safety pages, `## section | Title` markdown for safety entries, images re-encoded through `processImage` one at a time. Validate-everything-first (any error → nothing written). Idempotent (slug, or city + section + title). Never touches claimed venues. Doesn't overwrite existing guides or safety entries unless `--overwrite`, so CMS edits survive. Writes require `--confirm=<project-ref>` matching the target (guards against the wrong env file). One `content.loaded` audit entry per run. The format is documented in `content/README.md`, with a full valid example set in `content/_examples/` (ignored by default; examples are drafts).
+- Small parsers with no new dependencies: front matter (`lib/content/frontmatter.ts`), RFC 4180 CSV (`lib/content/csv.ts`), opening-hours syntax such as `mon-fri 18:00-02:00; sat,sun 12:00-04:00; sun closed` (`lib/content/hours-syntax.ts`).
+- **Remote smoke:** `tests/smoke/global-setup.ts` writes the storage state (consent pre-chosen, plus Vercel's preview-bypass cookie, fetched once via the documented query parameters so the secret is never sent as a header to Supabase or Mapbox). Consent tests keep the bypass cookie. `npm run smoke:remote` (full, Preview + DEV) and `npm run smoke:readonly` / `--grep @readonly` (PROD-safe).
+- `scripts/promote-migrations.md`: exact PROD DB steps (link, dry run, push, reference data, verification SQL for cron jobs, buckets, the Realtime policy, RLS and exposed schemas).
+
 ## Open questions for Fola
 (write here when you need me)
 
@@ -846,4 +895,5 @@ Other evidence: `seo.spec.ts` (robots, sitemap, canonical, WebSite/Organization 
 6. **[heads-up] MFA recovery:** Supabase TOTP has no backup codes. If an admin loses their phone, a super admin has to remove the factor in the Supabase dashboard (Authentication → Users → user → MFA). I'd suggest enrolling a second authenticator (e.g. a password-manager TOTP) on your super-admin account. I'll mention this in LAUNCH.md.
 7. **[content needed before launch] Verified safety information.** The safety pages only show the national numbers (112, FRSC 122) and LASEMA 767 from the PRD, all marked "not yet verified". Hospitals with 24 h A&E, police stations, embassies, travel advice, area notes and scam-awareness text need real, checked information per city. I won't invent emergency contacts. Add them in **Admin → Safety info** (`/admin/safety`, built in L12) or via the L15 content loader, ticking "checked against the official source today" when verified.
 8. **[before launch — legal] Privacy policy and terms are templates.** I rewrote them in L13 to match exactly what the product does (processors, retention, NDPA/UK rights, cookies), but they need a lawyer's review. Two product points to confirm: (a) the service is **18+** (I assumed this for a nightlife product), and (b) the contact address. Set `NEXT_PUBLIC_CONTACT_EMAIL` in Vercel; it defaults to `hello@` the production domain.
+9. **[needed for one L15 check] Vercel preview bypass for automated tests.** Preview deployments are behind Vercel Authentication (they redirect to Vercel SSO), so Playwright can't reach them. To run the full smoke suite on a Preview against DEV, enable **Vercel → Project → Settings → Deployment Protection → Protection Bypass for Automation** and add the generated value to `.env.local` as `VERCEL_AUTOMATION_BYPASS_SECRET`. Then `PLAYWRIGHT_BASE_URL=<preview-url> npm run smoke:remote`. Everything else is in place, and the same suite is green against a local production build on DEV. (Alternatively, turn deployment protection off for Previews; I haven't changed any Vercel security setting.)
 

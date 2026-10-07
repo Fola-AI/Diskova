@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 
 const GUIDE = "/guides/lagos/sample-lagos-first-weekend";
 
-test("PWA: a guide read online opens offline; other pages fall back to /offline listing saved guides", async ({ page, context }) => {
+test("PWA: a guide read online opens offline; other pages fall back to /offline listing saved guides", { tag: "@readonly" }, async ({ page, context }) => {
   test.skip(!(await page.request.get(GUIDE)).ok(), "sample guide not on this database (npm run db:samples)");
   await page.goto("/safety");
   // Wait for the service worker to install, activate and control the page.
@@ -26,7 +26,7 @@ test("PWA: a guide read online opens offline; other pages fall back to /offline 
   }
 });
 
-test("PWA: the service worker never caches signed-in or admin pages", async ({ request }) => {
+test("PWA: the service worker never caches signed-in or admin pages", { tag: "@readonly" }, async ({ request }) => {
   const sw = await (await request.get("/sw.js")).text();
   expect(sw).toContain("admin|api|auth|me|vendor");
   expect(sw).toContain("MAX_PAGES = 20");

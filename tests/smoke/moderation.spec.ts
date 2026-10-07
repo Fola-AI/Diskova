@@ -46,7 +46,7 @@ test("moderator (MFA) approves a held post from the queue and it goes live", asy
   await expect.poll(async () => (await admin().from("posts").select("status").eq("id", postId).single()).data?.status, { timeout: 15_000 }).toBe("published");
 });
 
-test("community guidelines are linked from every page footer", async ({ page }) => {
+test("community guidelines are linked from every page footer", { tag: "@readonly" }, async ({ page }) => {
   await page.goto("/");
   await page.getByRole("contentinfo").getByRole("link", { name: "Community Guidelines" }).click();
   await expect(page).toHaveURL(/\/guidelines$/);
