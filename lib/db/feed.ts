@@ -1,5 +1,6 @@
 import { publicStorageUrl } from "@/lib/config";
 import { getPublicSupabase } from "@/lib/db/public";
+import { blurDataUrl } from "@/lib/media/blur";
 
 /** Public feed shapes (what anon sees under RLS: published, non-shadowbanned). */
 export interface FeedMedia {
@@ -7,6 +8,8 @@ export interface FeedMedia {
   width: number | null;
   height: number | null;
   blurhash: string | null;
+  /** Tiny data URL decoded from the blurhash, for next/image `placeholder="blur"`. */
+  placeholder?: string;
 }
 
 export interface FeedPost {
@@ -37,7 +40,7 @@ function shape(rows: RawPost[]): FeedPost[] {
     ...r,
     media: [...r.media]
       .sort((a, b) => a.sort_order - b.sort_order)
-      .map((m) => ({ url: publicStorageUrl("media", m.storage_path), width: m.width, height: m.height, blurhash: m.blurhash })),
+      .map((m) => ({ url: publicStorageUrl("media", m.storage_path), width: m.width, height: m.height, blurhash: m.blurhash, placeholder: blurDataUrl(m.blurhash) })),
   }));
 }
 
@@ -70,7 +73,7 @@ export async function listCommunityPhotos(vendorId: string, limit = 12): Promise
     .limit(limit);
   if (error) throw error;
   const media = (data ?? []).flatMap((p) => (p.media ?? []) as RawPost["media"]);
-  return media.slice(0, limit).map((m) => ({ url: publicStorageUrl("media", m.storage_path), width: m.width, height: m.height, blurhash: m.blurhash }));
+  return media.slice(0, limit).map((m) => ({ url: publicStorageUrl("media", m.storage_path), width: m.width, height: m.height, blurhash: m.blurhash, placeholder: blurDataUrl(m.blurhash) }));
 }
 
 /** Public posts by a user (published only; shown on /u/[username], including expired ones). */

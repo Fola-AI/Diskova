@@ -7,7 +7,7 @@ import { FormAlert } from "@/components/forms/form-alert";
 import { initialFormState } from "@/components/forms/form-state";
 import { SubmitButton } from "@/components/forms/submit-button";
 import { Input } from "@/components/ui/input";
-import { REPORT_REASONS } from "@/lib/validation/posts";
+import { REPORT_REASONS } from "@/lib/validation/constants";
 
 /** Moderator actions (§11.3 subset). Removals, sanctions and shadowbans require a reason. */
 export function ModerationForm({ itemId, isPost }: { itemId: string; isPost: boolean }) {

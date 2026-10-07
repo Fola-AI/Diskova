@@ -87,3 +87,8 @@
     @apply font-display tracking-tight;
   }
 }
+
+/* Cookie banner: hidden once a choice exists (set pre-paint by CONSENT_BOOT_SCRIPT). */
+html[data-consent] .consent-banner {
+  display: none;
+}

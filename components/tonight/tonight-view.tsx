@@ -1,6 +1,7 @@
 import { CalendarDays, CalendarHeart, Megaphone, Sparkles, Sun, Trophy } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { preload } from "react-dom";
 
 import { VendorCard } from "@/components/directory/vendor-card";
 import { EventCard } from "@/components/events/event-card";
@@ -16,7 +17,6 @@ import { getLeaderboard } from "@/lib/db/leaderboard";
 import { getCityLive, getUsuallyBusyNow, type LiveVenue } from "@/lib/db/live";
 import { getPublicSettings } from "@/lib/db/settings-public";
 import { crowdLabel } from "@/lib/directory/crowd";
-import { staticMapUrl } from "@/lib/directory/links";
 import { openStatus, parseOpeningHours } from "@/lib/services/opening-hours";
 
 function isSeason(start: string | null, end: string | null, now = new Date()): boolean {
@@ -66,6 +66,10 @@ export async function TonightView({ city, mapPoints }: { city: CityRow; mapPoint
   const dateLabel = new Intl.DateTimeFormat("en-NG", { weekday: "long", day: "numeric", month: "long", timeZone: city.timezone }).format(now);
   const center = { lat: city.lat ?? 6.5244, lng: city.lng ?? 3.3792 };
   const points = mapPoints ?? livePoints(live);
+  // Same-origin WebP preview (api/map/city), CDN-cached. It's the LCP image on city pages, so React
+  // hoists a high-priority preload into <head> ahead of the scripts.
+  const mapPreview = city.hero_image_url ?? (MAPBOX_TOKEN ? `/api/map/city/${city.slug}` : null);
+  if (points.length && mapPreview) preload(mapPreview, { as: "image", fetchPriority: "high" });
 
   const emptyState = (
     <div className="space-y-3 text-sm">
@@ -84,7 +88,7 @@ export async function TonightView({ city, mapPoints }: { city: CityRow; mapPoint
       <p className="font-medium">Nothing live in {city.name} yet. Be the first — open a venue and tap to pulse.</p>
       <div className="flex flex-wrap gap-2">
         <Button asChild size="sm"><Link href={`/c/${city.slug}#places`}>Find a venue</Link></Button>
-        <Button asChild size="sm" variant="secondary"><Link href="/vendor"><Megaphone aria-hidden /> Vendors: post an official update</Link></Button>
+        <Button asChild size="sm" variant="secondary"><Link href="/vendor" prefetch={false}><Megaphone aria-hidden /> Vendors: post an official update</Link></Button>
       </div>
     </div>
   );
@@ -116,7 +120,7 @@ export async function TonightView({ city, mapPoints }: { city: CityRow; mapPoint
           heat
           eager
           points={points}
-          staticImageUrl={city.hero_image_url ?? staticMapUrl(MAPBOX_TOKEN, center, { zoom: 11, width: 480, height: 220, retina: false })}
+          staticImageUrl={mapPreview}
           label={live.length ? "Heat map" : "Map"}
         />
       ) : null}

@@ -29,7 +29,7 @@ export function LiveCard({ venue, areaName, priority = false }: { venue: LiveVen
     >
       <div className="relative aspect-[4/3]" style={{ background: categoryGradient(venue.slug) }}>
         {venue.photo_url ? (
-          <Image src={venue.photo_url} alt="" fill sizes="288px" className="object-cover" priority={priority} />
+          <Image src={venue.photo_url} alt="" fill sizes="288px" className="object-cover" priority={priority} {...(venue.photo_placeholder ? { placeholder: "blur" as const, blurDataURL: venue.photo_placeholder } : {})} />
         ) : null}
         <CrowdBadge level={venue.crowd_level_avg} confidence={venue.confidence} className="absolute left-2 top-2" />
         {price ? <span className="absolute right-2 top-2 rounded-md bg-black/60 px-2 py-0.5 text-xs font-semibold text-white">{price}</span> : null}

@@ -8,7 +8,8 @@ import { FormAlert } from "@/components/forms/form-alert";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Textarea } from "@/components/ui/textarea";
-import { REPORT_REASONS } from "@/lib/validation/posts";
+import { REPORT_REASONS } from "@/lib/validation/constants";
+import { trackEvent } from "@/lib/analytics";
 
 export function ReportButton({
   entityType,
@@ -38,6 +39,7 @@ export function ReportButton({
       if (res.needsLogin) window.location.href = `/login?next=${encodeURIComponent(window.location.pathname)}`;
       return setState({ error: res.error });
     }
+    trackEvent("report_submitted", { entity: entityType });
     setState({ message: "Thanks — our team reviews every report." });
   }
 

@@ -20,7 +20,7 @@ export function SiteFooter() {
           <CookieSettingsButton />
           <Link href="/safety" className="hover:text-foreground">Safety</Link>
           <Link href="/toolkit" className="hover:text-foreground">Diaspora toolkit</Link>
-          <Link href="/vendor" className="hover:text-foreground">For venues</Link>
+          <Link href="/vendor" prefetch={false} className="hover:text-foreground">For venues</Link>
         </nav>
         <p>
           © {year} {BRAND_NAME}. Listing is free. We do not take bookings or payments.

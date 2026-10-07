@@ -34,6 +34,7 @@ export default async function GuidePage({ params }: { params: Params }) {
     <GuideArticle
       guide={g}
       path={`/guides/${citySlug}/${g.slug}`}
+      crumbs={[{ name: "Guides", path: "/guides" }, { name: g.city?.name ?? "Nigeria", path: `/guides/${citySlug}` }]}
       breadcrumb={<><Link href="/guides" className="hover:underline">Guides</Link> / {g.city ? <Link href={`/guides/${citySlug}`} className="hover:underline">{g.city.name}</Link> : "Nigeria"}</>}
     />
   );

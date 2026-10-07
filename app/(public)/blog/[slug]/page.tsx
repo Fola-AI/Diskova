@@ -23,5 +23,5 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
 export default async function BlogPage({ params }: { params: Params }) {
   const g = await getPublishedGuide((await params).slug, ["blog"]);
   if (!g) notFound();
-  return <GuideArticle guide={g} path={`/blog/${g.slug}`} breadcrumb={<Link href="/blog" className="hover:underline">Blog</Link>} />;
+  return <GuideArticle guide={g} path={`/blog/${g.slug}`} crumbs={[{ name: "Blog", path: "/blog" }]} breadcrumb={<Link href="/blog" className="hover:underline">Blog</Link>} />;
 }

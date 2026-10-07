@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 
-import { SITE_URL } from "@/lib/config";
+import { FEATURES, SITE_URL } from "@/lib/config";
 import { listCities, listPublishedVendorSlugs } from "@/lib/db/directory";
 import { listPublishedEventSlugs } from "@/lib/db/events";
 import { listGuideSitemapEntries } from "@/lib/db/guides";
@@ -34,6 +34,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...guides.map((g) => ({ url: `${SITE_URL}${g.href}`, lastModified: new Date(g.updated_at), changeFrequency: "weekly" as const, priority: 0.7 })),
     { url: `${SITE_URL}/safety`, changeFrequency: "monthly", priority: 0.5 },
     ...cities.map((c) => ({ url: `${SITE_URL}/safety/${c.slug}`, changeFrequency: "monthly" as const, priority: 0.5 })),
+    ...(FEATURES.points ? cities.map((c) => ({ url: `${SITE_URL}/leaderboard/${c.slug}`, lastModified: now, changeFrequency: "daily" as const, priority: 0.4 })) : []),
     { url: `${SITE_URL}/guidelines`, changeFrequency: "yearly", priority: 0.2 },
     { url: `${SITE_URL}/privacy`, changeFrequency: "yearly", priority: 0.1 },
     { url: `${SITE_URL}/terms`, changeFrequency: "yearly", priority: 0.1 },

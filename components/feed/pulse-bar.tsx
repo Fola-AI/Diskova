@@ -1,7 +1,6 @@
 "use client";
 
 import { Loader2 } from "lucide-react";
-import { useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
@@ -10,18 +9,22 @@ import { hasAuthCookie } from "@/lib/client/auth-cookie";
 import { getPositionIfGranted } from "@/lib/client/geo";
 import { CROWD_LEVELS } from "@/lib/directory/crowd";
 import { cn } from "@/lib/utils";
+import { trackEvent } from "@/lib/analytics";
 
 /** §8.3 one-tap pulse: tap a crowd level and it's posted. */
 export function PulseBar({ vendorId, vendorSlug }: { vendorId: string; vendorSlug: string }) {
-  const params = useSearchParams();
   const ref = useRef<HTMLDivElement>(null);
   const [busy, setBusy] = useState<number | null>(null);
   const [done, setDone] = useState<number | null>(null);
-  const highlight = params.get("pulse") === "1";
+  // Read ?pulse=1 after mount (not useSearchParams): keeps the bar in the static/ISR HTML, so it
+  // doesn't pop in after hydration and shift the feed below it (CLS).
+  const [highlight, setHighlight] = useState(false);
 
   useEffect(() => {
-    if (highlight) ref.current?.scrollIntoView({ behavior: "smooth", block: "center" });
-  }, [highlight]);
+    if (new URLSearchParams(window.location.search).get("pulse") !== "1") return;
+    setHighlight(true);
+    ref.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+  }, []);
 
   async function pulse(level: number) {
     if (!hasAuthCookie()) {
@@ -38,6 +41,7 @@ export function PulseBar({ vendorId, vendorSlug }: { vendorId: string; vendorSlu
       return;
     }
     setDone(level);
+    trackEvent("pulse_submitted", { crowd: level });
     toast.success(res.points ? `Thanks! +${res.points} point${res.points === 1 ? "" : "s"}` : "Thanks for the pulse!");
     window.dispatchEvent(new Event("feed:posted"));
   }

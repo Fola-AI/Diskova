@@ -23,5 +23,5 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
 export default async function ToolkitPage({ params }: { params: Params }) {
   const g = await getPublishedGuide((await params).slug, ["toolkit"]);
   if (!g) notFound();
-  return <GuideArticle guide={g} path={`/toolkit/${g.slug}`} breadcrumb={<Link href="/toolkit" className="hover:underline">Diaspora toolkit</Link>} />;
+  return <GuideArticle guide={g} path={`/toolkit/${g.slug}`} crumbs={[{ name: "Diaspora toolkit", path: "/toolkit" }]} breadcrumb={<Link href="/toolkit" className="hover:underline">Diaspora toolkit</Link>} />;
 }

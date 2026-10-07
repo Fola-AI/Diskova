@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { ProsePage } from "@/components/content/prose-page";
 import { BRAND_NAME, UNVERIFIED_LABEL } from "@/lib/config";
 
-export const metadata: Metadata = { title: "Community Guidelines" };
+export const metadata: Metadata = { title: "Community Guidelines", alternates: { canonical: "/guidelines" } };
 
 export default function GuidelinesPage() {
   return (

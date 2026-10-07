@@ -92,7 +92,7 @@ export function LiveRail({
       {live.length ? (
         <p className="flex items-center gap-1 text-xs text-muted-foreground">
           <Radio className="h-3 w-3" aria-hidden /> From official updates, check-ins and one-tap pulses in the last 90 minutes.{" "}
-          <Link href="/vendor" className="underline underline-offset-4">Own a venue?</Link>
+          <Link href="/vendor" prefetch={false} className="underline underline-offset-4">Own a venue?</Link>
         </p>
       ) : null}
     </section>

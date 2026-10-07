@@ -9,7 +9,7 @@ import { SubmitButton } from "@/components/forms/submit-button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { EVENT_CATEGORIES } from "@/lib/validation/events";
+import { EVENT_CATEGORIES } from "@/lib/validation/constants";
 
 export interface EventEditValues {
   id: string; title: string; description_md: string | null; category: string; starts_local: string; ends_local: string;

@@ -8,6 +8,7 @@ import { submitForReviewAction } from "@/app/(vendor)/vendor/actions";
 import { FormAlert } from "@/components/forms/form-alert";
 import { Button } from "@/components/ui/button";
 import { StepFooter } from "@/components/vendor-dashboard/step-footer";
+import { trackEvent } from "@/lib/analytics";
 
 export function ReviewStep({
   vendorId,
@@ -35,6 +36,7 @@ export function ReviewStep({
     const res = await submitForReviewAction(vendorId);
     setBusy(false);
     if (!res.ok) return setError(res.error);
+    trackEvent("vendor_submitted");
     router.push("/vendor?submitted=1");
     router.refresh();
   }

@@ -2,6 +2,7 @@ import { toZonedTime } from "date-fns-tz";
 
 import { DEFAULT_TIMEZONE, publicStorageUrl } from "@/lib/config";
 import { getPublicSupabase } from "@/lib/db/public";
+import { blurDataUrl } from "@/lib/media/blur";
 
 /** One live venue on the Tonight view (§8.1), shaped for cards, map and the polling API. */
 export interface LiveVenue {
@@ -21,6 +22,8 @@ export interface LiveVenue {
   official_count: number;
   photo_url: string | null;
   photo_blurhash: string | null;
+  /** Tiny data URL from the blurhash for next/image `placeholder="blur"`. */
+  photo_placeholder?: string;
   last_official_update_at: string | null;
   last_activity_at: string | null;
   /** Heat weight: crowd_level_avg × (post_count + official_count × 3) — §8.1 */
@@ -57,6 +60,7 @@ async function fetchCityLive(cityId: string): Promise<LiveVenue[]> {
       official_count: r.official_count ?? 0,
       photo_url: r.last_photo_path ? publicStorageUrl("media", r.last_photo_path) : r.cover_image_url,
       photo_blurhash: r.last_photo_blurhash,
+      photo_placeholder: blurDataUrl(r.last_photo_blurhash),
       last_official_update_at: r.last_official_update_at,
       last_activity_at: r.last_activity_at,
       weight: avg * ((r.post_count ?? 0) + (r.official_count ?? 0) * 3),

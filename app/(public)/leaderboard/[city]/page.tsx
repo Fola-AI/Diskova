@@ -16,7 +16,7 @@ type Params = Promise<{ city: string }>;
 
 export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
   const city = await getCityBySlug((await params).city);
-  return { title: city ? `${city.name} leaderboard` : "Leaderboard" };
+  return city ? { title: `${city.name} leaderboard`, alternates: { canonical: `/leaderboard/${city.slug}` } } : { title: "Leaderboard" };
 }
 
 export default async function LeaderboardPage({ params, searchParams }: { params: Params; searchParams: Promise<{ board?: string }> }) {

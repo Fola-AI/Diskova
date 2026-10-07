@@ -15,7 +15,8 @@ import { getPositionOnce } from "@/lib/client/geo";
 import { CROWD_LEVELS } from "@/lib/directory/crowd";
 import { checkImageFile, uploadToIncoming } from "@/lib/media/client-upload";
 import { cn } from "@/lib/utils";
-import { VIBES } from "@/lib/validation/posts";
+import { VIBES } from "@/lib/validation/constants";
+import { trackEvent } from "@/lib/analytics";
 
 const MAX_PHOTOS = 4;
 
@@ -85,6 +86,7 @@ export function CheckinSheet({ vendorId, vendorSlug, vendorName }: { vendorId: s
     }
     setProgress("Publishing…");
     const done = await finalizeCheckinAction(created.postId, vendorSlug);
+    trackEvent("checkin_submitted", { photos: photos.length });
     setProgress(null);
     if (!done.ok) return setError(done.error);
     if (done.status === "published") toast.success(done.points ? `Checked in! +${done.points} points` : "Checked in!");

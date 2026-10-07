@@ -29,7 +29,8 @@ export const LIMITS = {
   liveIp: { tokens: 120, window: "1 m" },
   profileUpdateUser: { tokens: 30, window: "1 h" },
   likeUser: { tokens: 120, window: "1 h" }, // decision: likes are cheap but shouldn't be scriptable
-  exportUser: { tokens: 30, window: "1 h" }, // decision: admin CSV exports (PRD doesn't specify)
+  exportUser: { tokens: 30, window: "1 h" },
+  apiIp: { tokens: 300, window: "1 m" }, // decision: public API reads (§9 doesn't specify); generous for CGNAT // decision: admin CSV exports (PRD doesn't specify)
   eventSubmitUser: { tokens: 10, window: "1 d" }, // decision: PRD doesn't specify one
   assistantUser: { tokens: 20, window: "1 h" },
   assistantIp: { tokens: 200, window: "1 h" },

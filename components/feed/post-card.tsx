@@ -13,7 +13,7 @@ import { formatNaira } from "@/lib/directory/constants";
 import { crowdClass, crowdLabel } from "@/lib/directory/crowd";
 import type { FeedPost } from "@/lib/db/feed";
 import { cn } from "@/lib/utils";
-import { VIBES } from "@/lib/validation/posts";
+import { VIBES } from "@/lib/validation/constants";
 
 export function PostCard({ post, liked, showVendor }: { post: FeedPost & { vendor?: { slug: string; name: string } | null }; liked: boolean; showVendor?: boolean }) {
   const name = post.author?.display_name ?? post.author?.username ?? "Community member";
@@ -63,7 +63,7 @@ export function PostCard({ post, liked, showVendor }: { post: FeedPost & { vendo
         <div className={cn("mt-3 grid gap-0.5", post.media.length > 1 && "grid-cols-2")}>
           {post.media.map((m, i) => (
             <div key={m.url} className={cn("relative bg-secondary", post.media.length === 3 && i === 0 ? "col-span-2 aspect-[16/9]" : "aspect-square", post.media.length === 1 && "aspect-[4/3]")}>
-              <Image src={m.url} alt="Community photo" fill sizes="(max-width: 768px) 100vw, 720px" className="object-cover" />
+              <Image src={m.url} alt="Community photo" fill sizes="(max-width: 768px) 100vw, 720px" className="object-cover" {...(m.placeholder ? { placeholder: "blur" as const, blurDataURL: m.placeholder } : {})} />
               {i === 0 ? (
                 <span className="absolute bottom-2 left-2 rounded bg-black/65 px-1.5 py-0.5 text-[10px] font-medium text-white">Community photo · Unverified</span>
               ) : null}

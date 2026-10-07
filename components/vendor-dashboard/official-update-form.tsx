@@ -12,6 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { CROWD_LEVELS } from "@/lib/directory/crowd";
 import { checkImageFile, uploadToIncoming } from "@/lib/media/client-upload";
 import { cn } from "@/lib/utils";
+import { trackEvent } from "@/lib/analytics";
 
 /** Two taps: pick the crowd level, press Post. Photo and note are optional (§1.6, §8.9). */
 export function OfficialUpdateForm({ vendorId, vendorSlug }: { vendorId: string; vendorSlug: string }) {
@@ -31,6 +32,7 @@ export function OfficialUpdateForm({ vendorId, vendorSlug }: { vendorId: string;
       if (file) incomingPath = await uploadToIncoming(file, (mime, size) => createVendorImageUploadAction({ vendorId, mime, size }));
       const res = await postOfficialUpdateAction({ vendorId, crowdLevel: level, note: note || null, incomingPath });
       if (!res.ok) return setOutcome({ error: res.error });
+      trackEvent("official_update_posted", { photo: Boolean(incomingPath) });
       if (res.data.status === "published") {
         setOutcome({ message: "Posted! Your update is live on your page." });
       } else if (res.data.holdReason !== "none") {

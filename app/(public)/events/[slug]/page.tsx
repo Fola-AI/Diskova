@@ -6,6 +6,7 @@ import { notFound } from "next/navigation";
 
 import { ReportButton } from "@/components/feed/report-button";
 import { MapToggle } from "@/components/map/map-toggle";
+import { TrackClick } from "@/components/analytics/track";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ShareButtons } from "@/components/vendor/share-buttons";
@@ -79,9 +80,11 @@ export default async function EventPage({ params }: { params: Params }) {
               <a href={e.ticket_url} target="_blank" rel="nofollow noopener noreferrer"><ExternalLink aria-hidden />Tickets (external site)</a>
             </Button>
           ) : null}
-          <Button asChild variant="secondary">
-            <a href={`/events/${e.slug}/ics`} download><CalendarPlus aria-hidden />Add to calendar</a>
-          </Button>
+          <TrackClick event="calendar_added">
+            <Button asChild variant="secondary">
+              <a href={`/events/${e.slug}/ics`} download><CalendarPlus aria-hidden />Add to calendar</a>
+            </Button>
+          </TrackClick>
         </div>
         <ShareButtons url={url} title={e.title} text={`${e.title} on ${BRAND_NAME}:`} />
         <p className="text-xs text-muted-foreground">{BRAND_NAME} doesn&apos;t sell tickets. Ticket links go to the organiser&apos;s own site.</p>

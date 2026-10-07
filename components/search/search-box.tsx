@@ -8,6 +8,7 @@ import { typeahead } from "@/app/(public)/search/actions";
 import { Input } from "@/components/ui/input";
 import type { SearchHit } from "@/lib/db/directory";
 import { SEARCH_KIND_LABEL, searchHitHref } from "@/lib/directory/search-href";
+import { trackEvent } from "@/lib/analytics";
 
 export function SearchBox({ defaultValue = "", autoFocus = false }: { defaultValue?: string; autoFocus?: boolean }) {
   const [q, setQ] = useState(defaultValue);
@@ -34,7 +35,7 @@ export function SearchBox({ defaultValue = "", autoFocus = false }: { defaultVal
   }, [q]);
 
   return (
-    <form action="/search" method="get" role="search" className="relative" onSubmit={() => setOpen(false)}>
+    <form action="/search" method="get" role="search" className="relative" onSubmit={() => { setOpen(false); trackEvent("search_performed"); }}>
       <label htmlFor="search-q" className="sr-only">Search places, events and guides</label>
       <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden />
       <Input

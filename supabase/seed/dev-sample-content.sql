@@ -80,4 +80,13 @@ select v.id, p.label, p.amount, p.note
   join price p on p.category = c.slug
  where v.is_seed;
 
+-- A published sample city guide (DEV only) so guide pages can be QA'd and Lighthouse-tested.
+insert into public.guides (type, slug, title, excerpt, body_md, city_id, status, published_at, tags, seo_description)
+select 'city_guide', 'sample-lagos-first-weekend', 'Sample guide: a first weekend in Lagos',
+       'A fictional sample guide used on DEV for layout and performance checks.',
+       E'This is **sample content** for development. Venues below are fictional seed listings.\n\n## Friday: ease in\n\nStart on the Island with sundowners, then move somewhere with a DJ.\n\n<VendorCard slug="copper-lantern-rooftop-lagos" />\n\n<Callout type="tip">Traffic peaks between 5pm and 9pm. Leave early or stay put.</Callout>\n\n## Saturday: eat, then dance\n\n- Late lunch somewhere relaxed\n- A nap (seriously)\n- Out after 11pm\n\n<VendorCard slug="afrobeat-junction-lagos" />\n\n## Sunday: slow down\n\nCoffee, a walk, and an early night.\n\n<VendorCard slug="brass-hour-caf-lagos" />\n',
+       (select id from public.cities where slug = 'lagos'), 'published', now(), array['weekend', 'nightlife'],
+       'Fictional DEV sample guide.'
+ where not exists (select 1 from public.guides where slug = 'sample-lagos-first-weekend');
+
 commit;

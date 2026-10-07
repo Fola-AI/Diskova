@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Field, selectClass } from "@/components/vendor-dashboard/field";
-import { EVENT_CATEGORIES } from "@/lib/validation/events";
+import { EVENT_CATEGORIES } from "@/lib/validation/constants";
 
 interface Option { id: string; name: string }
 

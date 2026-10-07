@@ -6,6 +6,7 @@ import { useState } from "react";
 
 import type { MapPoint } from "@/components/map/vendor-map";
 import { Button } from "@/components/ui/button";
+import { trackEvent } from "@/lib/analytics";
 
 // Mapbox GL (≈ 1 MB) is fetched only when the visitor asks for the map (§2, §8.1).
 const VendorMap = dynamic(() => import("@/components/map/vendor-map"), {
@@ -55,7 +56,7 @@ export function MapToggle({
           <div className="h-full w-full bg-secondary" />
         )}
         <div className="absolute inset-0 grid place-items-center bg-gradient-to-t from-background/40 to-transparent">
-          <Button type="button" onClick={() => setOpen(true)} data-testid="map-toggle">
+          <Button type="button" onClick={() => { setOpen(true); trackEvent("map_opened", { heat }); }} data-testid="map-toggle">
             <MapIcon aria-hidden /> {label}
           </Button>
         </div>

@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { AtSign, BadgeCheck, MapPin, Shirt, Ticket } from "lucide-react";
 import Image from "next/image";
-import { Suspense } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -16,10 +15,12 @@ import { ActionRow } from "@/components/vendor/action-row";
 import { HoursTable } from "@/components/vendor/hours-table";
 import { Section } from "@/components/vendor/section";
 import { ShareButtons } from "@/components/vendor/share-buttons";
+import { JsonLd } from "@/components/seo/json-ld";
+import { breadcrumbJsonLd, vendorJsonLd } from "@/lib/content/jsonld";
 import { BRAND_NAME, DEFAULT_TIMEZONE, FEATURES as FEATURE_FLAGS, MAPBOX_TOKEN, SITE_URL } from "@/lib/config";
 import { getVendorBySlug, listRecentOfficialUpdates, listUpcomingEventsForVendor, listVendorPrices } from "@/lib/db/directory";
 import { FEATURES, formatNaira, priceBandSymbol, PRICE_BANDS } from "@/lib/directory/constants";
-import { instagramUrl, staticMapUrl } from "@/lib/directory/links";
+import { instagramUrl } from "@/lib/directory/links";
 import { listCommunityPhotos, listVendorFeed } from "@/lib/db/feed";
 import { getVendorForecast, getVendorLive } from "@/lib/db/live";
 import { CrowdBadge } from "@/components/tonight/crowd-badge";
@@ -78,6 +79,15 @@ export default async function VendorPage({ params }: { params: Params }) {
 
   return (
     <article className="pb-6">
+      <JsonLd
+        data={[
+          vendorJsonLd({ ...vendor, price_symbol: price, instagram_url: insta, opening_hours: hours, features }),
+          breadcrumbJsonLd([
+            ...(vendor.city ? [{ name: vendor.city.name, path: `/c/${vendor.city.slug}` }] : []),
+            { name: vendor.name, path: `/v/${vendor.slug}` },
+          ]),
+        ]}
+      />
       {/* 1. Cover — vendor photos (community photos join in Stage L6) */}
       <div className="relative aspect-[16/9] max-h-[420px] w-full overflow-hidden sm:aspect-[21/9]" style={{ background: categoryGradient(vendor.category?.slug) }}>
         {vendor.cover_image_url ? (
@@ -91,7 +101,7 @@ export default async function VendorPage({ params }: { params: Params }) {
         <ul className="flex gap-1 overflow-x-auto px-4 pt-2 [scrollbar-width:none]" aria-label="Community photos">
           {communityPhotos.map((m) => (
             <li key={m.url} className="relative h-24 w-32 shrink-0 overflow-hidden rounded-lg bg-secondary">
-              <Image src={m.url} alt="Community photo" fill sizes="128px" className="object-cover" />
+              <Image src={m.url} alt="Community photo" fill sizes="128px" className="object-cover" {...(m.placeholder ? { placeholder: "blur" as const, blurDataURL: m.placeholder } : {})} />
               <span className="absolute bottom-1 left-1 rounded bg-black/65 px-1 text-[9px] font-medium text-white">Community photo · Unverified</span>
             </li>
           ))}
@@ -156,9 +166,7 @@ export default async function VendorPage({ params }: { params: Params }) {
 
         {/* Pulse (one tap) + check-in */}
         <div className="space-y-3">
-          <Suspense fallback={null}>
-            <PulseBar vendorId={vendor.id} vendorSlug={vendor.slug} />
-          </Suspense>
+          <PulseBar vendorId={vendor.id} vendorSlug={vendor.slug} />
           <LazyCheckinSheet vendorId={vendor.id} vendorSlug={vendor.slug} vendorName={vendor.name} />
         </div>
 
@@ -182,7 +190,7 @@ export default async function VendorPage({ params }: { params: Params }) {
           ) : (
             <p className="rounded-xl border border-dashed p-4 text-sm text-muted-foreground">
               No prices listed yet.{" "}
-              <Link href="/vendor" className="text-foreground underline underline-offset-4">Own this venue? Add your prices.</Link>
+              <Link href="/vendor" prefetch={false} className="text-foreground underline underline-offset-4">Own this venue? Add your prices.</Link>
             </p>
           )}
           {vendor.dress_code || vendor.age_policy ? (
@@ -252,7 +260,7 @@ export default async function VendorPage({ params }: { params: Params }) {
               token={MAPBOX_TOKEN}
               center={point}
               zoom={15}
-              staticImageUrl={staticMapUrl(MAPBOX_TOKEN, point, { zoom: 15, width: 640, height: 280, pin: true })}
+              staticImageUrl={MAPBOX_TOKEN ? `/api/map/vendor/${vendor.slug}` : null}
               points={[{ id: vendor.id, slug: vendor.slug, name: vendor.name, lat: point.lat, lng: point.lng }]}
             />
           ) : null}

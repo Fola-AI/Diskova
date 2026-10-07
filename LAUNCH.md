@@ -46,7 +46,9 @@
 13. **Never run `npm run db:samples` (or `supabase/seed/dev-sample-content.sql`) on PROD** — it publishes the
     fictional sample vendors. On PROD the sample vendors don't exist at all (seed is DEV-only).
 14. **Mapbox**: the PROD token must be URL-restricted to `https://diskova.io/*` (and preview domains if wanted).
-    The app uses GL JS (map toggle) *and* the Static Images API (map previews) — both count toward usage.
+    The app uses GL JS (map toggle) *and* the Static Images API. Map previews are fetched **server-side** by
+    `/api/map/city/*` and `/api/map/vendor/*` with `Referer: https://diskova.io/`, so keep the production URL in
+    the allow-list. They're cached for 30 days, so expect about one static call per city/venue per month. Set a usage alert.
 
 ## Vendors (from Stage L5)
 
@@ -78,4 +80,13 @@
     blocked third-party resource.
 24. Answer open question 4 (Vault secrets for Storage purges) before launch. Without it, deleted users' photos
     and decided verification documents stay in Storage (rows are anonymised, files aren't deleted).
+
+## Performance & PWA (from Stage L14)
+
+25. After the first production deploy, run Lighthouse (mobile) on `/`, `/c/lagos`, a venue page and a guide.
+    Targets are ≥ 90 perf / ≥ 95 a11y / 100 SEO; DEV measured 91–93 / 100 / 100.
+26. Submit `https://diskova.io/sitemap.xml` in Google Search Console. Robots blocks indexing on Vercel
+    Preview automatically (`VERCEL_ENV !== "production"`).
+27. The service worker (`/sw.js`) caches up to 20 guides per device. To force every client to drop its caches
+    after a breaking change, bump `VERSION` in `public/sw.js`.
 

@@ -1,16 +1,9 @@
 import slugify from "slugify";
 import { z } from "zod";
 
-export const GUIDE_TYPES = [
-  { value: "city_guide", label: "City guide" },
-  { value: "area_guide", label: "Area guide" },
-  { value: "daytime", label: "Daytime" },
-  { value: "toolkit", label: "Diaspora toolkit" },
-  { value: "blog", label: "Blog" },
-  { value: "safety_page", label: "Safety page" },
-] as const;
-export type GuideTypeValue = (typeof GUIDE_TYPES)[number]["value"];
-export const CITY_SCOPED: GuideTypeValue[] = ["city_guide", "area_guide", "daytime", "safety_page"];
+import { CITY_SCOPED, GUIDE_TYPES, type GuideTypeValue } from "@/lib/validation/constants";
+
+export { CITY_SCOPED, GUIDE_TYPES, type GuideTypeValue } from "@/lib/validation/constants";
 
 const opt = (max: number) => z.string().trim().max(max).optional().transform((v) => v || null);
 

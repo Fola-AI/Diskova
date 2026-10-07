@@ -1,7 +1,7 @@
 # Build Progress
 
 ## Current stage
-Stage L14 — SEO, performance, PWA, analytics
+Stage L15 — Final QA, content loader, LAUNCH.md
 
 ## Launch stages (required before go-live)
 - [x] Stage L1: Project scaffold, tooling, `npm run verify`
@@ -17,7 +17,7 @@ Stage L14 — SEO, performance, PWA, analytics
 - [x] Stage L11: Safety information section and private issue reports
 - [x] Stage L12: Super-admin back office
 - [x] Stage L13: Security hardening and RLS matrix tests
-- [ ] Stage L14: SEO, performance, PWA, analytics
+- [x] Stage L14: SEO, performance, PWA, analytics
 - [ ] Stage L15: Final QA, content loader, LAUNCH.md (production promotion steps for Fola)
 
 ## Post-launch stages (continue automatically after L15)
@@ -589,8 +589,56 @@ Acceptance evidence:
 - **Privacy / terms:** rewritten (see notes); smoke checks the cookie, processor, retention and rights sections.
 - **Cookie consent (analytics only):** smoke: the banner shows on first visit, "Essential only" is remembered (cookie), "Cookie settings" in the footer reopens it, and "Allow analytics" stores consent. Analytics and Speed Insights don't mount without consent.
 - **Sentry scrub:** existing tests plus new wiring checks: `beforeSend` / `beforeSendSpan` / `beforeBreadcrumb` = scrubber, `sendDefaultPii` false, 10 % tracing, logs off, no Replay/profiling anywhere. A realistic event leaks no email, IPv4/IPv6 or key.
-- **RLS matrix:** `tests/rls/l13-rls-matrix.test.ts` + `tests/sql/rls-matrix.sql`: 9 roles (anon, user, vendor owner, moderator/admin/super_admin with and without MFA) × all 26 public relations × select/update/delete, impersonated exactly like PostgREST (role + JWT incl. `aal`) and rolled back. Asserts: RLS + policies on every table, views run as invoker, an exact set of API write grants, anon writes nothing, a user can update only their own profile, **staff without MFA are identical to plain users**, owners touch only their own vendor/prices, and staff with MFA see more but still write nothing directly. Catalog checks: no API access to `private`, admin RPCs or activity partitions.
+- **RLS matrix:** `tests/rls/matrix.test.ts` + `tests/sql/rls-matrix.sql`: 9 roles (anon, user, vendor owner, moderator/admin/super_admin with and without MFA) × all 26 public relations × select/update/delete, impersonated exactly like PostgREST (role + JWT incl. `aal`) and rolled back. Asserts: RLS + policies on every table, views run as invoker, an exact set of API write grants, anon writes nothing, a user can update only their own profile, **staff without MFA are identical to plain users**, owners touch only their own vendor/prices, and staff with MFA see more but still write nothing directly. Catalog checks: no API access to `private`, admin RPCs or activity partitions.
 - **Weekly backup:** `/api/cron/backup` (Sunday 03:00 UTC) → gzipped NDJSON of every public + private table into the private `backups` bucket, 8-week pruning, audited. Tested end-to-end, including the private bucket and the RPC lock-down.
+
+### Stage L14 — 2026-10-07
+```
+  ✓  28 [smoke] › tests/smoke/moderation.spec.ts:49:5 › community guidelines are linked from every page footer (256ms)
+  ✓  29 [smoke] › tests/smoke/pwa.spec.ts:5:5 › PWA: a guide read online opens offline; other pages fall back to /offline listing saved guides (402ms)
+  ✓  30 [smoke] › tests/smoke/pwa.spec.ts:29:5 › PWA: the service worker never caches signed-in or admin pages (8ms)
+  ✓  31 [smoke] › tests/smoke/safety.spec.ts:10:5 › emergency numbers render per city with verification status (335ms)
+  ✓  26 [smoke] › tests/smoke/events.spec.ts:99:5 › submit an event → admin approves → it is public (9.7s)
+  ✓  32 [smoke] › tests/smoke/safety.spec.ts:24:5 › anonymous private report → exact confirmation → visible only in admin triage (3.9s)
+  ✓  34 [smoke] › tests/smoke/safety.spec.ts:48:5 › honeypot submissions are not stored (444ms)
+  ✓  35 [smoke] › tests/smoke/seo.spec.ts:11:5 › robots.txt blocks private areas and points at the sitemap (10ms)
+  ✓  36 [smoke] › tests/smoke/seo.spec.ts:17:5 › sitemap lists cities, venues, guides and safety pages (43ms)
+  ✓  37 [smoke] › tests/smoke/seo.spec.ts:22:5 › home: canonical + WebSite search action + Organization (130ms)
+  ✓  38 [smoke] › tests/smoke/seo.spec.ts:29:5 › venue page: canonical, specific LocalBusiness type with address + geo, breadcrumbs, no ratings (457ms)
+  ✓  39 [smoke] › tests/smoke/settings.spec.ts:26:5 › edit profile: username, home city, diaspora, location consent (1.6s)
+  ✓  33 [smoke] › tests/smoke/security.spec.ts:5:5 › CSP is enforced and key pages (incl. the map) raise no violations (7.9s)
+  ✓  41 [smoke] › tests/smoke/security.spec.ts:35:7 › cookie consent (analytics only) › first visit asks; 'Essential only' is remembered; footer reopens the choice (300ms)
+  ✓  42 [smoke] › tests/smoke/security.spec.ts:52:7 › cookie consent (analytics only) › privacy policy covers cookies, processors, retention and rights (154ms)
+  ✓  23 [smoke] › tests/smoke/feed.spec.ts:39:5 › one-tap pulse appears for a signed-in viewer within 2 s (Realtime) and an anonymous viewer within 30 s (18.6s)
+  ✓  40 [smoke] › tests/smoke/settings.spec.ts:46:5 › avatar upload goes through the one-image pipeline (EXIF stripped, WebP) (4.2s)
+  ✓  43 [smoke] › tests/smoke/tonight.spec.ts:41:5 › empty Tonight view invites the first pulse and vendor updates (526ms)
+  ✓  46 [smoke] › tests/smoke/tonight.spec.ts:49:5 › a pulse becomes a live venue: rail, hero count, polling API and crowd badge (5.9s)
+  ✓  45 [smoke] › tests/smoke/settings.spec.ts:75:5 › delete account anonymises the profile and blocks sign-in (6.2s)
+  ✓  47 [smoke] › tests/smoke/tonight.spec.ts:77:5 › heat map renders on toggle (2.0s)
+  ✓  49 [smoke] › tests/smoke/tonight.spec.ts:84:5 › forecast line shows once there are 4+ weeks of data (156ms)
+  ✓  44 [smoke] › tests/smoke/feed.spec.ts:73:5 › 4-photo check-in: every request finishes in under 5 s (22.2s)
+  ✓  48 [smoke] › tests/smoke/vendor.spec.ts:27:5 › fresh account → submitted vendor in under 10 minutes (15.7s)
+  ✓  50 [smoke] › tests/smoke/feed.spec.ts:136:5 › my posts, public profile and leaderboard pages render (4.3s)
+  ✓  51 [smoke] › tests/smoke/vendor.spec.ts:90:5 › admin (with MFA) approves the listing and it goes live (6.3s)
+  ✓  52 [smoke] › tests/smoke/vendor.spec.ts:112:5 › official update in two taps appears on the vendor page labelled Official (3.4s)
+  ✓  53 [smoke] › tests/smoke/vendor.spec.ts:135:5 › claim flow: claimant uploads ID, admin approves, claimant becomes owner (8.3s)
+
+  53 passed (1.3m)
+```
+Vitest in the same run: `Test Files  33 passed (33) Tests  217 passed (217)`
+
+Acceptance evidence — **Lighthouse mobile** (`npx lighthouse@12`, default mobile emulation with simulated slow 4G + 4× CPU, local production build, first visit so the cookie banner shows; 3 runs each):
+
+| Page | Performance | Accessibility | Best practices | SEO | LCP / TBT / CLS |
+|---|---|---|---|---|---|
+| Home `/` | 92 · 93 · 93 | 100 | 96* | 100 | 3.2–3.3 s / 10 ms / 0 |
+| City `/c/lagos` | 91 · 91 · 91 | 100 | 96* | 100 | 3.5 s / 10–20 ms / 0.001 |
+| Vendor `/v/…` (map closed) | 92 · 92 · 92 | 100 | 100 | 100 | 3.2 s / 10 ms / 0.005 |
+| Guide `/guides/lagos/…` | 93 · 93 · 93 | 100 | 100 | 100 | 3.2 s / 10 ms / 0 |
+
+\*Local-only: a prefetch of `/vendor` was redirected to `https://localhost` by `upgrade-insecure-requests`. Those links no longer prefetch (they lead to a login redirect anyway). In the real browser with the same throttling, LCP = FCP ≈ 0.35–0.42 s on all four pages; Lighthouse's simulated LCP counts every script requested before first paint.
+
+Other evidence: `seo.spec.ts` (robots, sitemap, canonical, WebSite/Organization and LocalBusiness/BreadcrumbList JSON-LD, no ratings); `pwa.spec.ts` (a guide read online opens offline; uncached pages redirect to `/offline`, which lists saved guides; SW headers and exclusions); `tests/rls/l14-api.test.ts` (8 API tests: envelope, CORS, filters, 400/401/403/404, writes via Bearer token through RLS); `tests/unit/blur-jsonld.test.ts`, `tests/unit/analytics.test.ts`.
 
 ## Notes / decisions
 (append here as you go)
@@ -767,6 +815,25 @@ Acceptance evidence:
 - **Consent decision:** a first-party `consent` cookie (`analytics` | `essential`, 180 days, Lax, Secure on https). Essential = Supabase session cookies. Analytics + Speed Insights mount only with consent and only on Vercel; analytics drops query strings and never reports `/admin`. The banner is hidden in admin. Smoke tests start with "essential" pre-set so the banner doesn't cover controls.
 - **Privacy policy / terms:** rewritten to match what the code does: data collected, legal bases, cookies, processors (Supabase London, Vercel, Sentry EU, Upstash, OpenAI moderation, Mapbox, Resend), retention (24 h uploads, 30-day docs, 70-day snapshots, 13-month logs, 8-week backups), NDPA/UK rights with NDPC/ICO complaint routes, 18+. Contact address comes from `NEXT_PUBLIC_CONTACT_EMAIL` (in `lib/config.ts`, default hello@ the production domain). These are templates and need a lawyer's review (open question 8).
 - SQL test helper `tests/helpers/psql.ts` runs `tests/sql/*.sql` with credentials passed only through `PG*` env vars (never argv), and refuses any database that isn't the DEV project.
+
+**L14 (2026-10-07)**
+- **What moved the Lighthouse numbers** (from 77–88 to 91–93):
+  1. The new cookie banner became the LCP element (it rendered after hydration, ~3.3 s render delay). It's now server-rendered and hidden before first paint by a tiny inline script (`CONSENT_BOOT_SCRIPT`) plus CSS when a choice exists. No flash, no late paint.
+  2. **Lazy Sentry in the browser:** the SDK (~350 KB raw, mostly tracing) was in the shared first-load chunk of every page. It now loads after `load` + idle (`lib/sentry/client-lazy.ts`) with the same options. Errors before then are buffered and sent once it's ready, and `global-error` uses the same path. Shared first-load JS went from 171 kB to 105 kB.
+  3. **Map previews as same-origin WebP:** `/api/map/city/[slug]` (prebuilt per city) and `/api/map/vendor/[slug]` (on first request) fetch the Mapbox static image server-side, re-encode with sharp (55–70 KB PNG → 9–17 KB WebP) and cache for 30 days (ISR + CDN headers). The city preview is preloaded at high priority from `<head>`. Side benefit: about one Mapbox static call per city/venue per month instead of per page view. The server request sends our site as `Referer`, so the URL-restricted PROD token keeps working (LAUNCH step 14).
+  4. **zod no longer ships to public pages:** form option lists (`VIBES`, `REPORT_REASONS`, `EVENT_CATEGORIES`, `GUIDE_TYPES`) moved to the zod-free `lib/validation/constants.ts` (re-exported from the old paths).
+  5. **CLS:** the pulse bar used `useSearchParams`, which forced client-only rendering on the ISR venue page (empty Suspense fallback → bar popped in → feed shifted). It now reads `?pulse=1` after mount, so it's in the HTML. CLS went from 0.035 to 0.005.
+  6. The display font (Fraunces) is no longer preloaded, so it doesn't compete with the LCP resource; headings swap in.
+  - Tried and rejected: `experimental.inlineCss`. It puts the stylesheet in the HTML twice (style tag + RSC payload, +74 KB raw on every page) and scored worse.
+- **JSON-LD audit:** venue pages now have a specific schema.org type per category (NightClub, BarOrPub, Restaurant, Beach, MovieTheater…) with PostalAddress, geo, opening hours, price range, amenity features and sameAs, plus BreadcrumbList. Guides / toolkit / blog add BreadcrumbList alongside the existing Article. Home has WebSite (SearchAction → `/search?q=`) and Organization. Events keep their Event JSON-LD. No ratings or reviews anywhere (§16).
+- **Canonical / robots / sitemap:** canonical added on home, leaderboard and guidelines (the others had it). Robots also disallows `/preview/`, `/reset`, `/verify`. The sitemap gains leaderboards (when points are on).
+- **Blurhash placeholders:** `lib/media/blur.ts` decodes the stored blurhash to an 8×8 BMP data URL (~330 chars, no new dependency) for `next/image placeholder="blur"` on post photos, community photos and live cards.
+- **ISR review (no changes needed):** live surfaces revalidate at 60 s (home, venue, profiles) and use Realtime/polling on the client. Content revalidates at 300 s and on publish/approve (guides, events, safety, sitemap). OG images 1 h, sitemap 1 h, map previews 30 days. City and events lists are dynamic because their filters live in the query string (~0.2–0.4 s server time).
+- **PWA:** hand-written `public/sw.js` (no dependency). Guide/toolkit/blog/safety pages are network-first and the last **20** are kept (LRU). Hashed `/_next/static` assets are cache-first so cached pages render. Guide images are cached (max 60). Offline navigations to anything else redirect to `/offline` (a redirect, so the URL matches what the router hydrates), which lists the saved guides. The install step precaches `/offline` *and its own JS/CSS*. The SW never handles admin, API, auth, me, vendor or preview routes, non-GET requests or RSC requests. `/sw.js` is served `no-cache`.
+- **Public API `/api/v1` (§9):** reads `cities`, `cities/{slug}/live`, `vendors` (city filters or `q` search), `vendors/{slug}`, `vendors/{slug}/posts`, `events`, `guides`, `leaderboard/{city}`; writes `pulse`, `posts` (text check-in, moderated like the app), `reports`, authenticated with the user's Supabase access token (`Authorization: Bearer`, verified with Supabase Auth, email must be verified, suspended/banned → 403). Envelope `{ data, error, meta }`. Reads are CORS-open and CDN-cached, 300/min/IP (new `apiIp` limit; PRD doesn't specify). Writes use the existing per-user limits. Service errors map to 422/429 by `instanceof` (class names are minified). Documented in `docs/api.md` with curl examples. Photo check-ins stay web-only (the one-image-per-request pipeline).
+- **Custom analytics events** (`lib/analytics.ts`, consent-gated, no PII, coarse props only): pulse_submitted, checkin_submitted, official_update_posted, share_clicked (whatsapp/native/copy), map_opened, calendar_added, vendor_submitted, signup_completed, report_submitted, search_performed.
+- A DEV-only published sample guide (`sample-lagos-first-weekend`) was added to `dev-sample-content.sql` for QA and Lighthouse. It never goes to PROD (LAUNCH step 13).
+- The RLS matrix test was renamed to `tests/rls/matrix.test.ts` to match the PRD's L13 acceptance path.
 
 ## Open questions for Fola
 (write here when you need me)

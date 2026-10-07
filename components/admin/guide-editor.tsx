@@ -14,7 +14,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Field, selectClass } from "@/components/vendor-dashboard/field";
 import { markdownToHtml, parseBlocks } from "@/lib/content/markdown";
 import { checkImageFile, uploadToIncoming } from "@/lib/media/client-upload";
-import { GUIDE_TYPES } from "@/lib/validation/guides";
+import { GUIDE_TYPES } from "@/lib/validation/constants";
 
 export interface GuideFormValues {
   title: string;

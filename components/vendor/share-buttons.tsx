@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { whatsappShareUrl } from "@/lib/directory/links";
+import { trackEvent } from "@/lib/analytics";
 
 /** WhatsApp share, native share sheet (when supported) and copy link (§8.2). */
 export function ShareButtons({ url, title, text }: { url: string; title: string; text: string }) {
@@ -18,6 +19,7 @@ export function ShareButtons({ url, title, text }: { url: string; title: string;
   async function nativeShare() {
     try {
       await navigator.share({ title, text, url });
+      trackEvent("share_clicked", { channel: "native" });
     } catch {
       // user cancelled
     }
@@ -26,6 +28,7 @@ export function ShareButtons({ url, title, text }: { url: string; title: string;
   async function copy() {
     try {
       await navigator.clipboard.writeText(url);
+      trackEvent("share_clicked", { channel: "copy" });
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
@@ -36,7 +39,7 @@ export function ShareButtons({ url, title, text }: { url: string; title: string;
   return (
     <div className="flex flex-wrap gap-2">
       <Button asChild variant="secondary" size="sm">
-        <a href={whatsappShareUrl(`${text} ${url}`)} target="_blank" rel="nofollow noopener noreferrer">
+        <a href={whatsappShareUrl(`${text} ${url}`)} target="_blank" rel="nofollow noopener noreferrer" onClick={() => trackEvent("share_clicked", { channel: "whatsapp" })}>
           <MessageCircle aria-hidden /> Share on WhatsApp
         </a>
       </Button>

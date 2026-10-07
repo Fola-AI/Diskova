@@ -4,21 +4,9 @@ import { z } from "zod";
 import { DEFAULT_TIMEZONE } from "@/lib/config";
 import { safeExternalUrl } from "@/lib/directory/links";
 
-export const EVENT_CATEGORIES = [
-  { value: "concert", label: "Concert" },
-  { value: "festival", label: "Festival" },
-  { value: "party", label: "Party" },
-  { value: "beach_party", label: "Beach party" },
-  { value: "boat_cruise", label: "Boat cruise" },
-  { value: "comedy", label: "Comedy" },
-  { value: "art", label: "Art" },
-  { value: "food", label: "Food" },
-  { value: "sport", label: "Sport" },
-  { value: "conference", label: "Conference" },
-  { value: "community", label: "Community" },
-  { value: "other", label: "Other" },
-] as const;
-export type EventCategory = (typeof EVENT_CATEGORIES)[number]["value"];
+import { EVENT_CATEGORIES, type EventCategory } from "@/lib/validation/constants";
+
+export { EVENT_CATEGORIES, type EventCategory } from "@/lib/validation/constants";
 
 /** "2026-12-20T21:00" (venue-local, from <input type="datetime-local">) → UTC ISO string. */
 export function localToUtcIso(local: string, timeZone = DEFAULT_TIMEZONE): string {

@@ -7,15 +7,17 @@ import { MarkdownContent } from "@/components/content/markdown-content";
 import { Badge } from "@/components/ui/badge";
 import { ShareButtons } from "@/components/vendor/share-buttons";
 import { BRAND_NAME, SITE_URL } from "@/lib/config";
-import { guideJsonLd, jsonLdScript } from "@/lib/content/jsonld";
+import { breadcrumbJsonLd, guideJsonLd, jsonLdScript } from "@/lib/content/jsonld";
 import type { GuideRow } from "@/lib/db/guides";
 
-export function GuideArticle({ guide, path, breadcrumb, banner }: { guide: GuideRow; path: string; breadcrumb: ReactNode; banner?: ReactNode }) {
+/** `crumbs` (parents of this article) also become BreadcrumbList JSON-LD. */
+export function GuideArticle({ guide, path, breadcrumb, banner, crumbs = [] }: { guide: GuideRow; path: string; breadcrumb: ReactNode; banner?: ReactNode; crumbs?: Array<{ name: string; path: string }> }) {
   const url = `${SITE_URL}${path}`;
   const updated = new Intl.DateTimeFormat("en-NG", { day: "numeric", month: "long", year: "numeric", timeZone: "Africa/Lagos" }).format(new Date(guide.updated_at));
   return (
     <article className="pb-10">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdScript(guideJsonLd(guide, url)) }} />
+      {crumbs.length ? <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdScript(breadcrumbJsonLd([...crumbs, { name: guide.title, path }])) }} /> : null}
       {banner}
       {guide.cover_image_url ? (
         <div className="relative aspect-[16/9] max-h-[420px] w-full overflow-hidden">

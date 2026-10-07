@@ -1,5 +1,9 @@
 import { z } from "zod";
 
+import { REPORT_REASON_VALUES } from "@/lib/validation/constants";
+
+export { REPORT_REASONS, VIBES } from "@/lib/validation/constants";
+
 const optionalNumber = (min: number, max: number) =>
   z.preprocess((v) => (v === "" || v === null || v === undefined ? null : Number(v)), z.number().int().min(min).max(max).nullable());
 
@@ -37,25 +41,8 @@ export const checkinSchema = z.object({
 export const reportSchema = z.object({
   entityType: z.enum(["post", "vendor", "event", "profile"]),
   entityId: z.uuid(),
-  reason: z.enum(["fake", "spam", "abuse", "dangerous", "wrong_venue", "rival_sabotage", "copyright", "other"]),
+  reason: z.enum(REPORT_REASON_VALUES),
   details: z.string().trim().max(1000).optional().transform((v) => v || null),
 });
 
-export const VIBES = [
-  { level: 1, label: "Flat" },
-  { level: 2, label: "Easy" },
-  { level: 3, label: "Good" },
-  { level: 4, label: "Lit" },
-  { level: 5, label: "Electric" },
-] as const;
 
-export const REPORT_REASONS: Array<{ value: z.infer<typeof reportSchema>["reason"]; label: string }> = [
-  { value: "fake", label: "Fake or misleading" },
-  { value: "wrong_venue", label: "Not from this venue" },
-  { value: "spam", label: "Spam or advertising" },
-  { value: "abuse", label: "Abusive or hateful" },
-  { value: "dangerous", label: "Dangerous or illegal" },
-  { value: "rival_sabotage", label: "Rival trying to harm the venue" },
-  { value: "copyright", label: "My photo used without permission" },
-  { value: "other", label: "Something else" },
-];
