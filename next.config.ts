@@ -13,6 +13,8 @@ const supabaseHost = (() => {
 })();
 
 const nextConfig: NextConfig = {
+  // Optional separate build folder, so a second dev/verify server can run beside `npm run dev`.
+  distDir: process.env.NEXT_DIST_DIR || ".next",
   poweredByHeader: false,
   reactStrictMode: true,
   // Feature flags are not secrets; inline them so client and server read the same values.

@@ -23,14 +23,15 @@ export function DecisionForm({
   const [state, formAction] = useActionState(action, initialFormState);
   if (state.ok) return <FormAlert state={state} />;
   return (
-    <form action={formAction} className="space-y-2">
+    <form action={formAction} className="space-y-3">
       <input type="hidden" name={idName} value={idValue} />
       <FormAlert state={state} />
       <Input name="reason" placeholder="Reason (required to reject; sent to the vendor)" aria-label="Reason" />
-      <div className="flex gap-2">
-        <SubmitButton name="decision" value="approve" size="sm">{approveLabel}</SubmitButton>
-        <SubmitButton name="decision" value="reject" size="sm" variant="destructive">Reject</SubmitButton>
+      <div className="grid grid-cols-2 gap-2 sm:flex">
+        <SubmitButton name="decision" value="approve">{approveLabel}</SubmitButton>
+        <SubmitButton name="decision" value="reject" variant="destructive">Reject</SubmitButton>
       </div>
+      <p className="text-footnote text-muted-foreground">Rejecting sends your reason to the vendor.</p>
     </form>
   );
 }

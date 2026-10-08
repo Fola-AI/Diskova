@@ -2,10 +2,16 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { ArrowRight, MessagesSquare, SearchX } from "lucide-react";
+
 import { FilterBar } from "@/components/directory/filter-bar";
 import { VendorCard } from "@/components/directory/vendor-card";
 import type { MapPoint } from "@/components/map/vendor-map";
+import { SearchBox } from "@/components/search/search-box";
 import { CitySwitcher } from "@/components/tonight/city-switcher";
+import { SectionNav } from "@/components/tonight/section-nav";
+import { EmptyState } from "@/components/ui/empty-state";
+import { Button } from "@/components/ui/button";
 import { TonightView } from "@/components/tonight/tonight-view";
 import { BRAND_NAME, FEATURES } from "@/lib/config";
 import { getCityBySlug, listCities } from "@/lib/db/directory";
@@ -40,36 +46,57 @@ export default async function CityPage({ params, searchParams }: { params: Param
       return { id: v.id, slug: v.slug, name: v.name, subtitle: v.category?.name, lat: v.lat!, lng: v.lng!, weight: l?.weight ?? 0, crowd: l?.crowd_level_avg };
     });
 
+  const sections = [
+    { id: "tonight", label: "Tonight" },
+    { id: "places", label: `Places · ${directory.total}` },
+    ...(FEATURES.qa ? [{ id: "questions", label: "Questions" }] : []),
+  ];
+
   return (
-    <div className="container max-w-6xl space-y-8 px-4 py-4">
+    <div className="container max-w-6xl space-y-4 px-4 py-3">
       <CitySwitcher cities={cities} current={city.slug} />
-      <TonightView city={city} mapPoints={mapPoints} />
+      <SectionNav sections={sections} />
+      <section id="tonight" aria-label={`Tonight in ${city.name}`} className="scroll-mt-28">
+        <TonightView city={city} mapPoints={mapPoints} search={<SearchBox />} />
+      </section>
 
-      {FEATURES.qa ? (
-        <Link href={`/c/${city.slug}/questions`} className="flex items-center justify-between rounded-xl border bg-card p-4 text-sm transition-colors hover:border-primary/60" data-testid="city-qa-link">
-          <span><span className="font-medium">Questions about {city.name}?</span> <span className="text-muted-foreground">Ask locals and venues.</span></span>
-          <span aria-hidden>→</span>
-        </Link>
-      ) : null}
-
-      <section id="places" aria-labelledby="places-heading" className="scroll-mt-20 space-y-4">
-        <div>
-          <h2 id="places-heading" className="text-2xl font-semibold">All places in {city.name}</h2>
-          <p className="text-sm text-muted-foreground">{directory.total} {directory.total === 1 ? "place" : "places"} listed</p>
+      <section id="places" aria-labelledby="places-heading" className="scroll-mt-28 space-y-4 pt-10">
+        <div className="space-y-1">
+          <h2 id="places-heading" className="text-title font-semibold">All places in {city.name}</h2>
+          <p className="text-sm text-muted-foreground" aria-live="polite">{directory.total} {directory.total === 1 ? "place" : "places"} listed</p>
         </div>
         <FilterBar basePath={basePath} filters={filters} categories={directory.categories} areas={directory.areas} />
         {directory.vendors.length ? (
-          <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" data-testid="vendor-grid">
+          <ul className="grid gap-2.5 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3" data-testid="vendor-grid">
             {directory.vendors.map((v) => (
-              <li key={v.id}><VendorCard vendor={v} /></li>
+              <li key={v.id}><VendorCard vendor={v} layout="row" /></li>
             ))}
           </ul>
         ) : (
-          <div className="rounded-xl border border-dashed p-8 text-center text-sm text-muted-foreground">
-            Nothing matches those filters yet. Try clearing a filter.
-          </div>
+          <EmptyState
+            icon={SearchX}
+            title="Nothing matches yet"
+            action={<Button asChild variant="secondary"><Link href={`${basePath}#places`}>Clear filters</Link></Button>}
+          >
+            Try removing a filter or picking another area.
+          </EmptyState>
         )}
       </section>
+
+      {FEATURES.qa ? (
+        <section id="questions" aria-label="Questions" className="scroll-mt-28 pt-6">
+          <Link href={`/c/${city.slug}/questions`} className="surface pressable-soft flex items-center gap-4 rounded-2xl p-4 transition-colors hover:border-primary/50" data-testid="city-qa-link">
+            <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-primary/15 text-positive">
+              <MessagesSquare className="h-6 w-6" aria-hidden />
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block font-semibold">Questions about {city.name}?</span>
+              <span className="block text-sm text-muted-foreground">Ask locals and venues.</span>
+            </span>
+            <ArrowRight className="h-5 w-5 shrink-0 text-muted-foreground" aria-hidden />
+          </Link>
+        </section>
+      ) : null}
     </div>
   );
 }

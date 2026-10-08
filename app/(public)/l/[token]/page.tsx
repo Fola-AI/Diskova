@@ -39,20 +39,21 @@ export default async function SharedListPage({ params }: { params: Params }) {
   const url = `${SITE_URL}/l/${list.token}`;
 
   return (
-    <article className="container max-w-2xl space-y-6 px-4 py-8" data-testid="shared-list">
+    <article className="container max-w-2xl space-y-6 px-4 py-6" data-testid="shared-list">
       <CountListView token={list.token} />
-      <header className="space-y-1">
-        <p className="text-sm text-muted-foreground">A plan by @{list.owner.username}{list.city ? ` · ${list.city.name}` : ""}</p>
-        <h1 className="text-3xl font-semibold leading-tight sm:text-4xl">{list.title}</h1>
+      <header className="space-y-2">
+        <p className="inline-flex items-center gap-1.5 rounded-full bg-secondary px-3 py-1 text-caption font-semibold text-muted-foreground">Shared plan · by @{list.owner.username}{list.city ? ` · ${list.city.name}` : ""}</p>
+        <h1 className="text-display font-semibold sm:text-display-lg">{list.title}</h1>
+        <p className="text-sm text-muted-foreground">{list.items.length} {list.items.length === 1 ? "stop" : "stops"}</p>
       </header>
 
-      <section className="flex items-start gap-3 rounded-xl border bg-card p-4" data-testid="cost-estimate">
-        <Wallet className="mt-0.5 h-5 w-5 shrink-0 text-positive" aria-hidden />
+      <section className="surface flex items-start gap-3 rounded-2xl p-4" data-testid="cost-estimate">
+        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-primary/15 text-positive"><Wallet className="h-5 w-5" aria-hidden /></span>
         <div className="text-sm">
-          <p className="font-medium">
+          <p className="text-callout font-semibold">
             {cost.priced ? (cost.low === cost.high ? `About ${formatNaira(cost.low)} per person` : `About ${formatNaira(cost.low)}–${formatNaira(cost.high)} per person`) : "No prices listed yet"}
           </p>
-          <p className="text-xs text-muted-foreground">
+          <p className="mt-0.5 text-footnote text-muted-foreground">
             Rough guide from listed entry/drink prices and ticket prices{cost.unpriced ? ` · ${cost.unpriced} item${cost.unpriced === 1 ? "" : "s"} without prices` : ""}. Check with venues before you go.
           </p>
         </div>
@@ -64,13 +65,13 @@ export default async function SharedListPage({ params }: { params: Params }) {
 
       <ol className="space-y-3">
         {list.items.map((it, i) => (
-          <li key={it.id} className="rounded-xl border bg-card p-4" data-testid="shared-item">
+          <li key={it.id} className="surface enter-up rounded-2xl p-4" style={{ animationDelay: `${Math.min(i, 8) * 25}ms` }} data-testid="shared-item">
             <div className="flex gap-3">
-              <span className="font-display text-xl font-semibold text-muted-foreground">{i + 1}</span>
+              <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-secondary font-display text-base font-semibold text-muted-foreground" aria-hidden>{i + 1}</span>
               <div className="min-w-0 flex-1 space-y-1">
                 {it.kind === "vendor" ? (
                   <>
-                    <Link href={`/v/${it.vendor.slug}`} className="font-semibold underline-offset-4 hover:underline">{it.vendor.name}</Link>
+                    <Link href={`/v/${it.vendor.slug}`} className="text-callout font-semibold underline-offset-4 hover:underline">{it.vendor.name}</Link>
                     <p className="flex items-center gap-1 text-sm text-muted-foreground">
                       <MapPin className="h-3.5 w-3.5" aria-hidden />
                       {[it.vendor.category, it.vendor.area].filter(Boolean).join(" · ")}
@@ -79,7 +80,7 @@ export default async function SharedListPage({ params }: { params: Params }) {
                   </>
                 ) : (
                   <>
-                    <Link href={`/events/${it.event.slug}`} className={`font-semibold underline-offset-4 hover:underline ${it.event.status === "cancelled" ? "line-through" : ""}`}>{it.event.title}</Link>
+                    <Link href={`/events/${it.event.slug}`} className={`text-callout font-semibold underline-offset-4 hover:underline ${it.event.status === "cancelled" ? "line-through" : ""}`}>{it.event.title}</Link>
                     <p className="flex items-center gap-1 text-sm text-muted-foreground">
                       <CalendarDays className="h-3.5 w-3.5" aria-hidden />
                       {new Date(it.event.starts_at).toLocaleString("en-NG", { weekday: "short", day: "numeric", month: "short", hour: "numeric", minute: "2-digit", timeZone: "Africa/Lagos" })}
@@ -88,19 +89,19 @@ export default async function SharedListPage({ params }: { params: Params }) {
                     </p>
                   </>
                 )}
-                {it.note ? <p className="text-sm">“{it.note}”</p> : null}
+                {it.note ? <p className="mt-1 rounded-xl bg-secondary/60 px-3 py-2 text-sm italic">“{it.note}”</p> : null}
               </div>
             </div>
           </li>
         ))}
-        {!list.items.length ? <li className="text-sm text-muted-foreground">This list is empty.</li> : null}
+        {!list.items.length ? <li className="rounded-2xl border border-dashed p-5 text-sm text-muted-foreground">This list is empty.</li> : null}
       </ol>
 
       <section className="space-y-2">
-        <h2 className="text-sm font-medium text-muted-foreground">Share this plan</h2>
+        <h2 className="font-sans text-caption font-semibold uppercase tracking-[0.06em] text-muted-foreground">Share this plan</h2>
         <ShareButtons url={url} title={list.title} text={`${list.title} — the plan:`} />
       </section>
-      <p className="text-xs text-muted-foreground">
+      <p className="text-footnote text-muted-foreground">
         Made with {BRAND_NAME}. <Link href="/" className="underline underline-offset-4">See what&apos;s happening tonight</Link>
       </p>
     </article>

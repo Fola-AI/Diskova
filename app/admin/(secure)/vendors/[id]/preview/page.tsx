@@ -28,31 +28,31 @@ export default async function AdminVendorPreview({ params }: { params: Promise<{
 
   return (
     <div className="max-w-3xl space-y-5">
-      <Link href="/admin/vendors" className="text-sm text-muted-foreground hover:underline">← Vendor queue</Link>
+      <Link href="/admin/vendors" className="hit inline-flex h-10 items-center text-footnote font-semibold text-muted-foreground underline-offset-4 hover:text-foreground hover:underline">← Vendor queue</Link>
       <div>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-footnote text-muted-foreground">
           {[meta.category?.name, meta.area?.name, meta.city?.name].filter(Boolean).join(" · ")} · status {v.status} · {priceBandSymbol(v.price_band) ?? "no price band"}
         </p>
-        <h1 className="text-3xl font-semibold">{v.name}</h1>
+        <h1 className="text-title font-semibold sm:text-display">{v.name}</h1>
         {v.tagline ? <p className="text-muted-foreground">{v.tagline}</p> : null}
       </div>
       {v.cover_image_url ? (
-        <div className="relative aspect-[16/9] overflow-hidden rounded-xl border">
+        <div className="relative aspect-[16/9] overflow-hidden rounded-2xl border bg-secondary">
           <Image src={v.cover_image_url} alt="" fill sizes="720px" className="object-cover" />
         </div>
       ) : <p className="text-sm text-muted-foreground">No cover photo.</p>}
       <p className="whitespace-pre-line text-sm">{v.description_md ?? "No description."}</p>
-      <dl className="grid gap-2 text-sm sm:grid-cols-2">
+      <dl className="surface grid gap-3 rounded-2xl p-4 text-sm sm:grid-cols-2">
         {contacts.map(([k, val]) => (
-          <div key={k}><dt className="font-medium">{k}</dt><dd className="break-all text-muted-foreground">{val ?? "—"}</dd></div>
+          <div key={k}><dt className="text-caption font-semibold uppercase tracking-[0.06em] text-muted-foreground">{k}</dt><dd className="break-all text-muted-foreground">{val ?? "—"}</dd></div>
         ))}
       </dl>
       <p className="text-sm">Address: {v.address_line ?? "—"}</p>
       <p className="text-sm">Features: {v.features.map((f) => FEATURES[f] ?? f).join(", ") || "—"}</p>
-      <div className="rounded-xl border px-4"><HoursTable hours={parseOpeningHours(v.opening_hours)} timeZone={DEFAULT_TIMEZONE} /></div>
-      <ul className="divide-y rounded-xl border text-sm">
+      <div className="surface rounded-2xl px-4"><HoursTable hours={parseOpeningHours(v.opening_hours)} timeZone={DEFAULT_TIMEZONE} /></div>
+      <ul className="surface divide-y rounded-2xl text-sm">
         {(prices ?? []).map((p) => (
-          <li key={p.id} className="flex justify-between px-4 py-2"><span>{p.label}</span><span>{formatNaira(p.amount_ngn)}</span></li>
+          <li key={p.id} className="flex min-h-11 items-center justify-between gap-3 px-4 py-2"><span>{p.label}</span><span className="font-semibold tabular-nums">{formatNaira(p.amount_ngn)}</span></li>
         ))}
         {!prices?.length ? <li className="px-4 py-2 text-muted-foreground">No prices.</li> : null}
       </ul>

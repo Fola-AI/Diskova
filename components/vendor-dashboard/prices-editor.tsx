@@ -2,7 +2,8 @@
 
 import { Plus, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 
 import { savePricesAction } from "@/app/(vendor)/vendor/actions";
 import { FormAlert } from "@/components/forms/form-alert";
@@ -54,30 +55,59 @@ export function PricesEditor({
   }
 
   const update = (i: number, patch: Partial<PriceValue>) => setRows((rs) => rs.map((r, j) => (j === i ? { ...r, ...patch } : r)));
+  const listRef = useRef<HTMLUListElement | null>(null);
+  const [focusLast, setFocusLast] = useState(false);
+  useEffect(() => {
+    if (!focusLast) return;
+    listRef.current?.querySelector<HTMLInputElement>("li:last-child input")?.focus();
+    setFocusLast(false);
+  }, [focusLast, rows.length]);
+  const remove = (i: number) => {
+    const removed = rows[i]!;
+    setRows((rs) => rs.filter((_, j) => j !== i));
+    if (!removed.label && !removed.amount_ngn) return;
+    toast(`Removed ${removed.label || "price"}`, {
+      description: "Not saved yet — tap Save prices to keep the change.",
+      action: { label: "Undo", onClick: () => setRows((rs) => [...rs.slice(0, i), removed, ...rs.slice(i)]) },
+    });
+  };
 
   return (
     <div className="space-y-4">
       <p className="text-sm text-muted-foreground">Honest prices are one of the most-viewed things on a venue page. Use 0 for free.</p>
       {error ? <FormAlert state={{ error }} /> : null}
-      <ul className="space-y-3">
+      <ul ref={listRef} className="space-y-3">
         {rows.map((r, i) => (
-          <li key={r.id ?? `new-${i}`} className="space-y-2 rounded-lg border p-3">
-            <div className="flex gap-2">
-              <Input aria-label="Item" placeholder="e.g. Entry (Fri & Sat)" value={r.label} maxLength={80} onChange={(e) => update(i, { label: e.target.value })} />
-              <Input aria-label="Price in naira" placeholder="₦" inputMode="numeric" className="w-32" value={r.amount_ngn} onChange={(e) => update(i, { amount_ngn: e.target.value })} />
-              <Button type="button" variant="ghost" size="icon" aria-label="Remove price" onClick={() => setRows((rs) => rs.filter((_, j) => j !== i))}>
-                <Trash2 aria-hidden />
-              </Button>
-            </div>
-            <Input aria-label="Note" placeholder="Note (optional), e.g. free before midnight" value={r.note} maxLength={200} onChange={(e) => update(i, { note: e.target.value })} />
+          <li key={r.id ?? `new-${i}`} className="surface enter-up space-y-2.5 rounded-2xl p-3.5">
+            <fieldset className="space-y-2.5">
+              <legend className="sr-only">Price {i + 1}</legend>
+              <div className="flex gap-2">
+                <Input aria-label="Item" placeholder="e.g. Entry (Fri & Sat)" value={r.label} maxLength={80} onChange={(e) => update(i, { label: e.target.value })} />
+                <span className="relative w-36 shrink-0">
+                  <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" aria-hidden>₦</span>
+                  <Input aria-label="Price in naira" placeholder="0" inputMode="numeric" className="pl-8 tabular-nums" value={r.amount_ngn}
+                    onChange={(e) => update(i, { amount_ngn: e.target.value })}
+                    onBlur={() => {
+                      const n = Number(r.amount_ngn.replace(/[₦,\s]/g, ""));
+                      if (r.amount_ngn.trim() && Number.isFinite(n)) update(i, { amount_ngn: n.toLocaleString("en-NG") });
+                    }} />
+                </span>
+              </div>
+              <div className="flex gap-2">
+                <Input aria-label="Note" placeholder="Note (optional), e.g. free before midnight" value={r.note} maxLength={200} onChange={(e) => update(i, { note: e.target.value })} />
+                <Button type="button" variant="ghost" size="icon" className="shrink-0 text-muted-foreground hover:text-destructive" aria-label={`Remove ${r.label || `price ${i + 1}`}`} onClick={() => remove(i)}>
+                  <Trash2 aria-hidden />
+                </Button>
+              </div>
+            </fieldset>
           </li>
         ))}
       </ul>
-      <div className="flex flex-wrap gap-2">
-        <Button type="button" variant="secondary" size="sm" onClick={() => setRows((rs) => [...rs, { label: "", amount_ngn: "", note: "" }])} disabled={rows.length >= 30}>
-          <Plus aria-hidden /> Add price
-        </Button>
-        <Button type="button" size="sm" onClick={save}>Save prices</Button>
+      <Button type="button" variant="outline" className="w-full border-dashed" onClick={() => { setRows((rs) => [...rs, { label: "", amount_ngn: "", note: "" }]); setFocusLast(true); }} disabled={rows.length >= 30}>
+        <Plus aria-hidden /> Add price
+      </Button>
+      <div className="flex flex-wrap items-center gap-3">
+        <Button type="button" onClick={save} loading={state === "saving"}>Save prices</Button>
         <SaveIndicator state={state} error={error} />
       </div>
       {nextHref ? <StepFooter backHref={backHref} nextHref={nextHref} beforeNext={save} /> : null}

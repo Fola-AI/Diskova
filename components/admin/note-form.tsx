@@ -12,13 +12,13 @@ import { Textarea } from "@/components/ui/textarea";
 export function NoteForm({ entityType, entityId, back }: { entityType: string; entityId: string; back: string }) {
   const [state, action] = useActionState(addNoteAction, initialFormState);
   return (
-    <form action={action} className="space-y-2" key={state.ok ? String(Date.now()) : "note"}>
+    <form action={action} className="space-y-3" key={state.ok ? String(Date.now()) : "note"}>
       <input type="hidden" name="entityType" value={entityType} />
       <input type="hidden" name="entityId" value={entityId} />
       <input type="hidden" name="back" value={back} />
       <FormAlert state={state} />
       <Textarea name="note" rows={2} placeholder="Add an internal note" aria-label="Internal note" required minLength={2} maxLength={2000} />
-      <SubmitButton size="sm" variant="secondary">Add note</SubmitButton>
+      <SubmitButton variant="secondary" pendingText="Adding…">Add note</SubmitButton>
     </form>
   );
 }

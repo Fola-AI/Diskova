@@ -16,8 +16,8 @@ export function EventList({ events, showCity }: { events: EventCardRow[]; showCi
     <div className="space-y-6" data-testid="event-list">
       {[...groups.entries()].map(([key, g]) => (
         <section key={key} id={`d-${key}`} className="scroll-mt-20 space-y-2" aria-label={g.label}>
-          <h3 className="sticky top-14 z-10 -mx-4 bg-background/95 px-4 py-1.5 font-sans text-sm font-semibold tracking-normal backdrop-blur">{g.label}</h3>
-          <ul className="grid gap-2 sm:grid-cols-2">
+          <h3 className="sticky top-14 z-10 -mx-4 border-b border-border/40 bg-background/85 px-4 py-2 font-sans text-footnote font-semibold uppercase tracking-[0.06em] text-muted-foreground backdrop-blur-xl">{g.label}</h3>
+          <ul className="grid gap-2.5 sm:grid-cols-2">
             {g.events.map((e) => <li key={e.id}><EventCard event={e} showCity={showCity} /></li>)}
           </ul>
         </section>

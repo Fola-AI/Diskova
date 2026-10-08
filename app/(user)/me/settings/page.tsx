@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import { Breadcrumbs } from "@/components/ui/breadcrumbs";
 
 import { AvatarUploader } from "@/components/me/avatar-uploader";
 import { DeleteAccountForm } from "@/components/me/delete-account-form";
@@ -18,10 +18,10 @@ export default async function SettingsPage() {
     .order("sort_order");
 
   return (
-    <div className="container max-w-2xl space-y-6 px-4 py-8">
-      <div>
-        <Link href="/me" className="text-sm text-muted-foreground hover:underline">← Back to profile</Link>
-        <h1 className="mt-2 text-3xl font-semibold">Settings</h1>
+    <div className="container max-w-2xl space-y-6 px-4 py-6">
+      <div className="space-y-1">
+        <Breadcrumbs items={[{ href: "/me", label: "Me" }, { label: "Settings" }]} />
+        <h1 className="text-display font-semibold">Settings</h1>
       </div>
 
       <Card>
@@ -47,7 +47,8 @@ export default async function SettingsPage() {
 
       <Card className="border-destructive/40">
         <CardHeader>
-          <CardTitle>Delete account</CardTitle>
+          <CardTitle className="text-destructive">Danger zone</CardTitle>
+          <CardDescription>Delete your account and everything you&apos;ve posted.</CardDescription>
         </CardHeader>
         <CardContent>
           <DeleteAccountForm username={profile.username} />

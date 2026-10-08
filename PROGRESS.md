@@ -1,7 +1,7 @@
 # Build Progress
 
 ## Current stage
-All stages complete: L1–L15 and P1–P5. P6 and P7 are skipped (feature flags `FEATURE_INSTAGRAM_FEED` / `FEATURE_VIDEO` are false). Waiting on the open questions below.
+All stages complete: L1–L15, P1–P5 and the UX/UI upgrade U1 (requested by Fola on 8 Oct 2026). P6 and P7 are skipped (feature flags `FEATURE_INSTAGRAM_FEED` / `FEATURE_VIDEO` are false). Waiting on the open questions below.
 
 ## Launch stages (required before go-live)
 - [x] Stage L1: Project scaffold, tooling, `npm run verify`
@@ -28,6 +28,9 @@ All stages complete: L1–L15 and P1–P5. P6 and P7 are skipped (feature flags 
 - [x] Stage P5: In-app AI assistant (Groq)
 - [ ] Stage P6 (OPTIONAL, feature-flagged): Vendor Instagram feed via Meta Graph API — **skipped: `FEATURE_INSTAGRAM_FEED=false`**
 - [ ] Stage P7 (OPTIONAL, feature-flagged): Video check-ins with mandatory human review — **skipped: `FEATURE_VIDEO=false`**
+
+## Design stages (requested by Fola, 8 Oct 2026)
+- [x] Stage U1: UX/UI upgrade — every fix from `docs/ux-audit.md` (presentation only; no business logic, schema or route changes)
 
 ## Verify output per stage
 (paste the last 30 lines of `npm run verify` under each stage heading below as you complete it)
@@ -884,6 +887,42 @@ Acceptance evidence (`tests/rls/p5-assistant.test.ts` runs against **real Groq**
 
 **P6 / P7 skipped:** `FEATURE_INSTAGRAM_FEED` and `FEATURE_VIDEO` are false in `.env.local` (and default to false), so per the build instructions these optional stages weren't built.
 
+### Stage U1 — UX/UI upgrade
+`NEXT_DIST_DIR=.next-verify npm run verify` (build into a separate folder so Fola's running `npm run dev` isn't clobbered) — build ✓, lint ✓ (no warnings), typecheck ✓, Vitest 43 files / 269 tests ✓, Playwright smoke 60/60 ✓. Last 30 lines:
+
+```
+  ✓  34 [smoke] › tests/smoke/pwa.spec.ts:5:5 › PWA: a guide read online opens offline; other pages fall back to /offline listing saved guides @readonly (442ms)
+  ✓  37 [smoke] › tests/smoke/pwa.spec.ts:29:5 › PWA: the service worker never caches signed-in or admin pages @readonly (7ms)
+  ✓  38 [smoke] › tests/smoke/safety.spec.ts:10:5 › emergency numbers render per city with verification status @readonly (458ms)
+  ✓  39 [smoke] › tests/smoke/safety.spec.ts:24:5 › anonymous private report → exact confirmation → visible only in admin triage (8.4s)
+  ✓  36 [smoke] › tests/smoke/qa.spec.ts:14:5 › admin writes a pinned seed in /admin/qa → it renders first on the city Q&A page, logged-out, with its official answer (9.5s)
+  ✓  40 [smoke] › tests/smoke/safety.spec.ts:48:5 › honeypot submissions are not stored (690ms)
+  ✓  41 [smoke] › tests/smoke/qa.spec.ts:39:5 › ask on a venue page → moderated → visible; it shows up in /admin/qa (6.4s)
+  ✓  43 [smoke] › tests/smoke/seo.spec.ts:11:5 › robots.txt blocks private areas and points at the sitemap @readonly (13ms)
+  ✓  44 [smoke] › tests/smoke/seo.spec.ts:17:5 › sitemap lists cities, venues, guides and safety pages @readonly (112ms)
+  ✓  45 [smoke] › tests/smoke/seo.spec.ts:22:5 › home: canonical + WebSite search action + Organization @readonly (144ms)
+  ✓  46 [smoke] › tests/smoke/seo.spec.ts:29:5 › venue page: canonical, specific LocalBusiness type with address + geo, breadcrumbs, no ratings @readonly (444ms)
+  ✓  35 [smoke] › tests/smoke/feed.spec.ts:73:5 › 4-photo check-in: every request finishes in under 5 s (17.6s)
+  ✓  42 [smoke] › tests/smoke/security.spec.ts:7:5 › CSP is enforced and key pages (incl. the map) raise no violations @readonly (8.3s)
+  ✓  49 [smoke] › tests/smoke/security.spec.ts:40:7 › cookie consent (analytics only) › first visit asks; 'Essential only' is remembered; footer reopens the choice @readonly (519ms)
+  ✓  50 [smoke] › tests/smoke/security.spec.ts:57:7 › cookie consent (analytics only) › privacy policy covers cookies, processors, retention and rights @readonly (140ms)
+  ✓  47 [smoke] › tests/smoke/settings.spec.ts:26:5 › edit profile: username, home city, diaspora, location consent (2.4s)
+  ✓  51 [smoke] › tests/smoke/tonight.spec.ts:41:5 › empty Tonight view invites the first pulse and vendor updates (804ms)
+  ✓  48 [smoke] › tests/smoke/feed.spec.ts:136:5 › my posts, public profile and leaderboard pages render (3.6s)
+  ✓  53 [smoke] › tests/smoke/tonight.spec.ts:49:5 › a pulse becomes a live venue: rail, hero count, polling API and crowd badge (3.6s)
+  ✓  52 [smoke] › tests/smoke/settings.spec.ts:46:5 › avatar upload goes through the one-image pipeline (EXIF stripped, WebP) (4.7s)
+  ✓  55 [smoke] › tests/smoke/tonight.spec.ts:77:5 › heat map renders on toggle (1.7s)
+  ✓  57 [smoke] › tests/smoke/tonight.spec.ts:84:5 › forecast line shows once there are 4+ weeks of data (160ms)
+  ✓  56 [smoke] › tests/smoke/settings.spec.ts:75:5 › delete account anonymises the profile and blocks sign-in (3.3s)
+  ✓  54 [smoke] › tests/smoke/vendor.spec.ts:27:5 › fresh account → submitted vendor in under 10 minutes (10.9s)
+  ✓  58 [smoke] › tests/smoke/vendor.spec.ts:90:5 › admin (with MFA) approves the listing and it goes live (4.2s)
+  ✓  59 [smoke] › tests/smoke/vendor.spec.ts:112:5 › official update in two taps appears on the vendor page labelled Official (3.0s)
+  ✓  60 [smoke] › tests/smoke/vendor.spec.ts:135:5 › claim flow: claimant uploads ID, admin approves, claimant becomes owner (6.9s)
+
+  60 passed (1.5m)
+EXIT 0
+```
+
 ## Notes / decisions
 (append here as you go)
 
@@ -1135,6 +1174,57 @@ Acceptance evidence (`tests/rls/p5-assistant.test.ts` runs against **real Groq**
   - Questions are text-moderated first (blocklist + OpenAI). Never promises action by anyone.
 - **Logging:** `private.assistant_logs` (`0055`; service role only; question ≤ 500 chars, answer ≤ 4000, outcome, venues linked, model, latency), purged after 30 days by the daily purge job. The privacy policy now lists Groq as a processor and the 30-day retention.
 - UI: `/assistant` ("Ask" in the header when `FEATURE_AI_ASSISTANT` is on): city picker, example questions, streamed answers, and a disclaimer (AI can be wrong; community data; not for emergencies — 112). `noindex`.
+
+**U1 (2026-10-08) — UX/UI upgrade** (audit and per-screen status: `docs/ux-audit.md`)
+- **Design system:**
+  - type scale tokens: `caption` 12px is the floor everywhere; then `footnote`, `callout`, `title`, `display`;
+  - motion tokens: 120/180/340/220ms, ease-out, plus `linear()` springs with a cubic-bezier fallback;
+  - one global 2px `:focus-visible` ring, and `prefers-reduced-motion` respected everywhere;
+  - `.pressable` touch-down scale, `.hit` 44px hit-area expander, `.surface` cards, `.rail` snap scrollers;
+  - custom checkbox/radio/select styling.
+  - All of it is CSS: no new dependencies. framer-motion and `tailwindcss-animate` are still not used.
+- **New primitives** in `components/ui/`:
+  - Skeleton, EmptyState, chip helpers, SegmentedControl (roving focus), SegmentedLinks, Switch (a native checkbox, so forms and tests keep working);
+  - Breadcrumbs, BackLink, ListGroup/ListRow, Progress, Select, ConfirmSheet;
+  - `lib/client/deferred.ts`: Undo toasts with a 5s deferred commit, committed on `pagehide`.
+- **Sheet:** grabber; drag-to-dismiss that tracks the finger 1:1, rubber-bands upward and keeps the release velocity into the exit; sticky header and footer; spring entrance.
+- **Navigation:**
+  - phone-only bottom tab bar (Tonight · Events · Ask · Saved · Me/Sign in) as `nav "Primary"`;
+  - on phones the header slims to logo + search; on desktop it keeps Events/Guides/Ask/account;
+  - breadcrumbs on venue, event, question, Me, lists and itinerary pages; toasts move to the bottom, above the tab bar.
+- **Screens:**
+  - Home/City: search under the hero; a single live venue gets a wide card; sticky scroll-spy Tonight · Places · Questions nav; compact directory rows on phones (city page 6.8 → 4.3 screens).
+  - Venue:
+    - Directions is the primary action, other actions sit in a grid (nothing clipped), and Save/Share/Copy share one row;
+    - the pulse bar is primary, with check-in for details;
+    - a sticky compact title, a "Today" row in opening hours, and event rows that link out.
+  - Check-in sheet:
+    - the button explains what's missing instead of looking broken;
+    - wait, fee and note sit behind "More details"; photo thumbnails;
+    - ₦-prefixed fee field and a location switch.
+  - Events/December: the city picker is a sheet and the List/Month view is a segmented control; rolling countdown digits; whole month-grid cells are tappable; EmptyStates; "Add to my calendar" buttons; a sticky Tickets bar on event pages.
+  - Itinerary: segmented currency control with arrow-key navigation; day tabs with swipe between days and directional slides; amounts that roll in; a slimmer sticky totals bar ("So far" only from day 2).
+  - Assistant: chat bubbles, typing dots, a composer pinned above the tab bar that grows with the text, "New reply" pill, per-answer disclaimer.
+  - Auth:
+    - inline email validation on blur, with one error slot so a message never shows twice;
+    - show/hide password (its accessible name is "Show"/"Hide", so it doesn't collide with the "Password" label);
+    - a live password checklist and a 60s resend cooldown.
+  - Me/settings/lists/posts:
+    - grouped list rows and a tappable avatar (the file input is now labelled);
+    - switches for settings;
+    - the list editor has a real `<h1>` with inline rename, and Undo on remove;
+    - a ConfirmSheet replaces `window.confirm`, and post delete has Undo.
+  - Q&A: `<h1>` on `/q/[id]`; ask form in a sheet with a counter and inline validation; accepted answer marked; "Helpful" votes.
+  - Vendor: a real listing checklist (6 items linking to steps) instead of a bare %; a "Step N of 6" segmented progress bar; ₦ price fields with Undo; an official-update preview; verification requirements up front.
+  - Admin (by a helper agent; same rules): grouped sidebar on desktop and chip rail on phones; responsive cards/table in the data table; 44px filters and forms; KPI tiles; MFA steps with copy-secret.
+- **Deliberate deviations** (details in `docs/ux-audit.md` §6):
+  - **No route-level `loading.tsx`.** Under a Suspense boundary, `notFound()`/`redirect()` stream a 200, and `/search` rendered its results twice.
+  - **City sections scroll in place rather than hiding behind tabs**, for SEO, no-JS use and the existing tests.
+  - **Not built:** drag-reorder, swipe-to-delete and the leaderboard "you" row. They would need new data or endpoints.
+- **Tooling:**
+  - `next.config.ts` honours an optional `NEXT_DIST_DIR`, so a second dev or verify server can run beside `npm run dev`. `scripts/run-smoke.mjs` and the bundle-secret unit test read the same variable, and `.next-*/` is git-ignored.
+  - Measured result at 390px: undersized targets per page fell from 20–48 to 1–5, text under 12px fell to 0, and every page has exactly one h1.
+- **DEV auth limit, again:** three back-to-back verifies in ~30 minutes hit the 30-verifications/5-min DEV limit (logins stuck on `/login` and `/admin/mfa`). Spacing the run fixed it, as noted under P3.
 
 ## Open questions for Fola
 (write here when you need me)

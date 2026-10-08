@@ -11,7 +11,7 @@ export async function ClaimPanel({ session, slug }: { session: SessionContext; s
   if (!vendor || vendor.claim_status !== "unclaimed") {
     return (
       <div className="space-y-3">
-        <h1 className="text-3xl font-semibold">This listing can&apos;t be claimed</h1>
+        <h1 className="text-display font-semibold">This listing can&apos;t be claimed</h1>
         <p className="text-muted-foreground">It may already be managed by its owner. If you think that&apos;s wrong, contact us.</p>
         <Button asChild variant="secondary"><Link href="/vendor">Back</Link></Button>
       </div>
@@ -22,7 +22,7 @@ export async function ClaimPanel({ session, slug }: { session: SessionContext; s
   return (
     <div className="space-y-5">
       <div>
-        <h1 className="text-3xl font-semibold">Claim {vendor.name}</h1>
+        <h1 className="text-display font-semibold">Claim {vendor.name}</h1>
         <p className="mt-1 text-sm text-muted-foreground">
           {[vendor.category?.name, vendor.area?.name, vendor.city?.name].filter(Boolean).join(" · ")}
         </p>

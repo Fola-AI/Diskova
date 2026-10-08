@@ -8,7 +8,7 @@ export function DisputeList({ posts }: { posts: Array<{ id: string; kind: string
   if (!posts.length) return null;
   return (
     <section className="space-y-2">
-      <h2 className="text-xl font-semibold">Community posts on your page</h2>
+      <h2 className="text-title font-semibold">Community posts on your page</h2>
       <p className="text-sm text-muted-foreground">If one isn&apos;t from your venue, tell us — we review every dispute.</p>
       <ul className="divide-y rounded-xl border">
         {posts.map((p) => (

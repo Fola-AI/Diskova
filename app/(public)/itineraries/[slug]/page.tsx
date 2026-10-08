@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 import Image from "next/image";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { MarkdownContent } from "@/components/content/markdown-content";
 import { ItineraryView } from "@/components/itineraries/itinerary-view";
 import { JsonLd } from "@/components/seo/json-ld";
 import { ShareButtons } from "@/components/vendor/share-buttons";
+import { Breadcrumbs } from "@/components/ui/breadcrumbs";
 import { BRAND_NAME, SITE_URL } from "@/lib/config";
 import { breadcrumbJsonLd } from "@/lib/content/jsonld";
 import { getPublicSettings } from "@/lib/db/settings-public";
@@ -66,14 +66,19 @@ export default async function ItineraryPage({ params }: { params: Params }) {
       {it.cover_image_url ? (
         <div className="relative aspect-[16/9] max-h-[420px] w-full overflow-hidden">
           <Image src={it.cover_image_url} alt="" fill priority sizes="100vw" className="object-cover" />
+          <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-background to-transparent" />
         </div>
       ) : null}
-      <div className="container max-w-2xl space-y-6 px-4 pt-6">
-        <nav className="text-sm text-muted-foreground"><Link href="/itineraries" className="hover:underline">Itineraries</Link>{it.city ? <> / {it.city.name}</> : null}</nav>
-        <header className="space-y-2">
-          <h1 className="text-3xl font-semibold leading-tight sm:text-5xl">{it.title}</h1>
-          {it.excerpt ? <p className="text-lg text-muted-foreground">{it.excerpt}</p> : null}
-          <p className="text-xs text-muted-foreground">{it.days} day{it.days === 1 ? "" : "s"} · {it.items.length} stops · Last updated {updated}</p>
+      <div className="container max-w-2xl space-y-6 px-4 pt-4">
+        <Breadcrumbs items={[{ href: "/itineraries", label: "Itineraries" }, ...(it.city ? [{ label: it.city.name }] : [])]} />
+        <header className="space-y-3">
+          <h1 className="text-display font-semibold sm:text-display-lg">{it.title}</h1>
+          {it.excerpt ? <p className="text-callout text-muted-foreground">{it.excerpt}</p> : null}
+          <ul className="flex flex-wrap gap-2 text-caption font-medium text-muted-foreground">
+            <li className="rounded-full bg-secondary px-2.5 py-1">{it.days} day{it.days === 1 ? "" : "s"}</li>
+            <li className="rounded-full bg-secondary px-2.5 py-1">{it.items.length} stops</li>
+            <li className="rounded-full bg-secondary px-2.5 py-1">Updated {updated}</li>
+          </ul>
         </header>
         {it.intro_md ? <MarkdownContent markdown={it.intro_md} /> : null}
         <ItineraryView days={it.days} fx={fx} items={it.items.map((s) => ({ id: s.id, day: s.day, time_label: s.time_label, title: s.title, description_md: s.description_md, cost_ngn: s.cost_ngn, cost_note: s.cost_note, vendor: s.vendor ? { slug: s.vendor.slug, name: s.vendor.name } : null, event: s.event ? { slug: s.event.slug, title: s.event.title } : null }))} />

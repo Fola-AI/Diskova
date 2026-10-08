@@ -13,9 +13,9 @@ export function BlocklistForm() {
   const [state, action] = useActionState(addBlocklistPhraseAction, initialFormState);
   return (
     <form action={action} className="flex flex-wrap items-center gap-2" data-testid="blocklist-form" key={state.ok ? state.message : "b"}>
-      <Input name="phrase" placeholder="Add a phrase to the blocklist" aria-label="Blocklist phrase" className="h-9 max-w-xs" required minLength={3} maxLength={100} />
-      <SubmitButton size="sm" variant="outline">Add</SubmitButton>
-      <FormAlert state={state} />
+      <Input name="phrase" placeholder="Add a phrase to the blocklist" aria-label="Blocklist phrase" className="min-w-[12rem] flex-1 sm:max-w-xs" required minLength={3} maxLength={100} />
+      <SubmitButton variant="outline">Add</SubmitButton>
+      <FormAlert state={state} className="basis-full" />
     </form>
   );
 }

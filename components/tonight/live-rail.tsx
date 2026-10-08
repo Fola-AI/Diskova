@@ -68,31 +68,43 @@ export function LiveRail({
 
   return (
     <section aria-labelledby="live-heading" className="space-y-3">
-      <div className="flex items-end justify-between gap-2">
-        <h2 id="live-heading" className="flex items-center gap-2 text-2xl font-semibold">
-          <span className="relative flex h-2.5 w-2.5">
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-60" />
-            <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-primary" />
+      <div className="flex items-center justify-between gap-2">
+        <h2 id="live-heading" className="flex items-center gap-2.5 text-title font-semibold">
+          <span className="relative flex h-2.5 w-2.5" aria-hidden>
+            <span className="absolute inline-flex h-full w-full animate-live-ring rounded-full bg-positive" />
+            <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-positive" />
           </span>
           Live now
         </h2>
-        <span className="text-sm text-muted-foreground" data-testid="live-count">{live.length} {live.length === 1 ? "place" : "places"}</span>
+        <span className="rounded-full bg-secondary px-2.5 py-1 text-caption font-semibold tabular-nums text-muted-foreground" data-testid="live-count" aria-live="polite">
+          {live.length} {live.length === 1 ? "place" : "places"}
+        </span>
       </div>
-      {live.length ? (
-        <ul className="-mx-4 flex gap-3 overflow-x-auto px-4 pb-2 [scrollbar-width:none]" data-testid="live-rail">
+      {live.length > 1 ? (
+        <ul className="rail fade-x -mx-4 gap-3 px-4 pb-1" data-testid="live-rail">
           {live.map((v, i) => (
-            <li key={v.vendor_id}>
+            <li key={v.vendor_id} className="enter-up" style={{ animationDelay: `${Math.min(i, 5) * 40}ms` }}>
               <LiveCard venue={v} areaName={v.area_id ? areaNames[v.area_id] : null} priority={i === 0} />
             </li>
           ))}
+          <li aria-hidden className="w-1 shrink-0" />
+        </ul>
+      ) : live.length === 1 ? (
+        <ul data-testid="live-rail">
+          <li className="enter-up">
+            <LiveCard venue={live[0]!} areaName={live[0]!.area_id ? areaNames[live[0]!.area_id] : null} priority wide />
+          </li>
         </ul>
       ) : (
-        <div className="rounded-xl border border-dashed p-5" data-testid="live-empty">{emptyState}</div>
+        <div className="surface rounded-2xl p-5" data-testid="live-empty">{emptyState}</div>
       )}
       {live.length ? (
-        <p className="flex items-center gap-1 text-xs text-muted-foreground">
-          <Radio className="h-3 w-3" aria-hidden /> From official updates, check-ins and one-tap pulses in the last 90 minutes.{" "}
-          <Link href="/vendor" prefetch={false} className="underline underline-offset-4">Own a venue?</Link>
+        <p className="flex items-start gap-1.5 text-footnote text-muted-foreground">
+          <Radio className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden />
+          <span>
+            From official updates, check-ins and one-tap pulses in the last 90 minutes.{" "}
+            <Link href="/vendor" prefetch={false} className="font-medium text-foreground/90 underline underline-offset-4">Own a venue?</Link>
+          </span>
         </p>
       ) : null}
     </section>

@@ -1,6 +1,6 @@
 "use client";
 
-import { Loader2 } from "lucide-react";
+import { CheckCircle2, Loader2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
@@ -46,27 +46,49 @@ export function PulseBar({ vendorId, vendorSlug }: { vendorId: string; vendorSlu
     window.dispatchEvent(new Event("feed:posted"));
   }
 
+  const doneLabel = done ? CROWD_LEVELS.find((c) => c.level === done)?.label : null;
+
   return (
-    <div ref={ref} className={cn("rounded-xl border bg-card p-3", highlight && "ring-2 ring-accent")} data-testid="pulse-bar">
-      <p className="mb-2 text-sm font-medium">How busy is it right now? <span className="font-normal text-muted-foreground">One tap.</span></p>
-      <div className="grid grid-cols-5 gap-1.5">
-        {CROWD_LEVELS.map((c) => (
-          <button
-            key={c.level}
-            type="button"
-            onClick={() => pulse(c.level)}
-            disabled={busy !== null}
-            aria-label={`Pulse: ${c.label}`}
-            className={cn(
-              "flex min-h-[64px] flex-col items-center justify-center gap-1 rounded-lg border px-1 py-2 text-[11px] font-medium leading-tight transition-colors hover:border-primary/60 disabled:opacity-60",
-              done === c.level && "border-foreground",
-            )}
-          >
-            {busy === c.level ? <Loader2 className="h-3 w-3 animate-spin" aria-hidden /> : <span className={cn("h-3 w-3 rounded-full", c.className)} aria-hidden />}
-            {c.label}
-          </button>
-        ))}
+    <div ref={ref} className={cn("surface rounded-3xl p-4 transition-shadow duration-300", highlight && "ring-2 ring-accent")} data-testid="pulse-bar">
+      <div className="mb-3 flex items-baseline justify-between gap-2">
+        <p className="text-callout font-semibold">How busy is it right now?</p>
+        <span className="shrink-0 text-footnote text-muted-foreground">One tap</span>
       </div>
+      <div className="grid grid-cols-5 gap-2">
+        {CROWD_LEVELS.map((c) => {
+          const on = done === c.level;
+          return (
+            <button
+              key={c.level}
+              type="button"
+              onClick={() => pulse(c.level)}
+              disabled={busy !== null}
+              aria-label={`Pulse: ${c.label}`}
+              aria-pressed={on}
+              className={cn(
+                "pressable flex min-h-[68px] flex-col items-center justify-center gap-2 rounded-2xl border px-1 py-2 text-caption font-semibold leading-tight hover:border-muted-foreground/40 disabled:opacity-60",
+                on ? "border-positive bg-primary/15" : "bg-secondary/40",
+              )}
+            >
+              {busy === c.level ? (
+                <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+              ) : (
+                <span className={cn("h-4 w-4 rounded-full ring-[3px] ring-white/10 transition-transform duration-200 ease-spring", c.className, on && "scale-125")} aria-hidden />
+              )}
+              <span aria-hidden>{c.level === 5 ? "Full" : c.label}</span>
+            </button>
+          );
+        })}
+      </div>
+      <p className="mt-3 min-h-5 text-footnote text-muted-foreground" aria-live="polite">
+        {doneLabel ? (
+          <span className="enter-up inline-flex items-center gap-1.5 text-foreground/90">
+            <CheckCircle2 className="h-4 w-4 text-positive" aria-hidden /> Marked {doneLabel.toLowerCase()}. Add photos or details with Check in.
+          </span>
+        ) : (
+          "Updates the live crowd level for everyone."
+        )}
+      </p>
     </div>
   );
 }

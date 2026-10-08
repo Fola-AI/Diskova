@@ -1,10 +1,13 @@
 import { formatDistanceToNowStrict } from "date-fns";
+import { ChevronRight, Flag } from "lucide-react";
 import Link from "next/link";
 
 import { resolveReportForm } from "@/app/admin/(secure)/reports/actions";
 import { ActionForm } from "@/components/admin/action-form";
 import { FilterBar } from "@/components/admin/filter-bar";
 import { Badge } from "@/components/ui/badge";
+import { buttonVariants } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
 import { hrefWith, one, pageOf, pick, type SearchParams } from "@/lib/admin/params";
 import { requireRole } from "@/lib/auth/guards";
 import { Constants } from "@/lib/db/types";
@@ -26,7 +29,7 @@ export default async function AdminReportsPage({ searchParams }: { searchParams:
 
   return (
     <div className="space-y-4">
-      <h1 className="text-2xl font-semibold">Reports ({total})</h1>
+      <h1 className="text-title font-semibold sm:text-display">Reports ({total})</h1>
       <FilterBar
         basePath="/admin/reports"
         sp={sp}
@@ -41,19 +44,20 @@ export default async function AdminReportsPage({ searchParams }: { searchParams:
         {rows.map((r) => {
           const reporter = (r as unknown as { reporter: { username: string; trust_score: number } | null }).reporter;
           return (
-            <li key={r.id} className="space-y-2 rounded-xl border p-4 text-sm" data-testid="report-row">
+            <li key={r.id} className="surface space-y-3 rounded-2xl p-4 text-sm" data-testid="report-row">
               <div className="flex flex-wrap items-center gap-2">
                 <Badge variant="outline">{r.entity_type}</Badge>
                 <Badge variant={r.reason === "dangerous" ? "destructive" : "secondary"}>{r.reason.replace(/_/g, " ")}</Badge>
                 <Badge variant="outline">{r.status.replace(/_/g, " ")}</Badge>
-                <span className="text-xs text-muted-foreground">
+                <span className="text-footnote text-muted-foreground">
                   by @{reporter?.username ?? "deleted"} (trust {reporter?.trust_score ?? "—"}) · {formatDistanceToNowStrict(new Date(r.created_at), { addSuffix: true })}
                 </span>
-                <Link href={target(r.entity_type, r.entity_id)} className="text-xs underline">Open {r.entity_type}</Link>
               </div>
-              {r.details ? <p>{r.details}</p> : null}
-              {r.resolution_note ? <p className="text-xs text-muted-foreground">Resolution: {r.resolution_note}</p> : null}
+              {r.details ? <p className="leading-relaxed">{r.details}</p> : null}
+              {r.resolution_note ? <p className="text-footnote text-muted-foreground">Resolution: {r.resolution_note}</p> : null}
+              <Link href={target(r.entity_type, r.entity_id)} className="hit inline-flex h-10 items-center gap-1 text-footnote font-semibold text-positive underline-offset-4 hover:underline">Open {r.entity_type} <ChevronRight className="h-4 w-4" aria-hidden /></Link>
               {r.status === "open" || r.status === "reviewing" ? (
+                <div className="border-t pt-3">
                 <ActionForm
                   action={resolveReportForm}
                   hidden={{ id: r.id }}
@@ -65,13 +69,14 @@ export default async function AdminReportsPage({ searchParams }: { searchParams:
                     { value: "dismissed", label: "Dismiss" },
                   ]}
                 />
+                </div>
               ) : null}
             </li>
           );
         })}
-        {!rows.length ? <li className="text-sm text-muted-foreground">No reports.</li> : null}
+        {!rows.length ? <li><EmptyState icon={Flag} title="No reports." compact>Nothing matches these filters.</EmptyState></li> : null}
       </ul>
-      {total > page * PAGE_SIZE ? <Link href={hrefWith("/admin/reports", sp, { page: String(page + 1) })} className="text-sm underline">Next page</Link> : null}
+      {total > page * PAGE_SIZE ? <Link href={hrefWith("/admin/reports", sp, { page: String(page + 1) })} className={buttonVariants({ variant: "outline", className: "w-full sm:w-auto" })}>Next page <ChevronRight aria-hidden /></Link> : null}
     </div>
   );
 }

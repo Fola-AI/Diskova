@@ -43,9 +43,9 @@ export async function VendorTable({ sp }: { sp: SearchParams }) {
   const columns: Column<Row>[] = [
     { key: "name", label: "Name", sortable: true, render: (r) => <Link href={`/admin/vendors/${r.id}`} className="font-medium underline-offset-4 hover:underline">{r.name}</Link> },
     { key: "city", label: "City", sortable: true },
-    { key: "area", label: "Area" },
+    { key: "area", label: "Area", mobile: "detail" },
     { key: "category", label: "Category" },
-    { key: "status", label: "Status", sortable: true, render: (r) => <Badge variant={r.status === "published" ? "secondary" : r.status === "suspended" ? "destructive" : "outline"}>{r.status.replace("_", " ")}</Badge> },
+    { key: "status", label: "Status", sortable: true, mobile: "meta", render: (r) => <Badge variant={r.status === "published" ? "secondary" : r.status === "suspended" ? "destructive" : "outline"}>{r.status.replace("_", " ")}</Badge> },
     { key: "verified", label: "Verified", render: (r) => (r.verified ? <Badge variant="gold">Verified</Badge> : "—") },
     { key: "claim_status", label: "Claim" },
     { key: "owner_username", label: "Owner", render: (r) => (r.owner_username ? `@${r.owner_username}` : r.is_seed ? "seed" : "—") },
@@ -93,8 +93,11 @@ export async function VendorTable({ sp }: { sp: SearchParams }) {
         bulkFormId="vendor-bulk"
         testId="vendor-table"
       />
-      <div className="rounded-xl border p-3">
-        <p className="mb-2 text-sm font-medium">Bulk action on selected rows</p>
+      <div className="surface space-y-3 rounded-2xl p-4">
+        <div>
+          <p className="text-callout font-semibold">Bulk action on selected rows</p>
+          <p className="text-footnote text-muted-foreground">Tick rows above, then choose an action.</p>
+        </div>
         <ActionForm formId="vendor-bulk" action={bulkVendorFormAction} choices={[{ value: "approve", label: "Approve selected" }, { value: "suspend", label: "Suspend selected", destructive: true }]} reasonPlaceholder="Reason (required to suspend)" />
       </div>
     </div>

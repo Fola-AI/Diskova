@@ -18,8 +18,8 @@ export default async function EditGuidePage({ params }: { params: Promise<{ id: 
   const city = g.city as unknown as { slug: string } | null;
   return (
     <div className="space-y-4">
-      <Link href="/admin/content" className="text-sm text-muted-foreground hover:underline">← Content</Link>
-      <h1 className="text-2xl font-semibold">{g.title}</h1>
+      <Link href="/admin/content" className="hit inline-flex h-10 items-center text-footnote font-semibold text-muted-foreground underline-offset-4 hover:text-foreground hover:underline">← Content</Link>
+      <h1 className="text-title font-semibold sm:text-display">{g.title}</h1>
       <GuideEditor
         id={g.id}
         status={g.status}

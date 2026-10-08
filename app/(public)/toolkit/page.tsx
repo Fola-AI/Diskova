@@ -16,7 +16,7 @@ export default async function ToolkitIndex() {
   return (
     <div className="container max-w-5xl space-y-6 px-4 py-6">
       <header className="space-y-2">
-        <h1 className="flex items-center gap-2 text-3xl font-semibold sm:text-4xl"><Plane className="h-8 w-8 text-accent" aria-hidden />Diaspora toolkit</h1>
+        <h1 className="flex items-center gap-2 text-display font-semibold sm:text-display-lg"><Plane className="h-8 w-8 text-accent" aria-hidden />Diaspora toolkit</h1>
         <p className="max-w-2xl text-muted-foreground">Everything practical for visiting Nigeria — visas, arrival, SIM cards, money and your first 48 hours.</p>
       </header>
       {guides.length ? (

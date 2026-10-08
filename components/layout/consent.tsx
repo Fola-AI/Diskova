@@ -47,24 +47,24 @@ export function ConsentBanner() {
 
   return (
     <div role="dialog" aria-label="Cookie choices" data-testid="consent-banner"
-      className="consent-banner fixed inset-x-0 bottom-0 z-50 border-t bg-background/95 p-4 pb-[max(1rem,env(safe-area-inset-bottom))] backdrop-blur">
-      <div className="container flex max-w-3xl flex-col gap-3 px-0 sm:flex-row sm:items-center">
-        <p className="flex-1 text-sm text-muted-foreground">
+      className="consent-banner enter-up fixed inset-x-3 bottom-[calc(var(--tabbar-h)+0.75rem)] z-50 rounded-2xl border bg-card/95 p-4 shadow-[0_12px_40px_-8px_hsl(0_0%_0%/0.6)] backdrop-blur-xl sm:inset-x-auto sm:left-1/2 sm:w-[min(44rem,calc(100%-2rem))] sm:-translate-x-1/2">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+        <p className="flex-1 text-footnote text-muted-foreground">
           We use essential cookies to keep you signed in. With your OK we also measure page views and speed
           (anonymous, no ads, no cross-site tracking). <Link href="/privacy#cookies" className="underline underline-offset-4">Details</Link>
         </p>
-        <div className="flex gap-2">
-          <Button size="sm" variant="secondary" onClick={() => choose("essential")}>Essential only</Button>
-          <Button size="sm" onClick={() => choose("analytics")}>Allow analytics</Button>
+        <div className="grid grid-cols-2 gap-2 sm:flex">
+          <Button variant="secondary" onClick={() => choose("essential")}>Essential only</Button>
+          <Button variant="secondary" onClick={() => choose("analytics")}>Allow analytics</Button>
         </div>
       </div>
     </div>
   );
 }
 
-export function CookieSettingsButton() {
+export function CookieSettingsButton({ className = "hover:text-foreground" }: { className?: string }) {
   return (
-    <button type="button" className="hover:text-foreground" onClick={() => document.documentElement.removeAttribute("data-consent")}>
+    <button type="button" className={className} onClick={() => document.documentElement.removeAttribute("data-consent")}>
       Cookie settings
     </button>
   );

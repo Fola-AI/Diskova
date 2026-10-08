@@ -15,14 +15,14 @@ export function OfficialUpdates({ updates, verified }: { updates: OfficialUpdate
   if (!updates.length) return null;
   return (
     <section aria-labelledby="official-heading" className="space-y-3">
-      <h2 id="official-heading" className="flex items-center gap-2 text-xl font-semibold">
+      <h2 id="official-heading" className="flex items-center gap-2 text-title font-semibold">
         <Megaphone className="h-5 w-5 text-accent" aria-hidden /> Live from the venue
       </h2>
       <ul className="space-y-3">
         {updates.map((u) => {
           const photo = u.media[0];
           return (
-            <li key={u.id} className="overflow-hidden rounded-xl border border-accent/40 bg-card" data-testid="official-update">
+            <li key={u.id} className="enter-up overflow-hidden rounded-2xl border border-accent/35 bg-gradient-to-b from-accent/[0.06] to-card shadow-[inset_0_1px_0_0_hsl(0_0%_100%/0.04)]" data-testid="official-update">
               {photo ? (
                 <div className="relative aspect-[4/3] w-full bg-secondary">
                   <Image src={publicStorageUrl("media", photo.storage_path)} alt="Official photo from the venue" fill sizes="(max-width: 768px) 100vw, 720px" className="object-cover" />
@@ -40,11 +40,11 @@ export function OfficialUpdates({ updates, verified }: { updates: OfficialUpdate
                       {crowdLabel(u.crowd_level)}
                     </span>
                   ) : null}
-                  <span className="text-xs text-muted-foreground">
+                  <span className="text-footnote text-muted-foreground">
                     {formatDistanceToNowStrict(new Date(u.created_at), { addSuffix: true })}
                   </span>
                 </div>
-                {u.body ? <p className="text-sm">{u.body}</p> : null}
+                {u.body ? <p className="text-[15px] leading-relaxed">{u.body}</p> : null}
               </div>
             </li>
           );

@@ -23,7 +23,7 @@ export function StepFooter({
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   return (
-    <div className="sticky bottom-0 -mx-4 flex items-center justify-between gap-2 border-t bg-background/95 px-4 py-3 backdrop-blur">
+    <div className="sticky bottom-[var(--tabbar-h)] z-20 -mx-4 flex items-center justify-between gap-2 border-t border-border/70 bg-background/85 px-4 py-3 backdrop-blur-xl supports-[backdrop-filter]:bg-background/70">
       <div className="flex items-center gap-3">
         {backHref ? (
           <Button asChild variant="ghost" size="sm">
@@ -35,7 +35,8 @@ export function StepFooter({
       {nextHref ? (
         <Button
           type="button"
-          disabled={busy}
+          loading={busy}
+          className="min-w-28"
           onClick={async () => {
             setBusy(true);
             const ok = beforeNext ? await beforeNext() : true;
@@ -43,7 +44,7 @@ export function StepFooter({
             if (ok) router.push(nextHref);
           }}
         >
-          {nextLabel} <ArrowRight aria-hidden />
+          {nextLabel} {busy ? null : <ArrowRight aria-hidden />}
         </Button>
       ) : null}
     </div>

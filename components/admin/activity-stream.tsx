@@ -5,6 +5,9 @@ import { Pause, Play } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { nativeSelectClass } from "@/components/ui/select";
+import { cn } from "@/lib/utils";
 
 export interface ActivityItem {
   id: number;
@@ -92,39 +95,42 @@ export function ActivityStream({ initial, cities }: { initial: ActivityItem[]; c
       (!city || e.city_id === city) &&
       (!needle || [e.username, e.vendor_name, describe(e)].some((s) => s?.toLowerCase().includes(needle))),
   );
-  const control = "h-8 rounded-md border bg-background px-2 text-xs";
 
   return (
-    <section className="space-y-3 rounded-xl border p-4" data-testid="activity-stream" data-live={live ? "realtime" : "connecting"}>
+    <section className="surface space-y-4 rounded-2xl p-4" data-testid="activity-stream" data-live={live ? "realtime" : "connecting"}>
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 className="font-semibold">
-          Live activity <span className="text-xs font-normal text-muted-foreground">{live ? "· live" : "· connecting…"}</span>
+        <h2 className="flex items-center gap-2 text-callout font-semibold">
+          Live activity
+          <span className="inline-flex items-center gap-1.5 text-footnote font-normal text-muted-foreground">
+            <span aria-hidden className={cn("h-2 w-2 rounded-full", live ? (paused ? "bg-accent" : "animate-pulse bg-positive") : "bg-muted-foreground/50")} />
+            {live ? (paused ? "· paused" : "· live") : "· connecting…"}
+          </span>
         </h2>
         <Button type="button" size="sm" variant="outline" onClick={paused ? resume : () => setPaused(true)} data-testid="activity-pause">
-          {paused ? <Play className="h-3.5 w-3.5" aria-hidden /> : <Pause className="h-3.5 w-3.5" aria-hidden />}
+          {paused ? <Play aria-hidden /> : <Pause aria-hidden />}
           {paused ? `Resume${buffer.length ? ` (${buffer.length} new)` : ""}` : "Pause"}
         </Button>
       </div>
-      <div className="flex flex-wrap gap-2">
-        <select value={kind} onChange={(e) => setKind(e.target.value)} aria-label="Kind" className={control}>
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+        <select value={kind} onChange={(e) => setKind(e.target.value)} aria-label="Kind" className={nativeSelectClass}>
           <option value="">All kinds</option>
           {KINDS.map((k) => <option key={k} value={k}>{k}</option>)}
         </select>
-        <select value={city} onChange={(e) => setCity(e.target.value)} aria-label="City" className={control}>
+        <select value={city} onChange={(e) => setCity(e.target.value)} aria-label="City" className={nativeSelectClass}>
           <option value="">All cities</option>
           {cities.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
         </select>
-        <input value={who} onChange={(e) => setWho(e.target.value)} placeholder="Vendor or user" aria-label="Vendor or user" className={`${control} w-40`} />
+        <Input value={who} onChange={(e) => setWho(e.target.value)} placeholder="Vendor or user" aria-label="Vendor or user" className="col-span-2 sm:col-span-1" />
       </div>
-      <ul className="max-h-96 divide-y overflow-y-auto text-sm">
+      <ul className="-mx-4 max-h-[28rem] divide-y overflow-y-auto overscroll-contain border-t text-sm">
         {shown.map((e) => (
-          <li key={e.id} className="flex flex-wrap items-baseline gap-x-2 py-1.5" data-testid="activity-item">
-            <span className="rounded bg-secondary px-1.5 py-0.5 font-mono text-[11px]">{e.kind}</span>
+          <li key={e.id} className="flex flex-wrap items-center gap-x-2 gap-y-1 px-4 py-2.5" data-testid="activity-item">
+            <span className="rounded-md bg-secondary px-1.5 py-0.5 font-mono text-caption">{e.kind}</span>
             <span className="min-w-0 flex-1 truncate">{describe(e) || "—"}{e.username ? <span className="text-muted-foreground"> · @{e.username}</span> : null}</span>
-            <span className="text-xs text-muted-foreground">{e.city_name ?? ""} {formatDistanceToNowStrict(new Date(e.at), { addSuffix: true })}</span>
+            <span className="text-footnote text-muted-foreground">{e.city_name ? `${e.city_name} · ` : ""}{formatDistanceToNowStrict(new Date(e.at), { addSuffix: true })}</span>
           </li>
         ))}
-        {!shown.length ? <li className="py-2 text-muted-foreground">Nothing yet.</li> : null}
+        {!shown.length ? <li className="px-4 py-6 text-center text-muted-foreground">Nothing yet.</li> : null}
       </ul>
     </section>
   );

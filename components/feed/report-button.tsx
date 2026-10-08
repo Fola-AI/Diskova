@@ -58,15 +58,15 @@ export function ReportButton({
             <fieldset className="space-y-2">
               <legend className="sr-only">Reason</legend>
               {REPORT_REASONS.map((r) => (
-                <label key={r.value} className="flex items-center gap-3 rounded-md border px-3 py-2.5 text-sm">
-                  <input type="radio" name="reason" value={r.value} checked={reason === r.value} onChange={() => setReason(r.value)} className="accent-[hsl(var(--primary))]" />
+                <label key={r.value} className={`pressable-soft flex min-h-12 cursor-pointer items-center gap-3 rounded-xl border px-3.5 py-2.5 text-sm transition-colors ${reason === r.value ? "border-positive bg-primary/10" : "bg-secondary/30 hover:border-muted-foreground/40"}`}>
+                  <input type="radio" name="reason" value={r.value} checked={reason === r.value} onChange={() => setReason(r.value)} className="h-5 w-5" />
                   {r.label}
                 </label>
               ))}
             </fieldset>
             <Textarea aria-label="Details (optional)" placeholder="Details (optional)" value={details} onChange={(e) => setDetails(e.target.value)} maxLength={1000} rows={3} />
             {state.error ? <FormAlert state={state} /> : null}
-            <Button type="button" className="w-full" disabled={!reason || busy} onClick={submit}>{busy ? "Sending…" : "Send report"}</Button>
+            <Button type="button" className="w-full" size="lg" disabled={!reason} loading={busy} onClick={submit}>{busy ? "Sending…" : "Send report"}</Button>
           </div>
         )}
       </SheetContent>

@@ -1,14 +1,14 @@
 "use client";
 
-import { LocateFixed } from "lucide-react";
+import { LocateFixed, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { getMyHomeCityAction } from "@/app/actions/home-city";
+import { chipClass } from "@/components/ui/chip";
 import { hasAuthCookie } from "@/lib/client/auth-cookie";
 import { getPositionOnce } from "@/lib/client/geo";
-import { cn } from "@/lib/utils";
 
 interface CityOption {
   slug: string;
@@ -33,11 +33,13 @@ function nearest(cities: CityOption[], p: { lat: number; lng: number }): CityOpt
 
 /**
  * City choice (§8.1): signed-in users with a home city are taken there; anyone can tap
- * "Near me" (explicit, one-off geolocation) or pick a city.
+ * "Near me" (explicit, one-off geolocation) or pick a city. The current city scrolls into view.
  */
 export function CitySwitcher({ cities, current, redirectToHome = false }: { cities: CityOption[]; current: string; redirectToHome?: boolean }) {
   const router = useRouter();
   const [locating, setLocating] = useState(false);
+  const [notFound, setNotFound] = useState(false);
+  const currentRef = useRef<HTMLAnchorElement | null>(null);
 
   useEffect(() => {
     if (!redirectToHome || !hasAuthCookie()) return;
@@ -46,31 +48,41 @@ export function CitySwitcher({ cities, current, redirectToHome = false }: { citi
     });
   }, [redirectToHome, current, router]);
 
+  useEffect(() => {
+    currentRef.current?.scrollIntoView({ block: "nearest", inline: "center" });
+  }, [current]);
+
   return (
-    <nav aria-label="Cities" className="-mx-4 flex items-center gap-2 overflow-x-auto px-4 pb-1 text-sm [scrollbar-width:none]">
+    <nav aria-label="Cities" className="rail fade-x -mx-4 gap-2 px-4 py-1">
       <button
         type="button"
+        aria-busy={locating || undefined}
         onClick={async () => {
           setLocating(true);
+          setNotFound(false);
           const pos = await getPositionOnce();
           setLocating(false);
           const c = pos ? nearest(cities, pos) : null;
           if (c) router.push(`/c/${c.slug}`);
+          else setNotFound(true);
         }}
-        className="inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 hover:border-primary/60"
+        className={chipClass(false)}
       >
-        <LocateFixed className="h-3.5 w-3.5" aria-hidden /> {locating ? "Locating…" : "Near me"}
+        {locating ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <LocateFixed className="h-4 w-4" aria-hidden />}
+        {locating ? "Locating…" : notFound ? "Location off" : "Near me"}
       </button>
       {cities.map((c) => (
         <Link
           key={c.slug}
+          ref={c.slug === current ? currentRef : undefined}
           href={`/c/${c.slug}`}
           aria-current={c.slug === current ? "page" : undefined}
-          className={cn("shrink-0 rounded-full border px-3 py-1.5", c.slug === current ? "border-primary bg-primary text-primary-foreground" : "hover:border-primary/60")}
+          className={chipClass(c.slug === current)}
         >
           {c.name}
         </Link>
       ))}
+      <span className="w-2 shrink-0" aria-hidden />
     </nav>
   );
 }

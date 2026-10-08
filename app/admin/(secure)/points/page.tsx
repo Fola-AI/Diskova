@@ -14,23 +14,23 @@ export default async function AdminPointsPage() {
   ]);
   return (
     <div className="space-y-5">
-      <h1 className="text-2xl font-semibold">Points &amp; badges</h1>
-      <section className="rounded-xl border p-4"><PointsForm badges={Object.values(BADGES)} /></section>
+      <h1 className="text-title font-semibold sm:text-display">Points &amp; badges</h1>
+      <section className="surface rounded-2xl p-4"><PointsForm badges={Object.values(BADGES)} /></section>
       <div className="grid gap-4 lg:grid-cols-2">
-        <section className="space-y-2">
-          <h2 className="font-semibold">Top 20</h2>
-          <ol className="divide-y rounded-xl border text-sm">
+        <section className="space-y-3">
+          <h2 className="text-title font-semibold">Top 20</h2>
+          <ol className="surface divide-y rounded-2xl text-sm">
             {(top ?? []).map((p, i) => (
-              <li key={p.id} className="flex gap-2 p-2">
-                <span className="w-6 text-muted-foreground">{i + 1}</span>
-                <span className="flex-1">@{p.username}{p.badges.length ? <span className="text-xs text-muted-foreground"> · {p.badges.join(", ")}</span> : null}</span>
-                <span>{p.points}</span>
+              <li key={p.id} className="flex min-h-12 items-center gap-3 px-4 py-2">
+                <span className="w-6 text-footnote tabular-nums text-muted-foreground">{i + 1}</span>
+                <span className="min-w-0 flex-1">@{p.username}{p.badges.length ? <span className="text-footnote text-muted-foreground"> · {p.badges.join(", ")}</span> : null}</span>
+                <span className="font-semibold tabular-nums">{p.points}</span>
               </li>
             ))}
           </ol>
         </section>
-        <section className="space-y-2">
-          <h2 className="font-semibold">Recent adjustments</h2>
+        <section className="space-y-3">
+          <h2 className="text-title font-semibold">Recent adjustments</h2>
           <AuditList rows={recent ?? []} />
         </section>
       </div>

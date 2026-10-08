@@ -14,10 +14,10 @@ export default async function AssistantPage({ searchParams }: { searchParams: Pr
   const [cities, sp] = await Promise.all([listCities(), searchParams]);
   const def = cities.find((c) => c.slug === sp.city)?.slug ?? DEFAULT_CITY_SLUG;
   return (
-    <div className="container max-w-2xl space-y-4 px-4 py-8">
-      <header className="space-y-1">
-        <h1 className="text-3xl font-semibold">Ask {BRAND_NAME}</h1>
-        <p className="text-sm text-muted-foreground">Where&apos;s busy right now, what&apos;s on, and what it costs — answered from live community reports and venue listings.</p>
+    <div className="container max-w-2xl space-y-5 px-4 py-6">
+      <header className="space-y-1.5">
+        <h1 className="text-display font-semibold">Ask {BRAND_NAME}</h1>
+        <p className="text-[15px] text-muted-foreground">Where&apos;s busy right now, what&apos;s on, and what it costs — answered from live community reports and venue listings.</p>
       </header>
       <AssistantChat cities={cities.map((c) => ({ slug: c.slug, name: c.name }))} defaultCity={def} />
     </div>

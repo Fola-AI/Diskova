@@ -7,7 +7,8 @@ import { ServiceWorkerRegister } from "@/components/layout/service-worker";
 import { Providers } from "@/components/providers";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
-import { BRAND_COLORS, BRAND_NAME, SITE_URL } from "@/lib/config";
+import { TabBar } from "@/components/layout/tab-bar";
+import { BRAND_COLORS, BRAND_NAME, FEATURES, SITE_URL } from "@/lib/config";
 import { CONSENT_BOOT_SCRIPT } from "@/lib/consent";
 
 import "./globals.css";
@@ -60,6 +61,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           <SiteHeader />
           <main id="main">{children}</main>
           <SiteFooter />
+          <TabBar showAsk={FEATURES.aiAssistant} />
         </Providers>
         <ConsentBanner />
         <ServiceWorkerRegister />

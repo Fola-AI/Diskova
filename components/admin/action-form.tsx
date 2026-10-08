@@ -35,21 +35,25 @@ export function ActionForm({
   testId?: string;
 }) {
   const [state, formAction] = useActionState(action, initialFormState);
+  const hasDestructive = choices.some((c) => c.destructive);
   return (
-    <form id={formId} action={formAction} className="space-y-2" data-testid={testId}>
+    <form id={formId} action={formAction} className="space-y-3" data-testid={testId}>
       {Object.entries(hidden ?? {}).map(([k, v]) => <input key={k} type="hidden" name={k} value={v} />)}
       <FormAlert state={state} />
       <div className="flex flex-wrap gap-2">
-        <Input name="reason" placeholder={reasonPlaceholder} aria-label="Reason" className="h-9 min-w-[12rem] flex-1" />
-        {withDays ? <Input name="days" type="number" min={1} max={365} placeholder="Days" aria-label="Days" className="h-9 w-20" /> : null}
+        <Input name="reason" placeholder={reasonPlaceholder} aria-label="Reason" className="min-w-[12rem] flex-1" />
+        {withDays ? <Input name="days" type="number" inputMode="numeric" min={1} max={365} placeholder="Days" aria-label="Days" className="w-24 tabular-nums" /> : null}
       </div>
-      <div className="flex flex-wrap gap-1.5">
+      <div className="flex flex-wrap gap-2">
         {choices.map((c) => (
           <SubmitButton key={c.value} name="action" value={c.value} size="sm" variant={c.destructive ? "destructive" : "secondary"}>
             {c.label}
           </SubmitButton>
         ))}
       </div>
+      {hasDestructive ? (
+        <p className="text-footnote text-muted-foreground">Red actions take effect immediately, need a reason and are recorded in the audit log.</p>
+      ) : null}
     </form>
   );
 }

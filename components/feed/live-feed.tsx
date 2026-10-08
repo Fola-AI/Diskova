@@ -1,6 +1,6 @@
 "use client";
 
-import { Radio } from "lucide-react";
+import { Radio, Users } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { myLikesAction } from "@/app/actions/posts";
@@ -99,18 +99,23 @@ export function LiveFeed({
     <div className="space-y-6" data-testid="live-feed" data-live={live ? "realtime" : "polling"}>
       <OfficialUpdates updates={data.official} verified={verified} />
       <section aria-labelledby="feed-heading" className="space-y-3">
-        <h2 id="feed-heading" className="flex items-center gap-2 text-xl font-semibold">
+        <h2 id="feed-heading" className="flex items-center gap-2 text-title font-semibold">
           <Radio className="h-5 w-5 text-positive" aria-hidden /> Right now
-          {live ? <span className="text-xs font-normal text-muted-foreground">· live</span> : null}
+          {live ? (
+            <span className="ml-1 inline-flex items-center gap-1.5 rounded-full bg-primary/15 px-2 py-0.5 font-sans text-caption font-semibold text-positive">
+              <span className="h-1.5 w-1.5 animate-live-pulse rounded-full bg-positive" aria-hidden /> Live
+            </span>
+          ) : null}
         </h2>
         {data.feed.length ? (
-          <ul className="space-y-3">
+          <ul className="space-y-3" aria-live="polite" aria-relevant="additions">
             {data.feed.map((p) => (
               <PostCard key={p.id} post={p} liked={liked.has(p.id)} />
             ))}
           </ul>
         ) : (
-          <p className="rounded-xl border border-dashed p-4 text-sm text-muted-foreground">
+          <p className="flex items-center gap-3 rounded-2xl border border-dashed p-4 text-sm text-muted-foreground">
+            <Users className="h-5 w-5 shrink-0" aria-hidden />
             No one has checked in recently. Be the first — tap a crowd level above.
           </p>
         )}

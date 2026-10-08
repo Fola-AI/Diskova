@@ -18,13 +18,13 @@ export interface VendorEditValues {
 export function VendorEditForm({ vendorId, values }: { vendorId: string; values: VendorEditValues }) {
   const [state, action] = useActionState(vendorEditAction, initialFormState);
   const field = (name: keyof VendorEditValues, label: string) => (
-    <div className="space-y-1">
+    <div className="space-y-1.5">
       <Label htmlFor={`ve-${name}`}>{label}</Label>
       <Input id={`ve-${name}`} name={name} defaultValue={values[name] ?? ""} />
     </div>
   );
   return (
-    <form action={action} className="space-y-3">
+    <form action={action} className="space-y-4">
       <input type="hidden" name="vendorId" value={vendorId} />
       <FormAlert state={state} />
       <div className="grid gap-3 sm:grid-cols-2">
@@ -35,12 +35,14 @@ export function VendorEditForm({ vendorId, values }: { vendorId: string; values:
         {field("instagram_handle", "Instagram")}
         {field("website_url", "Website")}
       </div>
-      <div className="space-y-1">
+      <div className="space-y-1.5">
         <Label htmlFor="ve-description">Description (markdown)</Label>
         <Textarea id="ve-description" name="description_md" rows={5} defaultValue={values.description_md ?? ""} />
       </div>
-      <Input name="reason" placeholder="Reason for the edit (required, audited)" aria-label="Reason" required minLength={5} />
-      <SubmitButton size="sm">Save changes</SubmitButton>
+      <div className="space-y-3 border-t pt-4">
+        <Input name="reason" placeholder="Reason for the edit (required, audited)" aria-label="Reason" required minLength={5} />
+        <SubmitButton pendingText="Saving…">Save changes</SubmitButton>
+      </div>
     </form>
   );
 }

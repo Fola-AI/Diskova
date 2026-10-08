@@ -61,7 +61,7 @@ describe("service-role isolation (PRD §7.2)", () => {
 });
 
 describe("built client bundles contain no server secrets (PRD §7.2)", () => {
-  const staticDir = join(process.cwd(), ".next", "static");
+  const staticDir = join(process.cwd(), process.env.NEXT_DIST_DIR || ".next", "static");
   const secrets = [
     process.env.SUPABASE_SERVICE_ROLE_KEY,
     process.env.OPENAI_API_KEY,

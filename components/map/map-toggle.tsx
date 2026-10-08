@@ -11,7 +11,7 @@ import { trackEvent } from "@/lib/analytics";
 // Mapbox GL (≈ 1 MB) is fetched only when the visitor asks for the map (§2, §8.1).
 const VendorMap = dynamic(() => import("@/components/map/vendor-map"), {
   ssr: false,
-  loading: () => <div className="h-full w-full animate-pulse bg-secondary" aria-label="Loading map" />,
+  loading: () => <div className="skeleton h-full w-full rounded-none" role="status" aria-label="Loading map" />,
 });
 
 export function MapToggle({
@@ -21,9 +21,12 @@ export function MapToggle({
   points,
   staticImageUrl,
   label = "Show map",
+  hint,
   eager = false,
   heat = false,
 }: {
+  /** Secondary line under the button label. */
+  hint?: string;
   token: string;
   center: { lat: number; lng: number };
   zoom?: number;
@@ -41,7 +44,7 @@ export function MapToggle({
 
   if (!open) {
     return (
-      <div className="relative h-40 overflow-hidden rounded-xl border sm:h-56">
+      <div className="surface group relative h-44 overflow-hidden rounded-2xl sm:h-60">
         {staticImageUrl ? (
           // Static preview image: cheap first paint, no GL.
           // eslint-disable-next-line @next/next/no-img-element
@@ -51,27 +54,28 @@ export function MapToggle({
             loading={eager ? "eager" : "lazy"}
             fetchPriority={eager ? "high" : "auto"}
             decoding="async"
-            className="h-full w-full object-cover opacity-95" />
+            className="h-full w-full object-cover opacity-90 transition-transform duration-700 ease-out group-hover:scale-[1.02]" />
         ) : (
           <div className="h-full w-full bg-secondary" />
         )}
-        <div className="absolute inset-0 grid place-items-center bg-gradient-to-t from-background/40 to-transparent">
-          <Button type="button" onClick={() => { setOpen(true); trackEvent("map_opened", { heat }); }} data-testid="map-toggle">
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-gradient-to-t from-background/70 via-background/10 to-transparent">
+          <Button type="button" size="lg" className="rounded-full px-6" onClick={() => { setOpen(true); trackEvent("map_opened", { heat }); }} data-testid="map-toggle">
             <MapIcon aria-hidden /> {label}
           </Button>
+          {hint ? <span className="rounded-full bg-black/55 px-2.5 py-1 text-caption font-medium text-white/90 backdrop-blur">{hint}</span> : null}
         </div>
       </div>
     );
   }
 
   return (
-    <div className="relative h-[60vh] min-h-[320px] overflow-hidden rounded-xl border" data-testid="map-container">
+    <div className="surface enter-fade relative h-[60vh] min-h-[320px] overflow-hidden rounded-2xl" data-testid="map-container">
       <VendorMap token={token} center={center} zoom={zoom} points={points} heat={heat} />
       <Button
         type="button"
         size="icon"
         variant="secondary"
-        className="absolute left-2 top-2 h-9 w-9"
+        className="absolute left-2 top-2 rounded-full shadow-lg"
         onClick={() => setOpen(false)}
         aria-label="Hide map"
       >

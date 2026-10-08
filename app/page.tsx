@@ -20,16 +20,17 @@ export default async function HomePage() {
   const [city, cities] = await Promise.all([getCityBySlug(DEFAULT_CITY_SLUG), listCities()]);
   if (!city) notFound();
   return (
-    <div className="container max-w-6xl space-y-6 px-4 py-4">
+    <div className="container max-w-6xl space-y-4 px-4 py-3">
       <JsonLd data={siteJsonLd()} />
       <CitySwitcher cities={cities} current={city.slug} redirectToHome />
-      <TonightView city={city} />
-      <SearchBox />
-      <Button asChild variant="secondary" className="w-full sm:w-auto">
-        <Link href={`/c/${city.slug}#places`}>
-          Explore every place in {city.name} <ArrowRight aria-hidden />
-        </Link>
-      </Button>
+      <TonightView city={city} search={<SearchBox />} />
+      <div className="pt-6">
+        <Button asChild variant="secondary" size="lg" className="w-full sm:w-auto">
+          <Link href={`/c/${city.slug}#places`}>
+            Explore every place in {city.name} <ArrowRight aria-hidden />
+          </Link>
+        </Button>
+      </div>
     </div>
   );
 }

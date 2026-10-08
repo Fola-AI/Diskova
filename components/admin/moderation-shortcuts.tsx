@@ -7,6 +7,8 @@ import { useEffect, useState } from "react";
  * A approve · R remove (asks for a reason first) · S skip to next item · N focus the note/reason box.
  * Ignored while typing in a field (except Escape, which returns focus to the queue).
  */
+const kbd = "inline-grid h-6 min-w-6 place-items-center rounded-md border border-b-2 bg-secondary px-1.5 font-mono text-caption text-foreground";
+
 export function ModerationShortcuts() {
   const [index, setIndex] = useState(0);
   const [hint, setHint] = useState<string | null>(null);
@@ -66,9 +68,13 @@ export function ModerationShortcuts() {
   }, [index]);
 
   return (
-    <p className="text-xs text-muted-foreground" aria-live="polite" data-testid="moderation-shortcuts">
-      Shortcuts: <kbd className="rounded border px-1">A</kbd> approve · <kbd className="rounded border px-1">R</kbd> remove · <kbd className="rounded border px-1">S</kbd> skip · <kbd className="rounded border px-1">N</kbd> note
-      {hint ? <span className="ml-2 text-foreground">— {hint}</span> : null}
+    <p className="hidden flex-wrap items-center gap-x-2 gap-y-1 text-footnote text-muted-foreground md:flex" aria-live="polite" data-testid="moderation-shortcuts">
+      <span className="text-caption font-semibold uppercase tracking-[0.06em]">Shortcuts</span>
+      <span><kbd className={kbd}>A</kbd> approve</span>
+      <span><kbd className={kbd}>R</kbd> remove</span>
+      <span><kbd className={kbd}>S</kbd> skip</span>
+      <span><kbd className={kbd}>N</kbd> note</span>
+      {hint ? <span className="font-semibold text-foreground">— {hint}</span> : null}
     </p>
   );
 }

@@ -26,7 +26,7 @@ export default async function OnboardingPage({
   if (current && !["draft", "rejected"].includes(current.status)) {
     return (
       <div className="space-y-4">
-        <h1 className="text-3xl font-semibold">You already have a listing</h1>
+        <h1 className="text-display font-semibold">You already have a listing</h1>
         <p className="text-muted-foreground">
           {current.name} is {current.status.replace("_", " ")}. Edit it from your dashboard, or list another venue.
         </p>
@@ -41,7 +41,7 @@ export default async function OnboardingPage({
   return (
     <div className="space-y-5">
       <div className="space-y-2">
-        <h1 className="text-3xl font-semibold">{current ? `Finish listing ${current.name}` : "List your venue"}</h1>
+        <h1 className="text-display font-semibold">{current ? `Finish listing ${current.name}` : "List your venue"}</h1>
         <p className="text-sm text-muted-foreground">Takes about 5 minutes. Your progress saves as you go.</p>
       </div>
       {step === "basics" ? <ListingNotice markdown={settings.monetisation_notice_md} /> : null}

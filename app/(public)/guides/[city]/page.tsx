@@ -43,12 +43,12 @@ export default async function CityGuideHub({ params, searchParams }: { params: P
     <div className="container max-w-5xl space-y-8 px-4 py-6">
       <header className="space-y-2">
         <p className="text-sm text-muted-foreground"><Link href="/guides" className="hover:underline">Guides</Link> / {city.name}</p>
-        <h1 className="text-3xl font-semibold sm:text-4xl">{city.name} guide</h1>
+        <h1 className="text-display font-semibold sm:text-display-lg">{city.name} guide</h1>
         {city.intro_md ? <p className="max-w-2xl text-muted-foreground">{city.intro_md}</p> : null}
       </header>
       {guides.length ? (
         <section className="space-y-3">
-          <h2 className="text-xl font-semibold">Guides</h2>
+          <h2 className="text-title font-semibold">Guides</h2>
           <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{guides.map((g) => <li key={g.id}><GuideCard guide={g} /></li>)}</ul>
         </section>
       ) : null}

@@ -2,10 +2,9 @@
 
 import { UserRound } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
-import { hasAuthCookie } from "@/lib/client/auth-cookie";
+import { useSignedIn } from "@/lib/client/use-signed-in";
 
 /**
  * Header sign-in state without loading supabase-js on public pages (~110 KB): we only check whether a
@@ -13,16 +12,9 @@ import { hasAuthCookie } from "@/lib/client/auth-cookie";
  * the login page.
  */
 export function AuthNav() {
-  const [signedIn, setSignedIn] = useState<boolean | null>(null);
+  const signedIn = useSignedIn();
 
-  useEffect(() => {
-    setSignedIn(hasAuthCookie());
-    const onFocus = () => setSignedIn(hasAuthCookie());
-    window.addEventListener("focus", onFocus);
-    return () => window.removeEventListener("focus", onFocus);
-  }, []);
-
-  if (signedIn === null) return <span className="h-9 w-20" aria-hidden />;
+  if (signedIn === null) return <span className="inline-block h-10 w-20" aria-hidden />;
   if (!signedIn) {
     return (
       <Button asChild size="sm" variant="secondary">

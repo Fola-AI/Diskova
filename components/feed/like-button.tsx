@@ -18,7 +18,7 @@ export function LikeButton({ postId, count, liked: initialLiked }: { postId: str
       variant="ghost"
       size="sm"
       aria-pressed={liked}
-      aria-label={liked ? "Unlike" : "Like"}
+      aria-label={liked ? `Unlike${n ? ` (${n})` : ""}` : `Like${n ? ` (${n})` : ""}`}
       disabled={busy}
       onClick={async () => {
         setBusy(true);
@@ -37,7 +37,8 @@ export function LikeButton({ postId, count, liked: initialLiked }: { postId: str
         setN(res.count);
       }}
     >
-      <Heart className={cn(liked && "fill-current text-destructive")} aria-hidden /> {n > 0 ? n : ""}
+      <Heart className={cn("transition-transform duration-200 ease-spring", liked && "scale-110 fill-current text-destructive")} aria-hidden />
+      <span className="tabular-nums">{n > 0 ? n : ""}</span>
     </Button>
   );
 }

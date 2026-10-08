@@ -1,8 +1,10 @@
+import { CalendarCheck, Pencil } from "lucide-react";
 import Link from "next/link";
 
 import { EventDecisionForm } from "@/components/admin/event-decision-form";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
 import { requireRole } from "@/lib/auth/guards";
 import { SEASON_NAME } from "@/lib/config";
 import { eventDateParts } from "@/lib/events/format";
@@ -16,51 +18,58 @@ export default async function AdminEventsPage() {
   return (
     <div className="space-y-8">
       <section className="space-y-3">
-        <h1 className="text-2xl font-semibold">Events awaiting review ({pending.length})</h1>
-        {!pending.length ? <p className="text-sm text-muted-foreground">Nothing to review.</p> : null}
+        <h1 className="text-title font-semibold sm:text-display">Events awaiting review ({pending.length})</h1>
+        {!pending.length ? <EmptyState icon={CalendarCheck} title="Nothing to review." compact>Submitted events appear here for approval.</EmptyState> : null}
         <div className="grid gap-4 md:grid-cols-2">
           {pending.map((e) => (
-            <Card key={e.id} data-testid="pending-event">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-lg">{e.title}</CardTitle>
-                <p className="text-sm text-muted-foreground">
+            <Card key={e.id} data-testid="pending-event" className="flex flex-col">
+              <CardHeader className="p-4 pb-3">
+                <CardTitle className="text-callout">{e.title}</CardTitle>
+                <p className="text-footnote text-muted-foreground">
                   {eventDateParts(e.starts_at).long} · {meta(e).city?.name} · {e.venue_name_freeform} · by @{meta(e).submitter?.username ?? "unknown"}
-                  {e.is_december_season ? <Badge variant="gold" className="ml-2">{SEASON_NAME}</Badge> : null}
                 </p>
+                {e.is_december_season ? <Badge variant="gold" className="self-start">{SEASON_NAME}</Badge> : null}
               </CardHeader>
-              <CardContent className="space-y-2">
-                <Link href={`/admin/events/${e.id}`} className="text-sm underline underline-offset-4">Edit</Link>
-                <EventDecisionForm eventId={e.id} mode="pending" />
+              <CardContent className="flex flex-1 flex-col gap-3 p-4 pt-0">
+                <Link href={`/admin/events/${e.id}`} className="hit inline-flex h-10 items-center gap-1.5 self-start text-sm font-semibold text-positive underline-offset-4 hover:underline">
+                  <Pencil className="h-4 w-4" aria-hidden /> Edit
+                </Link>
+                <div className="mt-auto border-t pt-3">
+                  <EventDecisionForm eventId={e.id} mode="pending" />
+                </div>
               </CardContent>
             </Card>
           ))}
         </div>
       </section>
       <section className="space-y-3">
-        <h2 className="text-xl font-semibold">Upcoming published</h2>
-        <ul className="divide-y rounded-xl border">
+        <h2 className="text-title font-semibold">Upcoming published</h2>
+        <ul className="surface divide-y rounded-2xl">
           {upcoming.map((e) => (
-            <li key={e.id} className="grid gap-2 px-4 py-3 text-sm sm:grid-cols-[1fr_auto]">
-              <span>
-                <Link href={`/events/${e.slug}`} className="font-medium hover:underline">{e.title}</Link>{" "}
-                <Link href={`/admin/events/${e.id}`} className="text-xs text-muted-foreground underline">edit</Link>
-                <span className="block text-xs text-muted-foreground">{eventDateParts(e.starts_at).long} · {meta(e).city?.name}{e.is_featured ? " · featured" : ""}</span>
-              </span>
+            <li key={e.id} className="grid gap-3 p-4 text-sm lg:grid-cols-[minmax(0,1fr)_minmax(0,22rem)]">
+              <div className="min-w-0 space-y-0.5">
+                <p className="flex flex-wrap items-center gap-x-3">
+                  <Link href={`/events/${e.slug}`} className="font-semibold underline-offset-4 hover:underline">{e.title}</Link>
+                  <Link href={`/admin/events/${e.id}`} className="hit inline-flex h-10 items-center text-footnote font-semibold text-positive underline-offset-4 hover:underline">edit</Link>
+                </p>
+                <p className="text-footnote text-muted-foreground">{eventDateParts(e.starts_at).long} · {meta(e).city?.name}{e.is_featured ? " · featured" : ""}</p>
+              </div>
               <EventDecisionForm eventId={e.id} mode="published" featured={e.is_featured} />
             </li>
           ))}
+          {!upcoming.length ? <li className="p-4 text-sm text-muted-foreground">No upcoming published events.</li> : null}
         </ul>
       </section>
       <section className="space-y-3">
-        <h2 className="text-xl font-semibold">Possible duplicates ({duplicates.length})</h2>
-        <p className="text-sm text-muted-foreground">Same city, same day, similar title. Cancel or reject the weaker one with a reason.</p>
-        <ul className="divide-y rounded-xl border text-sm" data-testid="event-duplicates">
+        <h2 className="text-title font-semibold">Possible duplicates ({duplicates.length})</h2>
+        <p className="text-footnote text-muted-foreground">Same city, same day, similar title. Cancel or reject the weaker one with a reason.</p>
+        <ul className="surface divide-y rounded-2xl text-sm" data-testid="event-duplicates">
           {duplicates.map((d) => (
-            <li key={`${d.a_id}-${d.b_id}`} className="flex flex-wrap gap-2 px-4 py-3">
-              <Link href={`/admin/events/${d.a_id}`} className="underline">{d.a_title}</Link>
-              <span className="text-muted-foreground">≈</span>
-              <Link href={`/admin/events/${d.b_id}`} className="underline">{d.b_title}</Link>
-              <span className="text-xs text-muted-foreground">{d.day} · {Math.round(d.similarity * 100)}% similar</span>
+            <li key={`${d.a_id}-${d.b_id}`} className="flex flex-wrap items-center gap-x-2 gap-y-1 px-4 py-3">
+              <Link href={`/admin/events/${d.a_id}`} className="font-medium underline underline-offset-4">{d.a_title}</Link>
+              <span className="text-muted-foreground" aria-label="similar to">≈</span>
+              <Link href={`/admin/events/${d.b_id}`} className="font-medium underline underline-offset-4">{d.b_title}</Link>
+              <span className="basis-full text-footnote text-muted-foreground">{d.day} · {Math.round(d.similarity * 100)}% similar</span>
             </li>
           ))}
           {!duplicates.length ? <li className="px-4 py-3 text-muted-foreground">None found.</li> : null}

@@ -60,34 +60,37 @@ export function AddToNightSheet({ target, open, onOpenChange }: { target: AddTar
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent title="Add to my night" description={`Save ${target.name} to a list. Share it with friends when it's ready.`} data-testid="add-to-night-sheet">
-        <div className="space-y-3">
-          {error ? <p role="alert" className="text-sm text-destructive">{error}</p> : null}
+        <div className="space-y-4">
+          {error ? <p role="alert" className="rounded-xl border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm">{error}</p> : null}
+          <form onSubmit={(e) => void createAndAdd(e)} className="flex gap-2">
+            <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="New list, e.g. Saturday in Lekki" aria-label="New list name" maxLength={80} />
+            <Button type="submit" disabled={busy !== null || !title.trim()} loading={busy === "new"}>
+              {busy === "new" ? null : <Plus aria-hidden />} Create
+            </Button>
+          </form>
           {lists === null ? (
-            <p className="flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" aria-hidden /> Loading your lists…</p>
+            <div className="space-y-2" aria-hidden>
+              {[0, 1].map((i) => <div key={i} className="skeleton h-14 rounded-2xl" />)}
+              <p role="status" className="sr-only">Loading your lists…</p>
+            </div>
           ) : (
-            <ul className="space-y-1.5">
+            <ul className="surface divide-y overflow-hidden rounded-2xl">
               {lists.map((l) => (
                 <li key={l.id}>
                   <button type="button" onClick={() => void toggle(l)} disabled={busy !== null} aria-pressed={l.has}
-                    className="flex w-full items-center gap-3 rounded-lg border px-3 py-2.5 text-left text-sm transition-colors hover:border-primary/60 disabled:opacity-60">
-                    <span className={l.has ? "grid h-5 w-5 place-items-center rounded bg-primary text-primary-foreground" : "h-5 w-5 rounded border"} aria-hidden>
-                      {busy === l.id ? <Loader2 className="h-3 w-3 animate-spin" /> : l.has ? <Check className="h-3.5 w-3.5" /> : null}
+                    className="flex min-h-14 w-full items-center gap-3 px-4 py-2.5 text-left text-[15px] transition-colors hover:bg-secondary/60 active:bg-secondary disabled:opacity-60">
+                    <span className={l.has ? "grid h-6 w-6 shrink-0 place-items-center rounded-full bg-positive text-background" : "h-6 w-6 shrink-0 rounded-full border-2 border-muted-foreground/40"} aria-hidden>
+                      {busy === l.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : l.has ? <Check className="pop h-4 w-4" strokeWidth={3} /> : null}
                     </span>
-                    <span className="flex-1 font-medium">{l.title}</span>
-                    <span className="text-xs text-muted-foreground">{l.item_count} {l.item_count === 1 ? "item" : "items"}</span>
+                    <span className="min-w-0 flex-1 truncate font-semibold">{l.title}</span>
+                    <span className="shrink-0 text-footnote text-muted-foreground">{l.item_count} {l.item_count === 1 ? "item" : "items"}</span>
                   </button>
                 </li>
               ))}
-              {!lists.length ? <li className="text-sm text-muted-foreground">No lists yet — name your first one below.</li> : null}
+              {!lists.length ? <li className="px-4 py-5 text-center text-sm text-muted-foreground">No lists yet — name your first one above.</li> : null}
             </ul>
           )}
-          <form onSubmit={(e) => void createAndAdd(e)} className="flex gap-2">
-            <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="New list, e.g. Saturday in Lekki" aria-label="New list name" maxLength={80} />
-            <Button type="submit" disabled={busy !== null || !title.trim()}>
-              {busy === "new" ? <Loader2 className="animate-spin" aria-hidden /> : <Plus aria-hidden />} Create
-            </Button>
-          </form>
-          <Link href="/me/lists" className="block text-center text-sm text-muted-foreground underline underline-offset-4">Manage my lists</Link>
+          <Link href="/me/lists" className="flex min-h-11 items-center justify-center text-sm font-medium text-muted-foreground underline underline-offset-4 hover:text-foreground">Manage my lists</Link>
         </div>
       </SheetContent>
     </Sheet>

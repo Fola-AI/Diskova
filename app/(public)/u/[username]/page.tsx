@@ -42,7 +42,7 @@ export default async function PublicProfilePage({ params }: { params: Params }) 
       <header className="flex items-center gap-4">
         <Avatar url={p.avatar_url} name={name} size={72} />
         <div className="min-w-0">
-          <h1 className="truncate text-2xl font-semibold">{name}</h1>
+          <h1 className="truncate text-title font-semibold sm:text-display">{name}</h1>
           <p className="text-sm text-muted-foreground">@{p.username}</p>
         </div>
       </header>
@@ -53,7 +53,7 @@ export default async function PublicProfilePage({ params }: { params: Params }) 
         {(p.badges ?? []).map((b) => <Badge key={b} variant="gold">{b}</Badge>)}
       </div>
       <section className="space-y-3">
-        <h2 className="text-xl font-semibold">Recent posts</h2>
+        <h2 className="text-title font-semibold">Recent posts</h2>
         {posts.length ? (
           <ul className="space-y-3">{posts.map((post) => <PostCard key={post.id} post={post} liked={false} showVendor />)}</ul>
         ) : (

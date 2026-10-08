@@ -1,8 +1,11 @@
 import { format } from "date-fns";
+import { ChevronDown, Download, ScrollText } from "lucide-react";
 import Link from "next/link";
 
 import { AuditDiff } from "@/components/admin/audit-list";
 import { FilterBar } from "@/components/admin/filter-bar";
+import { buttonVariants } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
 import { getAdminSupabase } from "@/lib/admin-db/client";
 import { hrefWith, one, uuidParam, type SearchParams } from "@/lib/admin/params";
 import { requireRole } from "@/lib/auth/guards";
@@ -30,8 +33,8 @@ export default async function AdminAuditPage({ searchParams }: { searchParams: P
 
   return (
     <div className="space-y-4">
-      <h1 className="text-2xl font-semibold">Audit log</h1>
-      <p className="text-sm text-muted-foreground">Append-only. Nobody — including super admins and the service role — can edit or delete entries.</p>
+      <h1 className="text-title font-semibold sm:text-display">Audit log</h1>
+      <p className="text-footnote text-muted-foreground">Append-only. Nobody — including super admins and the service role — can edit or delete entries.</p>
       <FilterBar
         basePath="/admin/audit"
         sp={sp}
@@ -43,26 +46,31 @@ export default async function AdminAuditPage({ searchParams }: { searchParams: P
           { name: "actor", label: "Actor id", type: "text" },
         ]}
       />
-      <div className="flex justify-end">
-        <a href={`/admin/export/audit?${exportQuery.toString()}`} className="rounded-md border px-2 py-1 text-xs hover:bg-secondary" data-testid="export-csv">Export CSV</a>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <span className="text-footnote tabular-nums text-muted-foreground">{rows.length ? `${rows.length} entr${rows.length === 1 ? "y" : "ies"}${rows.length === LIMIT ? " (newest first)" : ""}` : ""}</span>
+        <a href={`/admin/export/audit?${exportQuery.toString()}`} className={buttonVariants({ variant: "outline", size: "sm" })} data-testid="export-csv"><Download aria-hidden /> Export CSV</a>
       </div>
-      <ul className="divide-y rounded-xl border text-sm" data-testid="audit-table">
+      <ul className="surface divide-y rounded-2xl text-sm" data-testid="audit-table">
         {rows.map((r) => (
-          <li key={r.id} className="space-y-1 p-3" data-testid="audit-row">
-            <div className="flex flex-wrap items-baseline gap-2">
-              <span className="font-mono text-xs">{r.action}</span>
-              <span className="text-xs text-muted-foreground">
+          <li key={r.id} className="space-y-1 p-4" data-testid="audit-row">
+            <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+              <span className="rounded-md bg-secondary px-1.5 py-0.5 font-mono text-footnote">{r.action}</span>
+              <span className="text-footnote text-muted-foreground">
                 {format(new Date(r.at), "d MMM yyyy HH:mm:ss")} · {r.actor_id ? `@${names.get(r.actor_id) ?? r.actor_id.slice(0, 8)}` : "system"} ({r.actor_role ?? "—"}) · {r.entity_type}
                 {r.entity_id ? ` ${r.entity_id.slice(0, 8)}` : ""}
               </span>
             </div>
-            {r.reason ? <p className="text-xs">Reason: “{r.reason}”</p> : null}
+            {r.reason ? <p className="text-footnote">Reason: “{r.reason}”</p> : null}
             <AuditDiff before={r.before} after={r.after} />
           </li>
         ))}
-        {!rows.length ? <li className="p-3 text-muted-foreground">No entries.</li> : null}
+        {!rows.length ? <li className="p-2"><EmptyState icon={ScrollText} title="No entries." compact className="border-0 shadow-none">Try fewer filters.</EmptyState></li> : null}
       </ul>
-      {rows.length === LIMIT ? <Link href={hrefWith("/admin/audit", sp, { before: String(rows.at(-1)!.id) })} className="text-sm underline">Older entries</Link> : null}
+      {rows.length === LIMIT ? (
+        <Link href={hrefWith("/admin/audit", sp, { before: String(rows.at(-1)!.id) })} className={buttonVariants({ variant: "outline", className: "w-full sm:w-auto" })}>
+          Older entries <ChevronDown aria-hidden />
+        </Link>
+      ) : null}
     </div>
   );
 }

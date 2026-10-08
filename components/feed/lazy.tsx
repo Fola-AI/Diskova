@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 export const LazyCheckinSheet = dynamic(() => import("@/components/feed/checkin-sheet").then((m) => m.CheckinSheet), {
   ssr: false,
   loading: () => (
-    <Button type="button" className="w-full" size="lg" disabled>
+    <Button type="button" variant="secondary" className="w-full" size="lg" disabled>
       <CheckCircle2 aria-hidden /> Check in
     </Button>
   ),

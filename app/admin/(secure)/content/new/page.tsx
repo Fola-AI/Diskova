@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import { GuideEditor } from "@/components/admin/guide-editor";
 import { requireRole } from "@/lib/auth/guards";
 import { listCities } from "@/lib/db/directory";
@@ -7,7 +9,8 @@ export default async function NewGuidePage() {
   const cities = await listCities();
   return (
     <div className="space-y-4">
-      <h1 className="text-2xl font-semibold">New guide</h1>
+      <Link href="/admin/content" className="hit inline-flex h-10 items-center text-footnote font-semibold text-muted-foreground underline-offset-4 hover:text-foreground hover:underline">← Content</Link>
+      <h1 className="text-title font-semibold sm:text-display">New guide</h1>
       <GuideEditor
         id={null}
         status={null}

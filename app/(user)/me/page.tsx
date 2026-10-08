@@ -1,12 +1,11 @@
 import type { Metadata } from "next";
-import { Award, ListChecks, ListPlus, Settings, ShieldCheck, Store, Trophy } from "lucide-react";
-import Link from "next/link";
+import { Award, Bookmark, ListChecks, LogOut, Settings, ShieldCheck, Sparkles, Store, Trophy, UserRound } from "lucide-react";
 
 import { FormAlert } from "@/components/forms/form-alert";
 import { Avatar } from "@/components/me/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { ListGroup, ListRow } from "@/components/ui/list-row";
 import { requireUser } from "@/lib/auth/guards";
 import { isStaffRole } from "@/lib/auth/roles";
 
@@ -22,7 +21,7 @@ export default async function MePage({
   const name = profile.display_name ?? profile.username;
 
   return (
-    <div className="container max-w-2xl space-y-6 px-4 py-8">
+    <div className="container max-w-2xl space-y-6 px-4 py-6">
       {params.welcome ? <FormAlert state={{ message: "Your email is confirmed. Welcome!" }} /> : null}
       {params.password ? <FormAlert state={{ message: "Your password has been updated." }} /> : null}
       {params.restricted || profile.status === "suspended" || profile.status === "banned" ? (
@@ -33,19 +32,19 @@ export default async function MePage({
         />
       ) : null}
 
-      <div className="flex items-center gap-4">
-        <Avatar url={profile.avatar_url} name={name} size={72} />
-        <div className="min-w-0">
-          <h1 className="truncate text-2xl font-semibold">{name}</h1>
-          <p className="text-sm text-muted-foreground">@{profile.username}</p>
+      <section className="surface relative overflow-hidden rounded-3xl p-5">
+        <div aria-hidden className="absolute inset-x-0 top-0 -z-0 h-20 bg-[radial-gradient(90%_100%_at_0%_0%,rgba(11,122,59,0.3),transparent_70%)]" />
+        <div className="relative flex items-center gap-4">
+          <Avatar url={profile.avatar_url} name={name} size={72} className="ring-2 ring-background" />
+          <div className="min-w-0 flex-1">
+            <h1 className="truncate text-title font-semibold sm:text-display">{name}</h1>
+            <p className="text-sm text-muted-foreground">@{profile.username}</p>
+          </div>
         </div>
-      </div>
-
-      <Card>
-        <CardContent className="flex items-center justify-between gap-4 pt-5">
+        <div className="relative mt-4 flex items-center justify-between gap-3 rounded-2xl bg-secondary/60 px-4 py-3">
           <div className="flex items-center gap-2">
             <Award className="h-5 w-5 text-accent" aria-hidden />
-            <span className="text-lg font-semibold">{profile.points}</span>
+            <span className="text-title font-semibold tabular-nums">{profile.points}</span>
             <span className="text-sm text-muted-foreground">points</span>
           </div>
           <div className="flex flex-wrap justify-end gap-1">
@@ -54,44 +53,37 @@ export default async function MePage({
                 <Badge key={b} variant="gold">{b}</Badge>
               ))
             ) : (
-              <span className="text-xs text-muted-foreground">Badges appear as you check in</span>
+              <span className="text-footnote text-muted-foreground">Check in to earn badges</span>
             )}
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </section>
 
       {!profile.email_verified_at ? (
         <FormAlert state={{ error: "Confirm your email to start posting." }} />
       ) : null}
 
-      <div className="grid gap-3 sm:grid-cols-2">
-        <Button asChild variant="secondary" className="justify-start">
-          <Link href="/me/posts"><ListChecks aria-hidden /> My posts</Link>
-        </Button>
-        <Button asChild variant="secondary" className="justify-start">
-          <Link href="/me/lists"><ListPlus aria-hidden /> My lists</Link>
-        </Button>
-        <Button asChild variant="secondary" className="justify-start">
-          <Link href="/me/settings"><Settings aria-hidden /> Settings</Link>
-        </Button>
-        <Button asChild variant="secondary" className="justify-start">
-          <Link href={`/u/${profile.username}`}><Award aria-hidden /> Public profile</Link>
-        </Button>
-        <Button asChild variant="secondary" className="justify-start">
-          <Link href="/leaderboard"><Trophy aria-hidden /> Leaderboard</Link>
-        </Button>
-        <Button asChild variant="secondary" className="justify-start">
-          <Link href="/vendor"><Store aria-hidden /> For venues</Link>
-        </Button>
-        {isStaffRole(profile.role) ? (
-          <Button asChild variant="secondary" className="justify-start">
-            <Link href="/admin"><ShieldCheck aria-hidden /> Admin</Link>
-          </Button>
-        ) : null}
-      </div>
+      <ListGroup title="Activity">
+        <ListRow href="/me/posts" icon={ListChecks} label="My posts" detail="Check-ins and pulses" />
+        <ListRow href="/me/lists" icon={Bookmark} label="My lists" detail="Saved places and plans" />
+        <ListRow href={`/u/${profile.username}`} icon={UserRound} label="Public profile" detail="What others see" />
+        <ListRow href="/leaderboard" icon={Trophy} label="Leaderboard" />
+        <ListRow href="/assistant" icon={Sparkles} label="Ask the assistant" prefetch={false} />
+      </ListGroup>
 
-      <form action="/auth/signout" method="post">
-        <Button type="submit" variant="ghost" className="text-muted-foreground">Sign out</Button>
+      <ListGroup title="Account">
+        <ListRow href="/me/settings" icon={Settings} label="Settings" detail="Profile, photo, location, delete account" />
+      </ListGroup>
+
+      <ListGroup title="Venues">
+        <ListRow href="/vendor" icon={Store} label="For venues" detail="List or manage your venue" prefetch={false} />
+        {isStaffRole(profile.role) ? <ListRow href="/admin" icon={ShieldCheck} label="Admin" prefetch={false} /> : null}
+      </ListGroup>
+
+      <form action="/auth/signout" method="post" className="pt-2">
+        <Button type="submit" variant="ghost" className="w-full text-destructive hover:bg-destructive/10 hover:text-destructive">
+          <LogOut aria-hidden /> Sign out
+        </Button>
       </form>
     </div>
   );

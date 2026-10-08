@@ -1,9 +1,9 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { PricesEditor } from "@/components/vendor-dashboard/prices-editor";
 import { requireVerifiedUser } from "@/lib/auth/guards";
 import { getCurrentVendor } from "@/lib/services/vendors";
+import { BackLink } from "@/components/ui/back-link";
 
 export default async function VendorPricesPage() {
   const session = await requireVerifiedUser("/vendor/prices");
@@ -17,8 +17,8 @@ export default async function VendorPricesPage() {
   return (
     <div className="space-y-5">
       <div>
-        <Link href="/vendor" className="text-sm text-muted-foreground hover:underline">← Dashboard</Link>
-        <h1 className="mt-2 text-3xl font-semibold">Prices</h1>
+        <BackLink href="/vendor">Dashboard</BackLink>
+        <h1 className="mt-1 text-display font-semibold">Prices</h1>
       </div>
       <PricesEditor
         vendorId={current.id}

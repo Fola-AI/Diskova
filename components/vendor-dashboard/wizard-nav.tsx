@@ -26,30 +26,47 @@ export function WizardNav({
 }) {
   const index = steps.indexOf(current);
   return (
-    <ol className="-mx-4 flex gap-1 overflow-x-auto px-4 pb-1 text-xs [scrollbar-width:none]" aria-label="Steps">
-      {steps.map((step, i) => {
-        const done = i < index;
-        const active = step === current;
-        const content = (
-          <span
-            className={cn(
-              "inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border px-3 py-1.5",
-              active && "border-primary bg-primary text-primary-foreground",
-              done && "border-primary/40",
-              !enabled && !active && "opacity-50",
-            )}
-          >
-            {done ? <Check className="h-3 w-3" aria-hidden /> : <span aria-hidden>{i + 1}</span>}
-            {STEP_LABELS[step]}
+    <nav aria-label="Listing progress" className="space-y-3">
+      <div className="flex items-baseline justify-between gap-2">
+        <p className="text-caption font-semibold uppercase tracking-[0.06em] text-muted-foreground">
+          Step {index + 1} of {steps.length}
+        </p>
+        <p className="text-sm font-semibold">{STEP_LABELS[current]}</p>
+      </div>
+      <div className="flex gap-1" aria-hidden>
+        {steps.map((step, i) => (
+          <span key={step} className="h-1.5 flex-1 overflow-hidden rounded-full bg-secondary">
+            <span className={cn("block h-full origin-left rounded-full bg-positive transition-transform duration-300 ease-out", i <= index ? "scale-x-100" : "scale-x-0")} />
           </span>
-        );
-        return (
-          <li key={step} aria-current={active ? "step" : undefined}>
-            {enabled && !active ? <Link href={`${basePath}?step=${step}`}>{content}</Link> : content}
-          </li>
-        );
-      })}
-    </ol>
+        ))}
+      </div>
+      <ol className="rail fade-x -mx-4 gap-1.5 px-4 py-0.5" aria-label="Steps">
+        {steps.map((step, i) => {
+          const done = i < index;
+          const active = step === current;
+          const content = (
+            <span
+              className={cn(
+                "inline-flex h-9 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border px-3 text-footnote font-medium",
+                active && "border-transparent bg-primary text-primary-foreground",
+                done && "border-positive/40 text-foreground/90",
+                !enabled && !active && "opacity-50",
+              )}
+            >
+              {done ? <Check className="h-3.5 w-3.5 text-positive" aria-hidden /> : <span aria-hidden className="tabular-nums">{i + 1}</span>}
+              {STEP_LABELS[step]}
+              {done ? <span className="sr-only"> (done)</span> : null}
+            </span>
+          );
+          return (
+            <li key={step} aria-current={active ? "step" : undefined}>
+              {enabled && !active ? <Link href={`${basePath}?step=${step}`} className="pressable hit block rounded-full">{content}</Link> : content}
+            </li>
+          );
+        })}
+        <li aria-hidden className="w-2 shrink-0" />
+      </ol>
+    </nav>
   );
 }
 

@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { QaList } from "@/components/qa/qa-list";
+import { Breadcrumbs } from "@/components/ui/breadcrumbs";
 import { BRAND_NAME, FEATURES } from "@/lib/config";
 import { getCityBySlug } from "@/lib/db/directory";
 import { listQuestions } from "@/lib/services/qa";
@@ -28,10 +28,10 @@ export default async function CityQuestionsPage({ params }: { params: Params }) 
   if (!city) notFound();
   const questions = await listQuestions({ cityId: city.id }, 30);
   return (
-    <div className="container max-w-2xl space-y-5 px-4 py-8">
-      <div className="space-y-1">
-        <Link href={`/c/${city.slug}`} className="text-xs text-muted-foreground underline-offset-4 hover:underline">← {city.name}</Link>
-        <h1 className="text-3xl font-semibold">{city.name}: questions &amp; answers</h1>
+    <div className="container max-w-2xl space-y-5 px-4 py-6">
+      <div className="space-y-1.5">
+        <Breadcrumbs items={[{ href: `/c/${city.slug}`, label: city.name }, { label: "Questions" }]} />
+        <h1 className="text-display font-semibold">{city.name}: questions &amp; answers</h1>
         <p className="text-sm text-muted-foreground">Ask the community and venues. Answers are from community members unless marked Official or Venue.</p>
       </div>
       <QaList questions={questions} scope={{ cityId: city.id }} path={`/c/${city.slug}/questions`} askLabel={`Ask about ${city.name}`} />

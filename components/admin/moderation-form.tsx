@@ -7,6 +7,7 @@ import { FormAlert } from "@/components/forms/form-alert";
 import { initialFormState } from "@/components/forms/form-state";
 import { SubmitButton } from "@/components/forms/submit-button";
 import { Input } from "@/components/ui/input";
+import { nativeSelectClass } from "@/components/ui/select";
 import { REPORT_REASONS } from "@/lib/validation/constants";
 
 /** Moderator actions (§11.3 subset). Removals, sanctions and shadowbans require a reason. */
@@ -14,17 +15,17 @@ export function ModerationForm({ itemId, isPost }: { itemId: string; isPost: boo
   const [state, action] = useActionState(moderationDecisionAction, initialFormState);
   if (state.ok) return <FormAlert state={state} />;
   return (
-    <form action={action} className="space-y-2">
+    <form action={action} className="space-y-3">
       <input type="hidden" name="itemId" value={itemId} />
       <FormAlert state={state} />
       <Input name="reason" placeholder="Reason (required to remove / sanction; emailed to the author)" aria-label="Reason" />
       {isPost ? (
-        <select name="category" aria-label="Category" className="h-9 w-full rounded-md border bg-background px-2 text-sm" defaultValue="">
+        <select name="category" aria-label="Category" className={nativeSelectClass} defaultValue="">
           <option value="">Category (optional)</option>
           {REPORT_REASONS.map((r) => <option key={r.value} value={r.value}>{r.label}</option>)}
         </select>
       ) : null}
-      <div className="flex flex-wrap gap-1.5">
+      <div className="flex flex-wrap gap-2">
         {isPost ? (
           <>
             <SubmitButton name="action" value="approve" size="sm">Approve</SubmitButton>
@@ -38,6 +39,7 @@ export function ModerationForm({ itemId, isPost }: { itemId: string; isPost: boo
         ) : null}
         <SubmitButton name="action" value="dismiss" size="sm" variant="ghost">Dismiss</SubmitButton>
       </div>
+      {isPost ? <p className="text-footnote text-muted-foreground">Remove hides the post for everyone and emails your reason to the author. Warn, suspend and ban also apply to their account.</p> : null}
     </form>
   );
 }

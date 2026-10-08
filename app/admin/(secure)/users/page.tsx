@@ -35,7 +35,7 @@ export default async function AdminUsersPage({ searchParams }: { searchParams: P
 
   const columns: Column<Row>[] = [
     { key: "username", label: "Username", sortable: true, render: (r) => <Link href={`/admin/users/${r.id}`} className="font-medium underline-offset-4 hover:underline">@{r.username}</Link> },
-    ...(showEmail ? [{ key: "email", label: "Email", render: (r: Row) => <span>{r.email}{r.email_verified ? "" : <span className="text-xs text-muted-foreground"> (unverified)</span>}</span> }] : []),
+    ...(showEmail ? [{ key: "email", label: "Email", render: (r: Row) => <span>{r.email}{r.email_verified ? "" : <span className="text-footnote text-muted-foreground"> (unverified)</span>}</span> }] : []),
     { key: "role", label: "Role", render: (r) => (r.role === "user" ? "user" : <Badge variant="outline">{r.role.replace("_", " ")}</Badge>) },
     { key: "status", label: "Status", render: (r) => <span>{r.status}{r.is_shadowbanned ? <Badge variant="destructive" className="ml-1">shadowbanned</Badge> : null}{r.deleted_at ? " (deleted)" : ""}</span> },
     { key: "trust_score", label: "Trust", sortable: true },
@@ -43,14 +43,14 @@ export default async function AdminUsersPage({ searchParams }: { searchParams: P
     { key: "post_count", label: "Posts", sortable: true },
     { key: "last_seen_at", label: "Last seen", sortable: true, render: (r) => ago(r.last_seen_at) },
     { key: "created_at", label: "Joined", sortable: true, render: (r) => ago(r.created_at) },
-    ...(showIp ? [{ key: "last_ip", label: "Last IP (informational)", render: (r: Row) => <span className="font-mono text-xs">{r.last_ip ?? "—"}</span> }] : []),
+    ...(showIp ? [{ key: "last_ip", label: "Last IP (informational)", render: (r: Row) => <span className="font-mono text-footnote">{r.last_ip ?? "—"}</span> }] : []),
   ];
   const exportQuery = new URLSearchParams(Object.entries(sp).flatMap(([k, v]) => (typeof v === "string" && k !== "page" ? [[k, v]] : [])));
 
   return (
     <div className="space-y-4">
-      <h1 className="text-2xl font-semibold">Users</h1>
-      {showIp ? <p className="text-xs text-muted-foreground">IP addresses are informational only — many Nigerian mobile users share one IP (carrier-grade NAT). Never sanction on IP alone.</p> : null}
+      <h1 className="text-title font-semibold sm:text-display">Users</h1>
+      {showIp ? <p className="text-footnote text-muted-foreground">IP addresses are informational only — many Nigerian mobile users share one IP (carrier-grade NAT). Never sanction on IP alone.</p> : null}
       <FilterBar
         basePath="/admin/users"
         sp={sp}

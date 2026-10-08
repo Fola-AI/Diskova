@@ -22,31 +22,38 @@ export function MonthGrid({ month, events, hrefFor }: { month: string; events: E
   while (cells.length % 7) cells.push(null);
 
   return (
-    <div className="overflow-hidden rounded-xl border" data-testid="month-grid">
-      <div className="grid grid-cols-7 border-b bg-secondary/60 text-center text-[11px] font-medium text-muted-foreground">
-        {WEEKDAYS.map((d) => <div key={d} className="py-1.5">{d}</div>)}
+    <div className="surface overflow-hidden rounded-2xl" data-testid="month-grid">
+      <div className="grid grid-cols-7 border-b bg-secondary/50 text-center text-caption font-semibold uppercase tracking-[0.04em] text-muted-foreground" aria-hidden>
+        {WEEKDAYS.map((d) => <div key={d} className="py-2">{d}</div>)}
       </div>
       <div className="grid grid-cols-7">
         {cells.map((key, i) => {
-          if (!key) return <div key={`x${i}`} className="min-h-14 border-b border-r bg-secondary/20 sm:min-h-24" />;
+          if (!key) return <div key={`x${i}`} className="min-h-12 border-b border-r border-border/60 bg-secondary/20 sm:min-h-24" />;
           const list = byDay.get(key) ?? [];
+          const isToday = key === today;
+          const dayLabel = new Intl.DateTimeFormat("en-NG", { weekday: "long", day: "numeric", month: "long", timeZone: "UTC" }).format(new Date(`${key}T12:00:00Z`));
           return (
-            <div key={key} className={cn("min-h-14 border-b border-r p-1 sm:min-h-24", key === today && "bg-primary/10")}>
-              <div className="flex items-center justify-between text-[11px]">
-                <span className={cn("font-medium", key === today && "text-positive")}>{Number(key.slice(8))}</span>
+            <div key={key} className={cn("relative min-h-12 border-b border-r border-border/60 p-1 sm:min-h-24 sm:p-1.5", list.length && "bg-primary/[0.06]")}>
+              {list.length ? (
+                <Link href={hrefFor(key)} className="absolute inset-0 sm:hidden" aria-label={`${dayLabel}, ${list.length} ${list.length === 1 ? "event" : "events"}`} />
+              ) : null}
+              <div className="flex items-start justify-between">
+                <span className={cn("grid h-6 min-w-6 place-items-center rounded-full text-caption font-semibold tabular-nums", isToday ? "bg-positive text-background" : "text-foreground/85")} aria-current={isToday ? "date" : undefined}>
+                  {Number(key.slice(8))}
+                </span>
                 {list.length ? (
-                  <Link href={hrefFor(key)} className="rounded-full bg-accent px-1.5 text-[10px] font-semibold text-accent-foreground sm:hidden" aria-label={`${list.length} events`}>
+                  <span aria-hidden className="grid h-5 min-w-5 place-items-center rounded-full bg-accent px-1 text-caption font-bold leading-none text-accent-foreground sm:hidden">
                     {list.length}
-                  </Link>
+                  </span>
                 ) : null}
               </div>
               <ul className="mt-1 hidden space-y-0.5 sm:block">
                 {list.slice(0, 3).map((e) => (
                   <li key={e.id}>
-                    <Link href={`/events/${e.slug}`} className="block truncate rounded bg-primary/15 px-1 text-[11px] hover:bg-primary/25">{e.title}</Link>
+                    <Link href={`/events/${e.slug}`} className="block truncate rounded-md bg-primary/15 px-1.5 py-0.5 text-caption hover:bg-primary/25">{e.title}</Link>
                   </li>
                 ))}
-                {list.length > 3 ? <li><Link href={hrefFor(key)} className="text-[11px] text-muted-foreground hover:underline">+{list.length - 3} more</Link></li> : null}
+                {list.length > 3 ? <li><Link href={hrefFor(key)} className="text-caption text-muted-foreground hover:underline">+{list.length - 3} more</Link></li> : null}
               </ul>
             </div>
           );

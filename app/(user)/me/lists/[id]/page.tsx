@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import { Breadcrumbs } from "@/components/ui/breadcrumbs";
 import { notFound } from "next/navigation";
 
 import { ListEditor, type EditorItem } from "@/components/lists/list-manager";
@@ -19,8 +19,8 @@ export default async function EditListPage({ params }: { params: Promise<{ id: s
     (i): EditorItem => ({ id: i.id, note: i.note, href: i.vendor ? `/v/${i.vendor.slug}` : `/events/${i.event?.slug}`, title: i.vendor?.name ?? i.event?.title ?? "Removed", subtitle: i.vendor?.tagline ?? (i.event ? new Date(i.event.starts_at).toLocaleString("en-NG", { dateStyle: "medium", timeStyle: "short", timeZone: "Africa/Lagos" }) : null) }),
   );
   return (
-    <div className="container max-w-2xl space-y-5 px-4 py-8">
-      <Link href="/me/lists" className="text-xs text-muted-foreground underline-offset-4 hover:underline">← My lists</Link>
+    <div className="container max-w-2xl space-y-4 px-4 py-6">
+      <Breadcrumbs items={[{ href: "/me", label: "Me" }, { href: "/me/lists", label: "My lists" }, { label: list.title }]} />
       <ListEditor list={{ id: list.id, title: list.title, isPublic: list.is_public, token: list.share_token, views: list.view_count }} items={items} shareUrl={`${SITE_URL}/l/${list.share_token}`} />
     </div>
   );

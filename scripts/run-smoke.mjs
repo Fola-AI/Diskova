@@ -14,7 +14,7 @@ if (specs.length === 0) {
 
 // Start from a cold Next.js Data Cache: Supabase GETs are cached on disk (.next/cache/fetch-cache) per
 // route revalidate window and survive rebuilds, so a previous run's responses could leak into this one.
-if (!process.env.PLAYWRIGHT_BASE_URL) rmSync(".next/cache/fetch-cache", { recursive: true, force: true });
+if (!process.env.PLAYWRIGHT_BASE_URL) rmSync(`${process.env.NEXT_DIST_DIR || ".next"}/cache/fetch-cache`, { recursive: true, force: true });
 
 console.log(`[verify] Playwright smoke: running ${specs.length} spec file(s)…`);
 const result = spawnSync("npx", ["playwright", "test", "--project=smoke"], { stdio: "inherit" });

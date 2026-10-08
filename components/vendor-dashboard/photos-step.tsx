@@ -54,15 +54,18 @@ function UploadButton({ vendorId, kind, label, disabled }: { vendorId: string; k
         accept="image/jpeg,image/png,image/webp"
         className="sr-only"
         data-testid={`upload-${kind}`}
+        aria-label={label}
+        tabIndex={-1}
         onChange={(e) => {
           const f = e.target.files?.[0];
           if (f) void onFile(f);
         }}
       />
-      <Button type="button" variant="secondary" size="sm" disabled={busy || disabled} onClick={() => input.current?.click()}>
+      <Button type="button" variant="secondary" size="sm" disabled={busy || disabled} onClick={() => input.current?.click()} aria-busy={busy || undefined}>
         {busy ? <Loader2 className="animate-spin" aria-hidden /> : <ImagePlus aria-hidden />}
         {busy ? "Uploading…" : label}
       </Button>
+      <span className="sr-only" aria-live="polite">{busy ? "Uploading photo" : ""}</span>
     </>
   );
 }
@@ -97,16 +100,16 @@ export function PhotosStep({
       </p>
       <section className="space-y-2">
         <h3 className="font-sans text-sm font-semibold tracking-normal">Cover photo</h3>
-        <div className="relative aspect-[16/9] overflow-hidden rounded-xl border bg-secondary">
-          {coverUrl ? <Image src={coverUrl} alt="Cover" fill sizes="(max-width: 640px) 100vw, 600px" className="object-cover" /> : null}
+        <div className="relative grid aspect-[16/9] place-items-center overflow-hidden rounded-2xl border bg-secondary/50">
+          {coverUrl ? <Image src={coverUrl} alt="Cover" fill sizes="(max-width: 640px) 100vw, 600px" className="object-cover" /> : <ImagePlus className="h-8 w-8 text-muted-foreground/60" aria-hidden />}
         </div>
         <UploadButton vendorId={vendorId} kind="cover" label={coverUrl ? "Replace cover" : "Add cover photo"} />
       </section>
       <section className="space-y-2">
         <h3 className="font-sans text-sm font-semibold tracking-normal">Logo</h3>
         <div className="flex items-center gap-3">
-          <div className="relative h-16 w-16 overflow-hidden rounded-xl border bg-secondary">
-            {logoUrl ? <Image src={logoUrl} alt="Logo" fill sizes="64px" className="object-cover" /> : null}
+          <div className="relative grid h-16 w-16 place-items-center overflow-hidden rounded-2xl border bg-secondary/50">
+            {logoUrl ? <Image src={logoUrl} alt="Logo" fill sizes="64px" className="object-cover" /> : <ImagePlus className="h-5 w-5 text-muted-foreground/60" aria-hidden />}
           </div>
           <UploadButton vendorId={vendorId} kind="logo" label={logoUrl ? "Replace logo" : "Add logo"} />
         </div>
@@ -116,12 +119,12 @@ export function PhotosStep({
         {gallery.length ? (
           <ul className="grid grid-cols-3 gap-2">
             {gallery.map((g) => (
-              <li key={g.path} className="relative aspect-square overflow-hidden rounded-lg border">
+              <li key={g.path} className="pop relative aspect-square overflow-hidden rounded-xl border">
                 <Image src={g.url} alt="" fill sizes="33vw" className="object-cover" />
                 <button
                   type="button"
                   onClick={() => remove(g.path)}
-                  className="absolute right-1 top-1 grid h-8 w-8 place-items-center rounded-full bg-black/70 text-white"
+                  className="hit absolute right-1.5 top-1.5 grid h-8 w-8 place-items-center rounded-full bg-black/70 text-white ring-1 ring-white/15 backdrop-blur"
                   aria-label="Remove photo"
                 >
                   <Trash2 className="h-4 w-4" aria-hidden />

@@ -1,4 +1,4 @@
-import { CalendarDays, CalendarHeart, Megaphone, Sparkles, Sun, Trophy } from "lucide-react";
+import { CalendarDays, CalendarHeart, ChevronRight, Compass, Medal, Megaphone, Sparkles, Sun, Trophy } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { preload } from "react-dom";
@@ -8,6 +8,7 @@ import { EventCard } from "@/components/events/event-card";
 import { MapToggle } from "@/components/map/map-toggle";
 import type { MapPoint } from "@/components/map/vendor-map";
 import { Avatar } from "@/components/me/avatar";
+import { SectionHeading } from "@/components/layout/section-heading";
 import { LiveRail } from "@/components/tonight/live-rail";
 import { Button } from "@/components/ui/button";
 import { DEFAULT_TIMEZONE, FEATURES, MAPBOX_TOKEN, SEASON_NAME } from "@/lib/config";
@@ -28,21 +29,20 @@ function isSeason(start: string | null, end: string | null, now = new Date()): b
 function Section({ title, icon, href, linkLabel, children }: { title: string; icon: ReactNode; href?: string; linkLabel?: string; children: ReactNode }) {
   return (
     <section className="space-y-3">
-      <div className="flex items-end justify-between gap-2">
-        <h2 className="flex items-center gap-2 text-xl font-semibold">{icon}{title}</h2>
-        {href ? <Link href={href} className="text-sm text-muted-foreground underline-offset-4 hover:underline">{linkLabel ?? "See all"}</Link> : null}
-      </div>
+      <SectionHeading title={title} icon={icon} href={href} linkLabel={linkLabel} />
       {children}
     </section>
   );
 }
+
+const MEDAL = ["text-accent", "text-zinc-300", "text-amber-600"];
 
 export function livePoints(live: LiveVenue[]): MapPoint[] {
   return live.map((v) => ({ id: v.vendor_id, slug: v.slug, name: v.name, lat: v.lat, lng: v.lng, weight: v.weight, crowd: v.crowd_level_avg }));
 }
 
 /** §8.1 Tonight view for one city. Used by `/` (default city) and `/c/[city]`. */
-export async function TonightView({ city, mapPoints }: { city: CityRow; mapPoints?: MapPoint[] }) {
+export async function TonightView({ city, mapPoints, search }: { city: CityRow; mapPoints?: MapPoint[]; search?: ReactNode }) {
   const now = new Date();
   const [live, areas, settings, categories] = await Promise.all([
     getCityLive(city.id),
@@ -72,9 +72,18 @@ export async function TonightView({ city, mapPoints }: { city: CityRow; mapPoint
   if (points.length && mapPreview) preload(mapPreview, { as: "image", fetchPriority: "high" });
 
   const emptyState = (
-    <div className="space-y-3 text-sm">
+    <div className="space-y-4">
+      <div className="flex items-start gap-3">
+        <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-secondary text-muted-foreground">
+          <Compass className="h-5 w-5" aria-hidden />
+        </span>
+        <div className="space-y-1">
+          <p className="text-callout font-semibold">Nothing live in {city.name} yet.</p>
+          <p className="text-sm text-muted-foreground">Be the first — open a venue and tap to pulse.</p>
+        </div>
+      </div>
       {usuallyBusy.length ? (
-        <p>
+        <p className="text-sm">
           <span className="font-medium">Usually busy around now: </span>
           {usuallyBusy.map((u, i) => (
             <span key={u.slug}>
@@ -85,27 +94,38 @@ export async function TonightView({ city, mapPoints }: { city: CityRow; mapPoint
           .
         </p>
       ) : null}
-      <p className="font-medium">Nothing live in {city.name} yet. Be the first — open a venue and tap to pulse.</p>
-      <div className="flex flex-wrap gap-2">
-        <Button asChild size="sm"><Link href={`/c/${city.slug}#places`}>Find a venue</Link></Button>
-        <Button asChild size="sm" variant="secondary"><Link href="/vendor" prefetch={false}><Megaphone aria-hidden /> Vendors: post an official update</Link></Button>
+      <div className="grid gap-2 sm:flex">
+        <Button asChild><Link href={`/c/${city.slug}#places`}>Find a venue</Link></Button>
+        <Button asChild variant="secondary"><Link href="/vendor" prefetch={false}><Megaphone aria-hidden /> Vendors: post an official update</Link></Button>
       </div>
     </div>
   );
 
   return (
-    <div className="space-y-8">
-      <header className="relative isolate -mx-4 overflow-hidden px-4 pb-2 pt-6">
-        <div aria-hidden className="absolute inset-0 -z-10 bg-[radial-gradient(120%_80%_at_10%_0%,rgba(11,122,59,0.35),transparent_60%),radial-gradient(80%_60%_at_100%_10%,rgba(244,180,0,0.15),transparent_55%)]" />
-        <p className="text-sm text-muted-foreground">{dateLabel}</p>
-        <h1 className="text-4xl font-semibold sm:text-5xl">Tonight in {city.name}</h1>
-        <p className="mt-1 text-sm text-muted-foreground" data-testid="hero-live-count">
-          {live.length ? `${live.length} ${live.length === 1 ? "place is" : "places are"} live right now` : "Waiting for the first check-in tonight"}
-        </p>
+    <div className="space-y-10">
+      <header className="relative isolate -mx-4 space-y-4 overflow-hidden px-4 pb-1 pt-5">
+        <div aria-hidden className="absolute inset-0 -z-10 bg-[radial-gradient(120%_80%_at_0%_0%,rgba(11,122,59,0.32),transparent_60%),radial-gradient(80%_60%_at_100%_0%,rgba(244,180,0,0.13),transparent_55%)]" />
+        <div className="space-y-1.5">
+          <p className="text-caption font-semibold uppercase tracking-[0.08em] text-muted-foreground">{dateLabel}</p>
+          <h1 className="text-display font-semibold sm:text-display-lg">Tonight in {city.name}</h1>
+          <p className="flex items-center gap-2 text-sm text-muted-foreground" data-testid="hero-live-count">
+            {live.length ? (
+              <span className="relative flex h-2 w-2" aria-hidden>
+                <span className="absolute inline-flex h-full w-full animate-live-ring rounded-full bg-positive" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-positive" />
+              </span>
+            ) : null}
+            {live.length ? `${live.length} ${live.length === 1 ? "place is" : "places are"} live right now` : "Waiting for the first check-in tonight"}
+          </p>
+        </div>
+        {search}
         {season ? (
-          <Link href="/events/december" className="mt-4 flex items-center gap-2 rounded-xl border border-accent/50 bg-accent/10 p-3 text-sm" data-testid="season-banner">
-            <CalendarHeart className="h-5 w-5 shrink-0 text-accent" aria-hidden />
-            <span><strong>{SEASON_NAME}</strong> is on — see what&apos;s happening this week.</span>
+          <Link href="/events/december" className="pressable-soft flex items-center gap-3 rounded-2xl border border-accent/40 bg-accent/10 p-3.5 text-sm transition-colors hover:bg-accent/15" data-testid="season-banner">
+            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-accent/20">
+              <CalendarHeart className="h-5 w-5 text-accent" aria-hidden />
+            </span>
+            <span className="flex-1"><strong>{SEASON_NAME}</strong> is on — see what&apos;s happening this week.</span>
+            <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
           </Link>
         ) : null}
       </header>
@@ -121,13 +141,14 @@ export async function TonightView({ city, mapPoints }: { city: CityRow; mapPoint
           eager
           points={points}
           staticImageUrl={mapPreview}
-          label={live.length ? "Heat map" : "Map"}
+          label={live.length ? "Open live map" : "Open map"}
+          hint={live.length ? "See where it's busy" : undefined}
         />
       ) : null}
 
       {weekEvents.length ? (
         <Section title="This week" icon={<CalendarDays className="h-5 w-5 text-accent" aria-hidden />} href={`/events?city=${city.slug}`} linkLabel="All events">
-          <ul className="grid gap-2 sm:grid-cols-2">
+          <ul className="grid gap-2.5 sm:grid-cols-2">
             {weekEvents.map((e) => <li key={e.id}><EventCard event={e} /></li>)}
           </ul>
         </Section>
@@ -135,30 +156,36 @@ export async function TonightView({ city, mapPoints }: { city: CityRow; mapPoint
 
       {daytime.length ? (
         <Section title="Daytime picks" icon={<Sun className="h-5 w-5 text-accent" aria-hidden />} href={`/c/${city.slug}#places`}>
-          <ul className="-mx-4 flex gap-3 overflow-x-auto px-4 pb-2 [scrollbar-width:none]">
+          <ul className="rail fade-x -mx-4 gap-3 px-4 pb-1">
             {daytime.map((v) => (
-              <li key={v.id} className="w-64 shrink-0"><VendorCard vendor={v} /></li>
+              <li key={v.id} className="w-[16.5rem] shrink-0"><VendorCard vendor={v} /></li>
             ))}
+            <li aria-hidden className="w-1 shrink-0" />
           </ul>
         </Section>
       ) : null}
 
       {leaders.length ? (
         <Section title="Top this month" icon={<Trophy className="h-5 w-5 text-accent" aria-hidden />} href={`/leaderboard/${city.slug}`} linkLabel="Leaderboard">
-          <ol className="divide-y rounded-xl border bg-card">
+          <ol className="surface divide-y overflow-hidden rounded-2xl">
             {leaders.map((r) => (
-              <li key={r.username} className="flex items-center gap-3 px-4 py-2.5 text-sm">
-                <span className="w-4 text-right font-semibold">{r.rank}</span>
-                <Avatar url={r.avatar_url} name={r.display_name ?? r.username} size={28} />
-                <Link href={`/u/${r.username}`} className="min-w-0 flex-1 truncate hover:underline">{r.display_name ?? r.username}</Link>
-                <span className="font-semibold tabular-nums">{r.points}</span>
+              <li key={r.username}>
+                <Link href={`/u/${r.username}`} className="flex min-h-14 items-center gap-3 px-4 py-2 text-sm transition-colors hover:bg-secondary/60 active:bg-secondary">
+                  <span className="flex w-6 justify-center font-semibold tabular-nums">
+                    {r.rank <= 3 ? <Medal className={`h-5 w-5 ${MEDAL[r.rank - 1]}`} aria-hidden /> : null}
+                    <span className={r.rank <= 3 ? "sr-only" : ""}>{r.rank}</span>
+                  </span>
+                  <Avatar url={r.avatar_url} name={r.display_name ?? r.username} size={32} />
+                  <span className="min-w-0 flex-1 truncate font-medium">{r.display_name ?? r.username}</span>
+                  <span className="font-semibold tabular-nums">{r.points}<span className="ml-1 text-caption font-normal text-muted-foreground">pts</span></span>
+                </Link>
               </li>
             ))}
           </ol>
         </Section>
       ) : (
-        <p className="flex items-center gap-2 text-sm text-muted-foreground">
-          <Sparkles className="h-4 w-4 text-accent" aria-hidden /> Check in to top the {city.name} leaderboard this month.
+        <p className="flex items-center gap-2.5 rounded-2xl border border-dashed px-4 py-3.5 text-sm text-muted-foreground">
+          <Sparkles className="h-4 w-4 shrink-0 text-accent" aria-hidden /> Check in to top the {city.name} leaderboard this month.
         </p>
       )}
     </div>

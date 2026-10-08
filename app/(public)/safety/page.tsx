@@ -14,7 +14,7 @@ export default async function SafetyIndex() {
   const [cities, national] = await Promise.all([listCities(), listSafetyInfo(null)]);
   return (
     <div className="container max-w-3xl space-y-6 px-4 py-6">
-      <h1 className="text-3xl font-semibold">Safety information</h1>
+      <h1 className="text-display font-semibold">Safety information</h1>
       <p className="flex items-start gap-2 rounded-xl border border-destructive/50 bg-destructive/10 p-4 text-sm font-medium">
         <PhoneCall className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
         {BRAND_NAME} is not an emergency service. If you are in danger, call <a href="tel:112" className="underline">112</a>.

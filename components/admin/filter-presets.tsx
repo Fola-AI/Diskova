@@ -37,15 +37,24 @@ export function FilterPresets({ storageKey, basePath }: { storageKey: string; ba
   };
 
   return (
-    <div className="flex flex-wrap items-center gap-1.5 text-xs">
-      <button type="button" onClick={save} className="inline-flex items-center gap-1 rounded-md border px-2 py-1 hover:bg-secondary">
-        <Bookmark className="h-3.5 w-3.5" aria-hidden /> Save view
+    <div className="flex flex-wrap items-center gap-2">
+      <button
+        type="button"
+        onClick={save}
+        className="pressable hit inline-flex h-10 items-center gap-1.5 rounded-xl border px-3.5 text-footnote font-semibold hover:bg-secondary"
+      >
+        <Bookmark className="h-4 w-4" aria-hidden /> Save view
       </button>
       {presets.map((p) => (
-        <span key={p.name} className="inline-flex items-center rounded-full border pl-2">
-          <Link href={`${basePath}${p.query}`} className="py-0.5">{p.name}</Link>
-          <button type="button" onClick={() => persist(presets.filter((x) => x.name !== p.name))} aria-label={`Delete view ${p.name}`} className="px-1.5 py-0.5 text-muted-foreground">
-            <X className="h-3 w-3" aria-hidden />
+        <span key={p.name} className="inline-flex h-10 items-center rounded-full border bg-secondary/40 pl-3.5 text-footnote">
+          <Link href={`${basePath}${p.query}`} className="hit inline-flex h-full items-center font-medium hover:underline">{p.name}</Link>
+          <button
+            type="button"
+            onClick={() => persist(presets.filter((x) => x.name !== p.name))}
+            aria-label={`Delete view ${p.name}`}
+            className="pressable grid h-10 w-10 place-items-center rounded-full text-muted-foreground hover:text-foreground"
+          >
+            <X className="h-4 w-4" aria-hidden />
           </button>
         </span>
       ))}

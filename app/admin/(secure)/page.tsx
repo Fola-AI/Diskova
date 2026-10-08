@@ -1,9 +1,11 @@
 import { formatDistanceToNowStrict } from "date-fns";
+import { AlertTriangle, CheckCircle2, ChevronRight } from "lucide-react";
 import Link from "next/link";
 
 import { ActivityStream, type ActivityItem } from "@/components/admin/activity-stream";
 import { Sparkline } from "@/components/admin/sparkline";
 import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 import { getAdminSupabase } from "@/lib/admin-db/client";
 import { getSession } from "@/lib/auth/guards";
 import { roleAtLeast } from "@/lib/auth/roles";
@@ -11,15 +13,33 @@ import { getDashboard } from "@/lib/services/admin/dashboard";
 
 export const dynamic = "force-dynamic";
 
+const sectionCard = "surface space-y-3 rounded-2xl p-4";
+const sectionTitle = "text-callout font-semibold";
+const metaLink = "hit inline-flex h-10 items-center gap-1 text-footnote font-semibold text-positive underline-offset-4 hover:underline";
+
 function Tile({ label, value, href, spark, tone }: { label: string; value: number; href?: string; spark?: number[]; tone?: "warn" }) {
+  const attention = tone === "warn" && value > 0;
   const body = (
-    <div className="flex h-full flex-col justify-between gap-1 rounded-xl border p-3" data-testid="kpi-tile">
-      <span className="text-xs text-muted-foreground">{label}</span>
-      <span className={tone === "warn" && value > 0 ? "text-2xl font-semibold text-gold" : "text-2xl font-semibold"}>{value.toLocaleString("en-NG")}</span>
-      {spark ? <Sparkline values={spark} label={label} className="text-positive" /> : null}
+    <div
+      className={cn(
+        "surface flex h-full min-h-[7.5rem] flex-col justify-between gap-2 rounded-2xl p-4 transition-colors duration-micro",
+        attention && "border-accent/50",
+        href && "group-hover:border-muted-foreground/40",
+      )}
+      data-testid="kpi-tile"
+    >
+      <span className="flex items-start justify-between gap-2 text-caption font-semibold uppercase tracking-[0.06em] text-muted-foreground">
+        <span>{label}</span>
+        {href ? <ChevronRight className="h-4 w-4 shrink-0 opacity-60 transition-transform duration-micro group-hover:translate-x-0.5" aria-hidden /> : null}
+      </span>
+      <span className={cn("font-display text-display font-semibold tabular-nums leading-none", attention && "text-gold")}>
+        {value.toLocaleString("en-NG")}
+        {attention ? <span className="sr-only"> (needs attention)</span> : null}
+      </span>
+      {spark ? <Sparkline values={spark} label={label} className="h-8 w-full max-w-[120px] text-positive" /> : null}
     </div>
   );
-  return href ? <Link href={href} className="block hover:opacity-90">{body}</Link> : body;
+  return href ? <Link href={href} className="pressable-soft group block rounded-2xl">{body}</Link> : body;
 }
 
 /** §11.1 dashboard. */
@@ -38,8 +58,8 @@ export default async function AdminDashboard() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-semibold">Dashboard</h1>
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+      <h1 className="text-title font-semibold sm:text-display">Dashboard</h1>
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-5">
         <Tile label="Signups 24h" value={s.signups_24h} spark={col("signups")} href="/admin/users" />
         <Tile label="Vendor signups 24h" value={s.vendor_signups_24h} spark={col("vendors")} href="/admin/vendors?tab=all" />
         <Tile label="Pending vendor reviews" value={s.vendors_pending_review} href="/admin/vendors" tone="warn" />
@@ -57,55 +77,71 @@ export default async function AdminDashboard() {
         <Tile label="Vendors (verified)" value={s.vendors_verified} />
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-3">
-        <div className="lg:col-span-2">
+      <div className="grid gap-4 xl:grid-cols-3">
+        <div className="xl:col-span-2">
           <ActivityStream initial={(activity ?? []) as ActivityItem[]} cities={cities ?? []} />
         </div>
         <div className="space-y-4">
-          <section className="space-y-2 rounded-xl border p-4" data-testid="needs-attention">
-            <h2 className="font-semibold">Needs attention</h2>
-            <ul className="space-y-1.5 text-sm">
+          <section className={sectionCard} data-testid="needs-attention">
+            <h2 className={sectionTitle}>Needs attention</h2>
+            <ul className="divide-y text-sm">
               {d.pendingVendors.map((v) => (
-                <li key={v.id}><Link href="/admin/vendors" className="underline-offset-4 hover:underline">Vendor review: {v.name}</Link> <span className="text-xs text-muted-foreground">waiting {formatDistanceToNowStrict(new Date(v.updated_at))}</span></li>
-              ))}
-              {d.pendingEvents.map((e) => (
-                <li key={e.id}><Link href="/admin/events" className="underline-offset-4 hover:underline">Event review: {e.title}</Link></li>
-              ))}
-              {s.moderation_open_p1 ? <li><Link href="/admin/moderation" className="text-destructive underline-offset-4 hover:underline">{s.moderation_open_p1} P1 moderation item(s)</Link></li> : null}
-              {d.unverifiedSafety ? <li><Link href="/admin/safety" className="underline-offset-4 hover:underline">{d.unverifiedSafety} safety entries never verified</Link></li> : null}
-              {!d.pendingVendors.length && !d.pendingEvents.length && !s.moderation_open_p1 && !d.unverifiedSafety ? <li className="text-muted-foreground">All clear.</li> : null}
-            </ul>
-          </section>
-          <section className="space-y-2 rounded-xl border p-4">
-            <h2 className="font-semibold">Tasks due</h2>
-            <ul className="space-y-1.5 text-sm">
-              {d.tasks.map((t) => (
-                <li key={t.id} className="flex flex-wrap items-center gap-2">
-                  <Badge variant={t.priority === "urgent" ? "destructive" : t.priority === "high" ? "gold" : "secondary"}>{t.priority}</Badge>
-                  <span className="flex-1">{t.title}</span>
-                  {t.due_at ? <span className={new Date(t.due_at) < new Date() ? "text-xs text-destructive" : "text-xs text-muted-foreground"}>{formatDistanceToNowStrict(new Date(t.due_at), { addSuffix: true })}</span> : null}
+                <li key={v.id} className="py-1">
+                  <Link href="/admin/vendors" className="hit flex min-h-10 flex-wrap items-center gap-x-2 underline-offset-4 hover:underline">
+                    <span>Vendor review: {v.name}</span>
+                    <span className="text-footnote text-muted-foreground">waiting {formatDistanceToNowStrict(new Date(v.updated_at))}</span>
+                  </Link>
                 </li>
               ))}
-              {!d.tasks.length ? <li className="text-muted-foreground">No open tasks.</li> : null}
+              {d.pendingEvents.map((e) => (
+                <li key={e.id} className="py-1"><Link href="/admin/events" className="hit flex min-h-10 items-center underline-offset-4 hover:underline">Event review: {e.title}</Link></li>
+              ))}
+              {s.moderation_open_p1 ? (
+                <li className="py-1">
+                  <Link href="/admin/moderation" className="hit flex min-h-10 items-center gap-2 font-semibold text-destructive underline-offset-4 hover:underline">
+                    <AlertTriangle className="h-4 w-4 shrink-0" aria-hidden /> {s.moderation_open_p1} P1 moderation item(s)
+                  </Link>
+                </li>
+              ) : null}
+              {d.unverifiedSafety ? <li className="py-1"><Link href="/admin/safety" className="hit flex min-h-10 items-center underline-offset-4 hover:underline">{d.unverifiedSafety} safety entries never verified</Link></li> : null}
+              {!d.pendingVendors.length && !d.pendingEvents.length && !s.moderation_open_p1 && !d.unverifiedSafety ? (
+                <li className="flex items-center gap-2 py-1 text-muted-foreground"><CheckCircle2 className="h-4 w-4 text-positive" aria-hidden /> All clear.</li>
+              ) : null}
             </ul>
-            <Link href="/admin/tasks" className="text-xs underline underline-offset-4">All tasks</Link>
           </section>
-          <section className="space-y-2 rounded-xl border p-4">
-            <h2 className="font-semibold">Moderation (7 days)</h2>
+          <section className={sectionCard}>
+            <h2 className={sectionTitle}>Tasks due</h2>
+            <ul className="divide-y text-sm">
+              {d.tasks.map((t) => (
+                <li key={t.id} className="flex flex-wrap items-center gap-2 py-2">
+                  <Badge variant={t.priority === "urgent" ? "destructive" : t.priority === "high" ? "gold" : "secondary"}>{t.priority}</Badge>
+                  <span className="min-w-0 flex-1">{t.title}</span>
+                  {t.due_at ? <span className={new Date(t.due_at) < new Date() ? "text-footnote font-semibold text-destructive" : "text-footnote text-muted-foreground"}>{new Date(t.due_at) < new Date() ? "Overdue · " : ""}{formatDistanceToNowStrict(new Date(t.due_at), { addSuffix: true })}</span> : null}
+                </li>
+              ))}
+              {!d.tasks.length ? <li className="py-2 text-muted-foreground">No open tasks.</li> : null}
+            </ul>
+            <Link href="/admin/tasks" className={metaLink}>All tasks <ChevronRight className="h-4 w-4" aria-hidden /></Link>
+          </section>
+          <section className={sectionCard}>
+            <h2 className={sectionTitle}>Moderation (7 days)</h2>
             <p className="text-sm text-muted-foreground">
               {d.moderation?.open_total ?? 0} open · {d.moderation?.auto_flagged_7d ?? 0} auto-flagged · {d.moderation?.human_actioned_7d ?? 0} human decisions
               {d.moderation?.median_seconds_to_close_7d ? ` · median ${Math.round(d.moderation.median_seconds_to_close_7d / 60)} min to close` : ""}
             </p>
           </section>
           {isAdmin ? (
-            <section className="space-y-2 rounded-xl border p-4">
-              <h2 className="font-semibold">Recent admin actions</h2>
-              <ul className="space-y-1 text-xs">
+            <section className={sectionCard}>
+              <h2 className={sectionTitle}>Recent admin actions</h2>
+              <ul className="divide-y text-footnote">
                 {(recentAudit ?? []).map((a) => (
-                  <li key={a.id}><span className="font-mono">{a.action}</span> <span className="text-muted-foreground">{formatDistanceToNowStrict(new Date(a.at), { addSuffix: true })}</span></li>
+                  <li key={a.id} className="flex flex-wrap items-baseline justify-between gap-x-2 py-1.5">
+                    <span className="font-mono">{a.action}</span>
+                    <span className="text-muted-foreground">{formatDistanceToNowStrict(new Date(a.at), { addSuffix: true })}</span>
+                  </li>
                 ))}
               </ul>
-              <Link href="/admin/audit" className="text-xs underline underline-offset-4">Audit log</Link>
+              <Link href="/admin/audit" className={metaLink}>Audit log <ChevronRight className="h-4 w-4" aria-hidden /></Link>
             </section>
           ) : null}
         </div>

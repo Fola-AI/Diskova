@@ -1,6 +1,6 @@
 "use client";
 
-import { Camera, Loader2, X } from "lucide-react";
+import { Camera, Check, Megaphone, X } from "lucide-react";
 import Link from "next/link";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
@@ -50,33 +50,50 @@ export function OfficialUpdateForm({ vendorId, vendorSlug }: { vendorId: string;
     }
   }
 
+  const chosen = CROWD_LEVELS.find((c) => c.level === level);
+
   return (
-    <div className="space-y-5">
-      <fieldset>
-        <legend className="mb-3 text-sm font-medium">How busy is it right now?</legend>
+    <div className="space-y-6">
+      <fieldset className="surface rounded-3xl p-4">
+        <legend className="sr-only">How busy is it right now?</legend>
+        <p aria-hidden className="mb-3 text-callout font-semibold">How busy is it right now?</p>
         <div className="grid grid-cols-5 gap-2">
-          {CROWD_LEVELS.map((c) => (
-            <button
-              key={c.level}
-              type="button"
-              onClick={() => setLevel(c.level)}
-              aria-pressed={level === c.level}
-              className={cn(
-                "flex min-h-[76px] flex-col items-center justify-center gap-1.5 rounded-xl border p-2 text-xs font-medium transition-colors",
-                level === c.level ? "border-foreground ring-2 ring-ring" : "hover:border-primary/60",
-              )}
-            >
-              <span className={cn("h-3 w-3 rounded-full", c.className)} aria-hidden />
-              {c.label}
-            </button>
-          ))}
+          {CROWD_LEVELS.map((c) => {
+            const on = level === c.level;
+            return (
+              <button
+                key={c.level}
+                type="button"
+                onClick={() => setLevel(c.level)}
+                aria-pressed={on}
+                aria-label={c.label}
+                className={cn(
+                  "pressable relative flex min-h-[76px] flex-col items-center justify-center gap-2 rounded-2xl border p-2 text-caption font-semibold",
+                  on ? "border-positive bg-primary/15" : "bg-secondary/40 hover:border-muted-foreground/40",
+                )}
+              >
+                {on ? (
+                  <span className="pop absolute -right-1 -top-1 grid h-5 w-5 place-items-center rounded-full bg-positive text-background">
+                    <Check className="h-3 w-3" strokeWidth={3} aria-hidden />
+                  </span>
+                ) : null}
+                <span className={cn("h-4 w-4 rounded-full ring-[3px] ring-white/10", c.className)} aria-hidden />
+                <span aria-hidden>{c.level === 5 ? "Full" : c.label}</span>
+              </button>
+            );
+          })}
         </div>
       </fieldset>
 
-      <div className="space-y-2">
-        <Textarea aria-label="Optional note" placeholder="Optional: “DJ on at 11, free entry before midnight”" value={note} maxLength={280}
-          onChange={(e) => setNote(e.target.value)} rows={2} />
-        <input ref={input} type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" data-testid="official-photo"
+      <div className="space-y-3">
+        <label className="block space-y-1.5 text-sm">
+          <span className="flex items-center justify-between font-medium">
+            Note <span className="text-caption font-normal tabular-nums text-muted-foreground">{note.length}/280</span>
+          </span>
+          <Textarea aria-label="Optional note" placeholder="Optional: “DJ on at 11, free entry before midnight”" value={note} maxLength={280}
+            onChange={(e) => setNote(e.target.value)} rows={2} />
+        </label>
+        <input ref={input} type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" data-testid="official-photo" aria-label="Add a photo" tabIndex={-1}
           onChange={(e) => {
             const f = e.target.files?.[0];
             if (!f) return;
@@ -85,24 +102,42 @@ export function OfficialUpdateForm({ vendorId, vendorSlug }: { vendorId: string;
             setFile(f);
           }} />
         {file ? (
-          <div className="flex items-center gap-2 text-sm">
-            <Camera className="h-4 w-4" aria-hidden /> {file.name}
-            <Button type="button" variant="ghost" size="icon" className="h-8 w-8" aria-label="Remove photo" onClick={() => setFile(null)}><X aria-hidden /></Button>
+          <div className="flex items-center gap-2 rounded-xl border bg-secondary/40 px-3 py-2 text-sm">
+            <Camera className="h-4 w-4 text-positive" aria-hidden /> <span className="min-w-0 flex-1 truncate">{file.name}</span>
+            <Button type="button" variant="ghost" size="icon-sm" aria-label="Remove photo" onClick={() => setFile(null)}><X aria-hidden /></Button>
           </div>
         ) : (
-          <Button type="button" variant="secondary" size="sm" onClick={() => input.current?.click()}>
+          <Button type="button" variant="outline" className="border-dashed" onClick={() => input.current?.click()}>
             <Camera aria-hidden /> Add a photo (optional)
           </Button>
         )}
       </div>
 
+      {chosen || note ? (
+        <div className="enter-up space-y-2" aria-hidden>
+          <p className="text-caption font-semibold uppercase tracking-[0.06em] text-muted-foreground">Preview on your page</p>
+          <div className="overflow-hidden rounded-2xl border border-accent/35 bg-gradient-to-b from-accent/[0.06] to-card p-4">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="inline-flex items-center gap-1 rounded-full bg-accent px-2.5 py-0.5 text-caption font-semibold text-accent-foreground"><Megaphone className="h-3 w-3" /> Official</span>
+              {chosen ? (
+                <span className="inline-flex items-center gap-1.5 text-sm font-medium">
+                  <span className={cn("h-2.5 w-2.5 rounded-full", chosen.className)} /> {chosen.label}
+                </span>
+              ) : null}
+              <span className="text-footnote text-muted-foreground">just now</span>
+            </div>
+            {note ? <p className="mt-2 text-[15px] leading-relaxed">{note}</p> : null}
+            {file ? <p className="mt-2 text-footnote text-muted-foreground">+ 1 photo</p> : null}
+          </div>
+        </div>
+      ) : null}
+
       {outcome ? <FormAlert state={outcome} /> : null}
-      <Button type="button" size="lg" className="w-full" disabled={!level || busy} onClick={post}>
-        {busy ? <Loader2 className="animate-spin" aria-hidden /> : null}
+      <Button type="button" size="lg" className="h-14 w-full rounded-2xl text-base" disabled={!level} loading={busy} onClick={post}>
         {busy ? "Posting…" : "Post official update"}
       </Button>
       {outcome?.message ? (
-        <Button asChild variant="link" className="w-full"><Link href={`/v/${vendorSlug}`}>See it on your page</Link></Button>
+        <Button asChild variant="secondary" className="w-full"><Link href={`/v/${vendorSlug}`}>See it on your page</Link></Button>
       ) : null}
     </div>
   );

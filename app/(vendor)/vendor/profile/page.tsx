@@ -1,10 +1,10 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { VendorEditor } from "@/components/vendor-dashboard/vendor-editor";
 import { requireVerifiedUser } from "@/lib/auth/guards";
 import { getCurrentVendor } from "@/lib/services/vendors";
 import type { VendorStep } from "@/lib/validation/vendor";
+import { BackLink } from "@/components/ui/back-link";
 
 const STEPS: VendorStep[] = ["basics", "contact", "photos", "details", "prices"];
 
@@ -17,8 +17,8 @@ export default async function VendorProfilePage({ searchParams }: { searchParams
   return (
     <div className="space-y-5">
       <div>
-        <Link href="/vendor" className="text-sm text-muted-foreground hover:underline">← Dashboard</Link>
-        <h1 className="mt-2 text-3xl font-semibold">Edit {current.name}</h1>
+        <BackLink href="/vendor">Dashboard</BackLink>
+        <h1 className="mt-1 text-display font-semibold">Edit {current.name}</h1>
       </div>
       <VendorEditor session={session} vendorId={current.id} step={step} basePath="/vendor/profile" mode="edit" />
     </div>

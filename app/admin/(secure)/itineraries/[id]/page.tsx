@@ -22,8 +22,8 @@ export default async function EditItineraryPage({ params }: { params: Promise<{ 
   }
   return (
     <div className="space-y-4">
-      <Link href="/admin/itineraries" className="text-xs text-muted-foreground underline-offset-4 hover:underline">← Itineraries</Link>
-      <h1 className="text-2xl font-semibold">{id === "new" ? "New itinerary" : "Edit itinerary"}</h1>
+      <Link href="/admin/itineraries" className="hit inline-flex h-10 items-center text-footnote font-semibold text-muted-foreground underline-offset-4 hover:text-foreground hover:underline">← Itineraries</Link>
+      <h1 className="text-title font-semibold sm:text-display">{id === "new" ? "New itinerary" : "Edit itinerary"}</h1>
       <ItineraryEditor initial={initial} cities={cities ?? []} />
     </div>
   );

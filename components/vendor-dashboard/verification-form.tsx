@@ -26,6 +26,8 @@ function DocUpload({ vendorId, label, testId, onUploaded }: { vendorId: string; 
         accept={DOC_ACCEPT}
         className="sr-only"
         data-testid={testId}
+        aria-label={label}
+        tabIndex={-1}
         onChange={async (e) => {
           const file = e.target.files?.[0];
           if (!file) return;
@@ -41,11 +43,19 @@ function DocUpload({ vendorId, label, testId, onUploaded }: { vendorId: string; 
           }
         }}
       />
-      <Button type="button" variant="secondary" size="sm" onClick={() => input.current?.click()} disabled={state === "busy"}>
-        {state === "busy" ? <Loader2 className="animate-spin" aria-hidden /> : state === "done" ? <FileCheck2 aria-hidden /> : <Upload aria-hidden />}
-        {state === "done" ? `${label} uploaded` : label}
-      </Button>
-      {error ? <p className="text-xs text-destructive">{error}</p> : null}
+      <button
+        type="button"
+        onClick={() => input.current?.click()}
+        disabled={state === "busy"}
+        aria-busy={state === "busy" || undefined}
+        className={`pressable flex min-h-14 w-full items-center gap-3 rounded-2xl border px-4 py-3 text-left text-sm font-medium disabled:opacity-60 ${state === "done" ? "border-positive/60 bg-primary/10" : "border-dashed bg-secondary/30 hover:border-muted-foreground/50"}`}
+      >
+        <span className={`grid h-9 w-9 shrink-0 place-items-center rounded-xl ${state === "done" ? "bg-positive text-background" : "bg-secondary text-muted-foreground"}`}>
+          {state === "busy" ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : state === "done" ? <FileCheck2 className="h-4 w-4" aria-hidden /> : <Upload className="h-4 w-4" aria-hidden />}
+        </span>
+        <span className="flex-1">{state === "done" ? `${label} uploaded` : label}</span>
+      </button>
+      {error ? <p role="alert" className="text-footnote text-destructive">{error}</p> : null}
     </div>
   );
 }
@@ -86,7 +96,7 @@ export function VerificationForm({ vendorId, isClaim }: { vendorId: string; isCl
         <Textarea id="note" value={note} onChange={(e) => setNote(e.target.value)} rows={3} maxLength={2000} />
       </Field>
       {result.error ? <FormAlert state={result} /> : null}
-      <Button type="button" className="w-full" onClick={submit} disabled={busy}>
+      <Button type="button" size="lg" className="w-full" onClick={submit} loading={busy}>
         {busy ? "Submitting…" : isClaim ? "Submit claim" : "Request verification"}
       </Button>
     </div>

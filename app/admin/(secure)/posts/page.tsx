@@ -41,7 +41,7 @@ export default async function AdminPostsPage({ searchParams }: { searchParams: P
   const columns: Column<Row>[] = [
     { key: "kind", label: "Kind", render: (r) => <Badge variant="outline">{r.kind}</Badge> },
     { key: "status", label: "Status", render: (r) => <Badge variant={r.status === "published" ? "secondary" : "destructive"}>{r.status}{r.hold_reason !== "none" ? ` · ${r.hold_reason.replace(/_/g, " ")}` : ""}</Badge> },
-    { key: "body", label: "Body", className: "max-w-xs", render: (r) => <span className="line-clamp-2">{r.body ?? "—"}</span> },
+    { key: "body", label: "Body", className: "md:max-w-xs", mobile: "title", render: (r) => <span className="line-clamp-2">{r.body ?? "—"}</span> },
     { key: "vendor", label: "Venue", render: (r) => <Link href={`/v/${r.vendor.slug}`} className="underline-offset-4 hover:underline">{r.vendor.name}</Link> },
     { key: "author", label: "Author", render: (r) => `@${r.author.username} (${r.author.trust_score})` },
     { key: "moderation_decision", label: "Decision" },
@@ -53,7 +53,7 @@ export default async function AdminPostsPage({ searchParams }: { searchParams: P
 
   return (
     <div className="space-y-4">
-      <h1 className="text-2xl font-semibold">Posts</h1>
+      <h1 className="text-title font-semibold sm:text-display">Posts</h1>
       <FilterBar
         basePath="/admin/posts"
         sp={sp}
@@ -70,8 +70,11 @@ export default async function AdminPostsPage({ searchParams }: { searchParams: P
         ]}
       />
       <DataTable columns={columns} rows={rows} rowKey={(r) => r.id} total={total} page={page} pageSize={PAGE_SIZE} basePath="/admin/posts" sp={sp} sort={sort} desc={desc} bulkFormId="post-bulk" testId="post-table" />
-      <div className="rounded-xl border p-3">
-        <p className="mb-2 text-sm font-medium">Bulk action on selected posts</p>
+      <div className="surface space-y-3 rounded-2xl p-4">
+        <div>
+          <p className="text-callout font-semibold">Bulk action on selected posts</p>
+          <p className="text-footnote text-muted-foreground">Tick rows above, then choose an action.</p>
+        </div>
         <ActionForm formId="post-bulk" action={bulkPostForm} testId="post-bulk-form" choices={[{ value: "hide", label: "Hide selected", destructive: true }, { value: "remove", label: "Remove selected", destructive: true }]} reasonPlaceholder="Reason (required)" />
       </div>
     </div>

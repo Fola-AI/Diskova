@@ -4,6 +4,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 
 import { MarkdownContent } from "@/components/content/markdown-content";
+import { ReadingProgress, TableOfContents } from "@/components/content/reading-aids";
 import { Badge } from "@/components/ui/badge";
 import { ShareButtons } from "@/components/vendor/share-buttons";
 import { BRAND_NAME, SITE_URL } from "@/lib/config";
@@ -24,21 +25,25 @@ export function GuideArticle({ guide, path, breadcrumb, banner, crumbs = [] }: {
           <Image src={guide.cover_image_url} alt="" fill priority sizes="100vw" className="object-cover" />
         </div>
       ) : null}
-      <div className="container max-w-2xl space-y-6 px-4 pt-6">
-        <nav className="text-sm text-muted-foreground">{breadcrumb}</nav>
+      <ReadingProgress />
+      <div className="container max-w-2xl space-y-6 px-4 pt-5">
+        <nav aria-label="Breadcrumb" className="text-footnote text-muted-foreground [&_a]:inline-flex [&_a]:min-h-9 [&_a]:items-center [&_a]:hover:text-foreground">{breadcrumb}</nav>
         <header className="space-y-3">
-          <h1 className="text-3xl font-semibold leading-tight sm:text-5xl">{guide.title}</h1>
-          {guide.excerpt ? <p className="text-lg text-muted-foreground">{guide.excerpt}</p> : null}
-          <p className="flex items-center gap-1.5 text-xs text-muted-foreground" data-testid="last-updated">
+          <h1 className="text-display font-semibold sm:text-display-lg">{guide.title}</h1>
+          {guide.excerpt ? <p className="text-callout text-muted-foreground">{guide.excerpt}</p> : null}
+          <p className="inline-flex items-center gap-1.5 rounded-full bg-secondary px-3 py-1 text-caption font-medium text-muted-foreground" data-testid="last-updated">
             <CalendarClock className="h-3.5 w-3.5" aria-hidden /> Last updated {updated}
           </p>
           {guide.tags.length ? (
             <div className="flex flex-wrap gap-1.5">{guide.tags.map((t) => <Badge key={t} variant="secondary">{t}</Badge>)}</div>
           ) : null}
         </header>
-        <MarkdownContent markdown={guide.body_md} />
+        <TableOfContents containerId="guide-content" />
+        <div id="guide-content">
+          <MarkdownContent markdown={guide.body_md} />
+        </div>
         <ShareButtons url={url} title={guide.title} text={`${guide.title} — ${BRAND_NAME}`} />
-        <p className="text-xs text-muted-foreground">
+        <p className="text-footnote text-muted-foreground">
           Spotted something out of date? <Link href="/guidelines" className="underline">Let us know</Link>.
         </p>
       </div>

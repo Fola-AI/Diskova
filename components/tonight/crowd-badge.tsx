@@ -13,10 +13,10 @@ export function CrowdBadge({
 }) {
   if (!level) return null;
   return (
-    <span className={cn("inline-flex items-center gap-1.5 rounded-full bg-black/70 px-2.5 py-1 text-xs font-semibold text-white backdrop-blur", className)}>
-      <span className={cn("h-2.5 w-2.5 rounded-full", crowdClass(level))} aria-hidden />
+    <span className={cn("inline-flex items-center gap-1.5 rounded-full bg-black/65 px-2.5 py-1 text-caption font-semibold text-white ring-1 ring-white/10 backdrop-blur-md", className)}>
+      <span className={cn("h-2 w-2 rounded-full ring-2 ring-white/20", crowdClass(level))} aria-hidden />
       {crowdLabel(level)}
-      {confidence === "low" ? <span className="font-normal opacity-75">· early signal</span> : null}
+      {confidence === "low" ? <span className="font-normal opacity-80">· early signal</span> : null}
     </span>
   );
 }

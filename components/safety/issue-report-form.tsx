@@ -7,6 +7,7 @@ import { submitIssueReportAction } from "@/app/actions/safety";
 import { FormAlert } from "@/components/forms/form-alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Field, selectClass } from "@/components/vendor-dashboard/field";
 import { hasAuthCookie } from "@/lib/client/auth-cookie";
@@ -61,11 +62,12 @@ export function IssueReportForm({ cityId, areas }: { cityId: string; areas: Arra
       <div aria-hidden className="absolute -left-[9999px] h-0 overflow-hidden">
         <label>Website <input tabIndex={-1} autoComplete="off" value={v.website} onChange={(e) => set("website", e.target.value)} name="website" /></label>
       </div>
-      <label className="flex items-start gap-3 text-sm">
-        <input type="checkbox" checked={useLocation} onChange={(e) => setUseLocation(e.target.checked)} className="mt-0.5 h-5 w-5 accent-[hsl(var(--primary))]" />
-        <span><span className="inline-flex items-center gap-1 font-medium"><MapPinned className="h-4 w-4" aria-hidden />Attach my current location</span><span className="block text-muted-foreground">Optional, only seen by our team.</span></span>
+      <label className="flex cursor-pointer items-center gap-3 rounded-2xl border bg-secondary/30 p-4 text-sm">
+        <MapPinned className="h-5 w-5 shrink-0 text-positive" aria-hidden />
+        <span className="flex-1"><span className="block font-semibold">Attach my current location</span><span id="issue-loc-help" className="block text-footnote text-muted-foreground">Optional, only seen by our team.</span></span>
+        <Switch checked={useLocation} onChange={(e) => setUseLocation(e.target.checked)} aria-describedby="issue-loc-help" />
       </label>
-      <Button type="button" className="w-full" onClick={submit} disabled={busy}>{busy ? "Sending…" : "Send privately"}</Button>
+      <Button type="button" size="lg" className="w-full" onClick={submit} loading={busy}>{busy ? "Sending…" : "Send privately"}</Button>
     </div>
   );
 }

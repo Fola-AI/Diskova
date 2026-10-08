@@ -34,11 +34,12 @@ export default async function CitySafetyPage({ params }: { params: Params }) {
   return (
     <div className="container max-w-3xl space-y-8 px-4 py-6">
       <header className="space-y-3">
-        <h1 className="text-3xl font-semibold">Safety in {city.name}</h1>
-        <p className="flex items-start gap-2 rounded-xl border border-destructive/50 bg-destructive/10 p-4 text-sm font-medium" data-testid="emergency-banner">
-          <PhoneCall className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
-          {BRAND_NAME} is not an emergency service. If you are in danger, call <a href="tel:112" className="underline">112</a>.
-        </p>
+        <h1 className="text-display font-semibold">Safety in {city.name}</h1>
+        <div className="flex items-center gap-3 rounded-2xl border border-destructive/50 bg-destructive/10 p-4 text-sm font-medium" data-testid="emergency-banner">
+          <PhoneCall className="h-5 w-5 shrink-0 text-destructive" aria-hidden />
+          <p className="flex-1">{BRAND_NAME} is not an emergency service. If you are in danger, call <a href="tel:112" className="underline">112</a>.</p>
+          <a href="tel:112" className="pressable inline-flex h-11 shrink-0 items-center rounded-full bg-destructive px-4 font-semibold text-destructive-foreground" aria-label="Call 112 now">Call 112</a>
+        </div>
       </header>
       {page ? <MarkdownContent markdown={page.body_md} /> : null}
       {SAFETY_SECTIONS.map((s) => {
@@ -46,13 +47,13 @@ export default async function CitySafetyPage({ params }: { params: Params }) {
         if (!list.length) return null;
         return (
           <section key={s.value} aria-labelledby={`s-${s.value}`} className="space-y-3">
-            <h2 id={`s-${s.value}`} className="text-xl font-semibold">{s.label}</h2>
+            <h2 id={`s-${s.value}`} className="text-title font-semibold">{s.label}</h2>
             <div className="grid gap-3 sm:grid-cols-2">{list.map((b) => <SafetyBlock key={b.id} block={b} />)}</div>
           </section>
         );
       })}
-      <section id="report" aria-labelledby="report-heading" className="scroll-mt-20 space-y-3 rounded-2xl border p-4">
-        <h2 id="report-heading" className="text-xl font-semibold">Report an issue privately</h2>
+      <section id="report" aria-labelledby="report-heading" className="surface scroll-mt-20 space-y-3 rounded-3xl p-5">
+        <h2 id="report-heading" className="text-title font-semibold">Report an issue privately</h2>
         <p className="text-sm text-muted-foreground">
           Tell our team about a safety concern, scam or problem. Reports are private — they are never published or shown on a map.
         </p>

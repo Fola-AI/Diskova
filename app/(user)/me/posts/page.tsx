@@ -1,7 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
+import { Radio } from "lucide-react";
+
 import { MyPostRow } from "@/components/me/my-post-row";
+import { Breadcrumbs } from "@/components/ui/breadcrumbs";
+import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
 import { requireUser } from "@/lib/auth/guards";
 
 export const metadata: Metadata = { title: "My posts", robots: { index: false } };
@@ -17,18 +22,18 @@ export default async function MyPostsPage() {
     .limit(100);
   const posts = (data ?? []) as unknown as Array<Parameters<typeof MyPostRow>[0]["post"]>;
   return (
-    <div className="container max-w-2xl space-y-5 px-4 py-8">
-      <div>
-        <Link href="/me" className="text-sm text-muted-foreground hover:underline">← Profile</Link>
-        <h1 className="mt-2 text-3xl font-semibold">My posts</h1>
+    <div className="container max-w-2xl space-y-5 px-4 py-6">
+      <div className="space-y-1">
+        <Breadcrumbs items={[{ href: "/me", label: "Me" }, { label: "My posts" }]} />
+        <h1 className="text-display font-semibold">My posts</h1>
         <p className="text-sm text-muted-foreground">Check-ins stay on your profile after they expire from a venue&apos;s live feed.</p>
       </div>
       {posts.length ? (
-        <ul className="divide-y rounded-xl border bg-card">{posts.map((p) => <MyPostRow key={p.id} post={p} />)}</ul>
+        <ul className="surface divide-y overflow-hidden rounded-2xl">{posts.map((p) => <MyPostRow key={p.id} post={p} />)}</ul>
       ) : (
-        <p className="rounded-xl border border-dashed p-6 text-sm text-muted-foreground">
-          No posts yet. Find a venue and tap a crowd level — that&apos;s it.
-        </p>
+        <EmptyState icon={Radio} title="No posts yet" action={<Button asChild><Link href="/">Find a venue</Link></Button>}>
+          Find a venue and tap a crowd level — that&apos;s it.
+        </EmptyState>
       )}
     </div>
   );

@@ -8,17 +8,22 @@ export function HoursTable({ hours, timeZone }: { hours: OpeningHours; timeZone:
   return (
     <table className="w-full text-sm">
       <tbody>
-        {WEEK_ORDER.map((d) => (
-          <tr key={d} className={cn("border-b last:border-0", d === today && "font-semibold text-foreground")}>
-            <th scope="row" className="py-2 pr-4 text-left font-normal">
-              {DAY_LABELS[d]}
-              {d === today ? <span className="sr-only"> (today)</span> : null}
-            </th>
-            <td className={cn("py-2 text-right", !hours[d]?.length && "text-muted-foreground")}>
-              {formatIntervals(hours[d])}
-            </td>
-          </tr>
-        ))}
+        {WEEK_ORDER.map((d) => {
+          const isToday = d === today;
+          return (
+            <tr key={d} aria-current={isToday ? "date" : undefined} className={cn("border-b last:border-0", isToday && "bg-primary/10 font-semibold text-foreground")}>
+              <th scope="row" className="py-3 pl-4 pr-4 text-left font-normal">
+                <span className="inline-flex items-center gap-2">
+                  {DAY_LABELS[d]}
+                  {isToday ? <span className="rounded-full bg-primary px-2 py-0.5 text-caption font-semibold text-primary-foreground">Today</span> : null}
+                </span>
+              </th>
+              <td className={cn("py-3 pr-4 text-right tabular-nums", !hours[d]?.length && "text-muted-foreground")}>
+                {formatIntervals(hours[d])}
+              </td>
+            </tr>
+          );
+        })}
       </tbody>
     </table>
   );
