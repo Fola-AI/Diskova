@@ -11,6 +11,9 @@ const DEFAULT_BRAND_NAME = "Diskova";
 /** The brand name. Never hard-code it anywhere else (CLAUDE.md). */
 export const BRAND_NAME: string = process.env.NEXT_PUBLIC_BRAND_NAME?.trim() || DEFAULT_BRAND_NAME;
 
+/** Public contact address for privacy / data requests (privacy policy, terms). */
+export const CONTACT_EMAIL: string = process.env.NEXT_PUBLIC_CONTACT_EMAIL?.trim() || "hello@diskova.io";
+
 /** Season naming (PRD §1.5). */
 export const SEASON_NAME = "December in Nigeria";
 
@@ -86,3 +89,8 @@ export const BRAND_COLORS = {
   gold: "#F4B400",
   background: "#0B0F0D",
 } as const;
+
+/** Public URL for an object in a public Storage bucket (media / vendor-assets / guides). */
+export function publicStorageUrl(bucket: "media" | "vendor-assets" | "guides", path: string): string {
+  return `${SUPABASE_URL}/storage/v1/object/public/${bucket}/${path.split("/").map(encodeURIComponent).join("/")}`;
+}

@@ -59,6 +59,26 @@ const config: Config = {
           5: "hsl(var(--crowd-5))",
         },
       },
+      fontSize: {
+        // Type scale (docs/ux-audit.md G2). Nothing in the product goes below `caption` (12px).
+        caption: ["0.75rem", { lineHeight: "1rem", letterSpacing: "0.01em" }],
+        footnote: ["0.8125rem", { lineHeight: "1.125rem" }],
+        callout: ["1.0625rem", { lineHeight: "1.5rem" }],
+        title: ["1.375rem", { lineHeight: "1.75rem", letterSpacing: "-0.01em" }],
+        display: ["2rem", { lineHeight: "2.25rem", letterSpacing: "-0.02em" }],
+        "display-lg": ["2.5rem", { lineHeight: "2.75rem", letterSpacing: "-0.025em" }],
+      },
+      transitionTimingFunction: {
+        spring: "var(--ease-spring)",
+        "spring-soft": "var(--ease-spring-soft)",
+        out: "var(--ease-out)",
+        in: "var(--ease-in)",
+      },
+      transitionDuration: {
+        press: "120ms",
+        micro: "180ms",
+        move: "340ms",
+      },
       fontFamily: {
         sans: ["var(--font-inter)", "ui-sans-serif", "system-ui", "sans-serif"],
         display: ["var(--font-fraunces)", "ui-serif", "Georgia", "serif"],
@@ -81,11 +101,21 @@ const config: Config = {
           "0%, 100%": { opacity: "1" },
           "50%": { opacity: "0.35" },
         },
+        "live-ring": {
+          "0%": { transform: "scale(1)", opacity: "0.6" },
+          "100%": { transform: "scale(2.4)", opacity: "0" },
+        },
+        "digit-in": {
+          from: { opacity: "0", transform: "translate3d(0, 40%, 0)" },
+          to: { opacity: "1", transform: "none" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
         "live-pulse": "live-pulse 1.6s ease-in-out infinite",
+        "live-ring": "live-ring 1.8s cubic-bezier(0.22, 1, 0.36, 1) infinite",
+        "digit-in": "digit-in 200ms var(--ease-out) both",
       },
     },
   },

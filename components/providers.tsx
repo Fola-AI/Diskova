@@ -14,7 +14,15 @@ export function Providers({ children }: { children: ReactNode }) {
       disableTransitionOnChange
     >
       {children}
-      <Toaster theme="dark" position="top-center" richColors closeButton />
+      <Toaster
+        theme="dark"
+        position="bottom-center"
+        richColors
+        visibleToasts={2}
+        offset={24}
+        mobileOffset={{ bottom: "calc(var(--tabbar-h) + 12px)", left: 12, right: 12 }}
+        toastOptions={{ className: "!rounded-2xl !font-sans" }}
+      />
     </ThemeProvider>
   );
 }

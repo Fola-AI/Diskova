@@ -9,29 +9,37 @@ import { expect, test } from "@playwright/test";
 test("city directory lists published seed vendors with open-now status", async ({ page }) => {
   await page.goto("/c/lagos");
   await expect(page.getByRole("heading", { level: 1, name: "Lagos" })).toBeVisible();
+  // ≥ 10: the 10 Lagos sample vendors (other smoke tests may add their own venues in parallel).
   const cards = page.getByTestId("vendor-grid").locator("li");
-  await expect(cards).toHaveCount(10);
+  expect(await cards.count()).toBeGreaterThanOrEqual(10);
   await expect(page.getByText("Afrobeat Junction")).toBeVisible();
   await expect(page.locator("text=/Open · closes|Closed · opens/").first()).toBeVisible();
 });
 
 test("category chip, area and price filters narrow the list", async ({ page }) => {
   await page.goto("/c/lagos");
+  const grid = page.getByTestId("vendor-grid");
+  await page.goto("/c/lagos");
+  const total = await grid.locator("li").count();
+
   await page.getByRole("link", { name: /^Nightclub/ }).click();
   await expect(page).toHaveURL(/category=nightclub/);
-  await expect(page.getByTestId("vendor-grid").locator("li")).toHaveCount(1);
+  await expect(grid).toContainText("Afrobeat Junction");
+  await expect(grid).not.toContainText("Suya Street Corner");
 
   await page.goto("/c/lagos?area=ikoyi");
-  await expect(page.getByTestId("vendor-grid").locator("li")).toHaveCount(2);
+  await expect(grid).toContainText("Copper Lantern Rooftop");
+  await expect(grid).toContainText("Ochre Wall Gallery");
+  await expect(grid).not.toContainText("Afrobeat Junction");
 
   await page.goto("/c/lagos?price=budget&feature=late_night");
-  await expect(page.getByTestId("vendor-grid").locator("li")).toHaveCount(1);
-  await expect(page.getByText("Suya Street Corner")).toBeVisible();
+  await expect(grid).toContainText("Suya Street Corner");
+  await expect(grid).not.toContainText("Palmwine & Pepper"); // budget, but not open late
 
   // Unknown values are ignored, not errors.
   const res = await page.goto("/c/lagos?price=cheap&area=%3Cscript%3E");
   expect(res?.status()).toBe(200);
-  await expect(page.getByTestId("vendor-grid").locator("li")).toHaveCount(10);
+  expect(await grid.locator("li").count()).toBe(total);
 });
 
 test("unknown city and unpublished vendor return 404", async ({ page }) => {

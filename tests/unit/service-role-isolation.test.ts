@@ -1,3 +1,5 @@
+import { existsSync, readdirSync, readFileSync } from "node:fs";
+import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
 import { isClientFile, listSourceFiles, read, rel } from "../helpers/source-files";
@@ -55,5 +57,41 @@ describe("service-role isolation (PRD §7.2)", () => {
     for (const f of adminFiles) {
       expect(read(f), rel(f)).toMatch(/assertServerOnly\(/);
     }
+  });
+});
+
+describe("built client bundles contain no server secrets (PRD §7.2)", () => {
+  const staticDir = join(process.cwd(), process.env.NEXT_DIST_DIR || ".next", "static");
+  const secrets = [
+    process.env.SUPABASE_SERVICE_ROLE_KEY,
+    process.env.OPENAI_API_KEY,
+    process.env.UPSTASH_REDIS_REST_TOKEN,
+    process.env.RESEND_API_KEY,
+    process.env.CRON_SECRET,
+    process.env.TOKEN_ENCRYPTION_KEY,
+    process.env.SENTRY_AUTH_TOKEN,
+    process.env.GROQ_API_KEY,
+  ].filter((s): s is string => Boolean(s && s.length >= 12));
+  const run = existsSync(staticDir) ? it : it.skip;
+
+  run("no secret value or sb_secret_ key material appears in any file under .next/static", () => {
+    const files: string[] = [];
+    const walk = (dir: string) => {
+      for (const e of readdirSync(dir, { withFileTypes: true })) {
+        const p = join(dir, e.name);
+        if (e.isDirectory()) walk(p);
+        else if (/\.(js|css|json|txt|html)$/.test(e.name)) files.push(p);
+      }
+    };
+    walk(staticDir);
+    expect(files.length).toBeGreaterThan(10);
+    const leaks: string[] = [];
+    for (const f of files) {
+      const body = readFileSync(f, "utf8");
+      // supabase-js itself contains the bare prefix ("sb_secret_") in a key-type check; a real key has material after it.
+      if (/sb_secret_[A-Za-z0-9_-]{10,}/.test(body)) leaks.push(`${f}: sb_secret_ key`);
+      for (const s of secrets) if (body.includes(s)) leaks.push(`${f}: secret value`);
+    }
+    expect(leaks).toEqual([]);
   });
 });

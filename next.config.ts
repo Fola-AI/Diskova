@@ -13,6 +13,8 @@ const supabaseHost = (() => {
 })();
 
 const nextConfig: NextConfig = {
+  // Optional separate build folder, so a second dev/verify server can run beside `npm run dev`.
+  distDir: process.env.NEXT_DIST_DIR || ".next",
   poweredByHeader: false,
   reactStrictMode: true,
   // Feature flags are not secrets; inline them so client and server read the same values.
@@ -37,12 +39,14 @@ const nextConfig: NextConfig = {
   },
   async headers() {
     return [
+      // The service worker must always be revalidated so updates roll out promptly.
+      { source: "/sw.js", headers: [{ key: "Cache-Control", value: "no-cache, no-store, must-revalidate" }] },
       {
         source: "/:path*",
         headers: buildSecurityHeaders({
           supabaseUrl,
           sentryDsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
-          enforceCsp: false, // Report-only until Stage L13 (PRD §7.7)
+          enforceCsp: true, // Enforced from Stage L13 (PRD §7.7)
           isDev: process.env.NODE_ENV !== "production",
         }),
       },

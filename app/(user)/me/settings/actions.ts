@@ -4,12 +4,11 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import type { FormState } from "@/components/forms/form-state";
-import { writeAudit } from "@/lib/admin-db/audit";
-import { getAdminSupabase } from "@/lib/admin-db/client";
 import { requireUser, requireVerifiedUser } from "@/lib/auth/guards";
 import { requestMeta } from "@/lib/http/request-meta";
 import { createIncomingUpload, UploadError } from "@/lib/media/uploads";
 import { rateLimit, retryAfterText } from "@/lib/ratelimit";
+import { anonymiseAccount } from "@/lib/services/account";
 import { fieldErrors, formObject, profileSchema } from "@/lib/validation/auth";
 
 export async function updateProfile(_prev: FormState, formData: FormData): Promise<FormState> {
@@ -52,44 +51,8 @@ export async function deleteAccount(_prev: FormState, formData: FormData): Promi
     return { fieldErrors: { confirm: [`Type your username (${profile.username}) to confirm.`] } };
   }
 
-  const admin = getAdminSupabase();
-  const anonymisedUsername = `deleted_${user.id.replace(/-/g, "").slice(0, 12)}`;
-  const now = new Date().toISOString();
-
-  const { error: profileError } = await admin
-    .from("profiles")
-    .update({
-      deleted_at: now,
-      username: anonymisedUsername,
-      display_name: null,
-      bio: null,
-      avatar_url: null,
-      home_city_id: null,
-      is_diaspora: null,
-      location_consent: false,
-      badges: [],
-    })
-    .eq("id", user.id);
-  if (profileError) return { error: "We couldn't delete your account. Please try again or contact us." };
-
-  await admin.from("posts").update({ deleted_at: now }).eq("author_id", user.id).is("deleted_at", null);
-
   const { ip, userAgent } = await requestMeta();
-  await writeAudit({
-    action: "account.deleted",
-    entityType: "public.profiles",
-    entityId: user.id,
-    before: { username: profile.username },
-    after: { username: anonymisedUsername },
-    reason: "Self-service account deletion",
-    actorId: user.id,
-    actorRole: profile.role,
-    ip,
-    userAgent,
-  });
-
-  // Soft delete: the auth row is anonymised and can no longer sign in; the profile row stays (anonymised).
-  await admin.auth.admin.deleteUser(user.id, true);
   await supabase.auth.signOut();
+  await anonymiseAccount(user.id, { actorId: user.id, actorRole: profile.role, reason: "Self-service account deletion", ip, userAgent });
   redirect("/?account=deleted");
 }

@@ -10,7 +10,7 @@ export function FormAlert({ state, className }: { state: FormState; className?: 
     <div
       role={isError ? "alert" : "status"}
       className={cn(
-        "flex items-start gap-2 rounded-md border px-3 py-2.5 text-sm",
+        "enter-up flex items-start gap-2.5 rounded-xl border px-3.5 py-3 text-sm leading-relaxed",
         isError ? "border-destructive/50 bg-destructive/10 text-foreground" : "border-primary/40 bg-primary/10",
         className,
       )}
@@ -28,7 +28,8 @@ export function FormAlert({ state, className }: { state: FormState; className?: 
 export function FieldError({ errors, id }: { errors?: string[]; id?: string }) {
   if (!errors?.length) return null;
   return (
-    <p id={id} className="text-xs text-destructive">
+    <p id={id} className="enter-fade flex items-start gap-1.5 text-footnote text-destructive">
+      <AlertCircle className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden />
       {errors[0]}
     </p>
   );

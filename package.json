@@ -22,10 +22,17 @@
     "db:seed": "dotenv -e .env.local -- node scripts/dev-db.mjs seed",
     "db:types": "dotenv -e .env.local -- node scripts/dev-db.mjs types",
     "create-super-admin": "dotenv -e .env.local -- tsx scripts/create-super-admin.ts",
-    "db:samples": "dotenv -e .env.local -- node scripts/dev-db.mjs samples"
+    "db:samples": "dotenv -e .env.local -- node scripts/dev-db.mjs samples",
+    "bench:snapshots": "dotenv -e .env.local -- sh -c 'psql \"$SUPABASE_DB_URL\" -X -q -f scripts/bench/crowd-snapshots.sql'",
+    "content:check": "dotenv -e .env.local -- tsx scripts/seed-content.ts --dry-run",
+    "content:load": "dotenv -e .env.local -- tsx scripts/seed-content.ts",
+    "smoke:remote": "dotenv -e .env.local -- playwright test",
+    "smoke:readonly": "dotenv -e .env.local -- playwright test --grep @readonly"
   },
   "dependencies": {
+    "@ai-sdk/openai": "4.0.87",
     "@hookform/resolvers": "5.9.1",
+    "@radix-ui/react-dialog": "1.2.0",
     "@radix-ui/react-slot": "1.4.0",
     "@react-email/components": "1.0.12",
     "@sentry/nextjs": "11.5.0",
@@ -36,6 +43,7 @@
     "@vercel/analytics": "2.0.1",
     "@vercel/og": "1.0.3",
     "@vercel/speed-insights": "2.0.0",
+    "ai": "7.0.131",
     "blurhash": "2.0.5",
     "class-variance-authority": "0.7.1",
     "clsx": "2.1.1",

@@ -231,3 +231,43 @@ export async function listPublishedVendorSlugs(): Promise<Array<{ slug: string; 
   if (error) throw error;
   return data ?? [];
 }
+
+export interface AreaWithCity extends AreaRow {
+  city_id: string;
+  lat: number | null;
+  lng: number | null;
+}
+
+export const listAllAreas = cache(async (): Promise<AreaWithCity[]> => {
+  const { data, error } = await getPublicSupabase()
+    .from("areas")
+    .select("id, slug, name, city_id, lat, lng")
+    .eq("is_active", true)
+    .order("sort_order");
+  if (error) throw error;
+  return (data ?? []) as unknown as AreaWithCity[];
+});
+
+export interface OfficialUpdateRow {
+  id: string;
+  crowd_level: number | null;
+  body: string | null;
+  created_at: string;
+  media: Array<{ storage_path: string; width: number | null; height: number | null; blurhash: string | null }>;
+}
+
+/** Official updates from the last 24 h (pinned on the vendor page, §8.2). */
+export async function listRecentOfficialUpdates(vendorId: string, limit = 3): Promise<OfficialUpdateRow[]> {
+  const { data, error } = await getPublicSupabase()
+    .from("posts")
+    .select("id, crowd_level, body, created_at, media:post_media(storage_path, width, height, blurhash)")
+    .eq("vendor_id", vendorId)
+    .eq("kind", "official")
+    .eq("status", "published")
+    .is("deleted_at", null)
+    .gte("created_at", new Date(Date.now() - 24 * 3600_000).toISOString())
+    .order("created_at", { ascending: false })
+    .limit(limit);
+  if (error) throw error;
+  return (data ?? []) as unknown as OfficialUpdateRow[];
+}

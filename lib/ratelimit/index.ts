@@ -12,7 +12,7 @@ assertServerOnly("lib/ratelimit");
  * Sliding-window rate limits (PRD §7.5). Per-user keys are primary; IP limits are generous
  * because of carrier-grade NAT. Emails are hashed before use as keys.
  */
-const LIMITS = {
+export const LIMITS = {
   signupIp: { tokens: 100, window: "1 h" },
   loginEmail: { tokens: 20, window: "15 m" },
   loginIp: { tokens: 300, window: "15 m" },
@@ -28,6 +28,16 @@ const LIMITS = {
   mediaUser: { tokens: 12, window: "1 h" },
   liveIp: { tokens: 120, window: "1 m" },
   profileUpdateUser: { tokens: 30, window: "1 h" },
+  likeUser: { tokens: 120, window: "1 h" }, // decision: likes are cheap but shouldn't be scriptable
+  exportUser: { tokens: 30, window: "1 h" },
+  apiIp: { tokens: 300, window: "1 m" },
+  agentKey: { tokens: 120, window: "1 m" }, // §12: 120 req/min/key
+  listWriteUser: { tokens: 120, window: "1 h" }, // decision: P2 list edits (PRD doesn't specify)
+  listViewIp: { tokens: 1, window: "1 h" }, // one counted view per IP per list per hour
+  qaAskUser: { tokens: 5, window: "1 h" }, // decision: P3 (PRD doesn't specify)
+  qaAnswerUser: { tokens: 20, window: "1 h" },
+  qaVoteUser: { tokens: 120, window: "1 h" }, // decision: public API reads (§9 doesn't specify); generous for CGNAT // decision: admin CSV exports (PRD doesn't specify)
+  eventSubmitUser: { tokens: 10, window: "1 d" }, // decision: PRD doesn't specify one
   assistantUser: { tokens: 20, window: "1 h" },
   assistantIp: { tokens: 200, window: "1 h" },
 } as const satisfies Record<string, { tokens: number; window: `${number} ${"s" | "m" | "h" | "d"}` }>;
@@ -44,7 +54,7 @@ export interface LimitResult {
 let redis: Redis | null | undefined;
 const limiters = new Map<string, Ratelimit>();
 
-function getRedis(): Redis | null {
+export function getRedis(): Redis | null {
   if (redis === undefined) {
     const { UPSTASH_REDIS_REST_URL: url, UPSTASH_REDIS_REST_TOKEN: token } = serverEnv();
     redis = url && token ? new Redis({ url, token }) : null;

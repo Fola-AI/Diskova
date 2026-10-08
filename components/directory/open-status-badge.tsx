@@ -17,7 +17,7 @@ export function OpenStatusBadge({
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1 text-xs font-medium",
+        "inline-flex items-center gap-1 text-footnote font-medium",
         status.isOpen ? "text-positive" : "text-muted-foreground",
         className,
       )}

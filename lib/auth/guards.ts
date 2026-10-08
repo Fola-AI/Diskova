@@ -4,6 +4,7 @@ import { cache } from "react";
 
 import { isStaffRole, memberRoleAtLeast, roleAtLeast, type UserRole, type VendorMemberRole } from "@/lib/auth/roles";
 import { getServerSupabase } from "@/lib/db/server";
+import { currentPath } from "@/lib/http/request-meta";
 import type { Database } from "@/lib/db/types";
 import { assertServerOnly } from "@/lib/server-only";
 
@@ -59,7 +60,8 @@ export async function currentAal(supabase: ServerSupabase): Promise<{ current: s
  * without it the user is sent to /admin/mfa to enrol or verify. Non-matching roles get a 404 so admin
  * routes don't reveal themselves.
  */
-export async function requireRole(min: UserRole, next = "/admin"): Promise<SessionContext> {
+export async function requireRole(min: UserRole, fallbackNext = "/admin"): Promise<SessionContext> {
+  const next = (await currentPath()) ?? fallbackNext;
   const session = await requireUser(next);
   const role = session.profile.role as UserRole;
   if (!roleAtLeast(role, min) || session.profile.status === "suspended" || session.profile.status === "banned") {

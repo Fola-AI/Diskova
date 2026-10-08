@@ -16,6 +16,7 @@
 
 # next.js
 /.next/
+/.next-*/
 /out/
 /build
 
@@ -37,3 +38,7 @@ next-env.d.ts
 
 # sentry
 .sentryclirc
+/playwright/.auth/
+
+# Claude Code local runtime files
+.claude/*.lock

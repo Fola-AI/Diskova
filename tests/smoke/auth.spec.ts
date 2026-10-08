@@ -8,23 +8,23 @@ test.afterAll(async () => {
   for (const id of created) await admin().auth.admin.deleteUser(id);
 });
 
-test("home renders the branded shell with security headers", async ({ page }) => {
+test("home renders the branded shell with security headers", { tag: "@readonly" }, async ({ page }) => {
   const res = await page.goto("/");
   expect(res?.status()).toBe(200);
   expect(res?.headers()["x-frame-options"]).toBe("DENY");
-  expect(res?.headers()["content-security-policy-report-only"]).toContain("default-src 'self'");
+  expect(res?.headers()["content-security-policy"]).toContain("default-src 'self'"); // enforced since L13
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
   await expect(page.getByText("Unverified").or(page.getByText("Community posts are shared"))).toBeVisible();
 });
 
-test("protected pages send anonymous visitors to login with a safe next", async ({ page }) => {
+test("protected pages send anonymous visitors to login with a safe next", { tag: "@readonly" }, async ({ page }) => {
   await page.goto("/me/settings");
   await expect(page).toHaveURL(/\/login\?next=%2Fme%2Fsettings$/);
   await page.goto("/admin");
   await expect(page).toHaveURL(/\/login\?next=%2Fadmin$/);
 });
 
-test("signup form validates before calling the server", async ({ page }) => {
+test("signup form validates before calling the server", { tag: "@readonly" }, async ({ page }) => {
   await page.goto("/signup");
   await page.getByLabel("Email").fill("not-an-email");
   await page.getByLabel("Password").fill("short");
@@ -72,7 +72,7 @@ test("signup → verify → login", async ({ page }) => {
   await expect(page.getByRole("heading", { name: "Settings" })).toBeVisible();
 });
 
-test("used or invalid links land on login with a clear message", async ({ page }) => {
+test("used or invalid links land on login with a clear message", { tag: "@readonly" }, async ({ page }) => {
   await page.goto("/auth/callback?token_hash=not-a-real-token&type=signup");
   await expect(page).toHaveURL(/\/login\?error=link$/);
   await expect(page.getByText(/expired or was already used/i)).toBeVisible();

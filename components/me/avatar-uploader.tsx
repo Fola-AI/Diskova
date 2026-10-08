@@ -50,24 +50,32 @@ export function AvatarUploader({ url, name }: { url: string | null; name: string
 
   return (
     <div className="flex items-center gap-4">
-      <Avatar url={preview} name={name} size={72} />
-      <div className="space-y-1">
+      <label htmlFor="avatar-file" className="pressable relative shrink-0 cursor-pointer rounded-full" aria-hidden>
+        <Avatar url={preview} name={name} size={80} className={busy ? "opacity-60" : undefined} />
+        <span className="absolute -bottom-0.5 -right-0.5 grid h-8 w-8 place-items-center rounded-full border-2 border-background bg-primary text-primary-foreground">
+          {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Camera className="h-4 w-4" />}
+        </span>
+      </label>
+      <div className="space-y-1.5">
         <input
           ref={input}
           type="file"
           accept={ACCEPT.join(",")}
           className="sr-only"
           id="avatar-file"
+          aria-label="Change profile photo"
+          aria-describedby="avatar-help"
           onChange={(e) => {
             const file = e.target.files?.[0];
             if (file) void onFile(file);
           }}
         />
-        <Button type="button" variant="outline" size="sm" disabled={busy} onClick={() => input.current?.click()}>
-          {busy ? <Loader2 className="animate-spin" aria-hidden /> : <Camera aria-hidden />}
+        <Button type="button" variant="secondary" size="sm" loading={busy} onClick={() => input.current?.click()}>
+          {busy ? null : <Camera aria-hidden />}
           {busy ? "Uploading…" : "Change photo"}
         </Button>
-        <p className="text-xs text-muted-foreground">JPEG, PNG or WebP, up to 5 MB. Location data is removed.</p>
+        <p id="avatar-help" className="text-footnote text-muted-foreground">JPEG, PNG or WebP, up to 5 MB. Location data is removed.</p>
+        <span className="sr-only" aria-live="polite">{busy ? "Uploading photo" : ""}</span>
       </div>
     </div>
   );

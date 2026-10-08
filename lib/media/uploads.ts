@@ -49,8 +49,14 @@ export async function removeIncoming(path: string): Promise<void> {
   await getAdminSupabase().storage.from(INCOMING_BUCKET).remove([path]);
 }
 
-export async function putPublicWebp(path: string, data: Buffer): Promise<string> {
-  const storage = getAdminSupabase().storage.from(MEDIA_BUCKET);
+export const VENDOR_ASSETS_BUCKET = "vendor-assets";
+
+export async function putPublicWebp(
+  path: string,
+  data: Buffer,
+  bucket: typeof MEDIA_BUCKET | typeof VENDOR_ASSETS_BUCKET = MEDIA_BUCKET,
+): Promise<string> {
+  const storage = getAdminSupabase().storage.from(bucket);
   const { error } = await storage.upload(path, data, {
     contentType: "image/webp",
     cacheControl: "31536000",

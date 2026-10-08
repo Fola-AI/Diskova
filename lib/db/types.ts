@@ -419,6 +419,158 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"itineraries": {
+                  Row: {
+                    "city_id": string | null,"cover_image_url": string | null,"created_at": string,"created_by": string | null,"days": number,"deleted_at": string | null,"excerpt": string | null,"id": string,"intro_md": string,"published_at": string | null,"seo_description": string | null,"seo_title": string | null,"slug": string,"status": Database["public"]['Enums']["guide_status"],"title": string,"updated_at": string,"updated_by": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "city_id"?: string | null,"cover_image_url"?: string | null,"created_at"?: string,"created_by"?: string | null,"days"?: number,"deleted_at"?: string | null,"excerpt"?: string | null,"id"?: string,"intro_md"?: string,"published_at"?: string | null,"seo_description"?: string | null,"seo_title"?: string | null,"slug": string,"status"?: Database["public"]['Enums']["guide_status"],"title": string,"updated_at"?: string,"updated_by"?: string | null
+                  }
+                  Update: {
+                    "city_id"?: string | null,"cover_image_url"?: string | null,"created_at"?: string,"created_by"?: string | null,"days"?: number,"deleted_at"?: string | null,"excerpt"?: string | null,"id"?: string,"intro_md"?: string,"published_at"?: string | null,"seo_description"?: string | null,"seo_title"?: string | null,"slug"?: string,"status"?: Database["public"]['Enums']["guide_status"],"title"?: string,"updated_at"?: string,"updated_by"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "itineraries_city_id_fkey"
+      columns: ["city_id"]
+isOneToOne: false
+      referencedRelation: "cities"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "itineraries_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "itineraries_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "v_public_profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "itineraries_updated_by_fkey"
+      columns: ["updated_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "itineraries_updated_by_fkey"
+      columns: ["updated_by"]
+isOneToOne: false
+      referencedRelation: "v_public_profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"itinerary_items": {
+                  Row: {
+                    "cost_ngn": number | null,"cost_note": string | null,"created_at": string,"day": number,"description_md": string | null,"event_id": string | null,"id": string,"itinerary_id": string,"sort_order": number,"time_label": string | null,"title": string,"updated_at": string,"vendor_id": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "cost_ngn"?: number | null,"cost_note"?: string | null,"created_at"?: string,"day": number,"description_md"?: string | null,"event_id"?: string | null,"id"?: string,"itinerary_id": string,"sort_order"?: number,"time_label"?: string | null,"title": string,"updated_at"?: string,"vendor_id"?: string | null
+                  }
+                  Update: {
+                    "cost_ngn"?: number | null,"cost_note"?: string | null,"created_at"?: string,"day"?: number,"description_md"?: string | null,"event_id"?: string | null,"id"?: string,"itinerary_id"?: string,"sort_order"?: number,"time_label"?: string | null,"title"?: string,"updated_at"?: string,"vendor_id"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "itinerary_items_event_id_fkey"
+      columns: ["event_id"]
+isOneToOne: false
+      referencedRelation: "events"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "itinerary_items_itinerary_id_fkey"
+      columns: ["itinerary_id"]
+isOneToOne: false
+      referencedRelation: "itineraries"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "itinerary_items_vendor_id_fkey"
+      columns: ["vendor_id"]
+isOneToOne: false
+      referencedRelation: "v_live_now"
+      referencedColumns: ["vendor_id"]
+    },{
+      foreignKeyName: "itinerary_items_vendor_id_fkey"
+      columns: ["vendor_id"]
+isOneToOne: false
+      referencedRelation: "vendors"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"list_items": {
+                  Row: {
+                    "created_at": string,"event_id": string | null,"id": string,"list_id": string,"note": string | null,"sort_order": number,"vendor_id": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"event_id"?: string | null,"id"?: string,"list_id": string,"note"?: string | null,"sort_order"?: number,"vendor_id"?: string | null
+                  }
+                  Update: {
+                    "created_at"?: string,"event_id"?: string | null,"id"?: string,"list_id"?: string,"note"?: string | null,"sort_order"?: number,"vendor_id"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "list_items_event_id_fkey"
+      columns: ["event_id"]
+isOneToOne: false
+      referencedRelation: "events"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "list_items_list_id_fkey"
+      columns: ["list_id"]
+isOneToOne: false
+      referencedRelation: "lists"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "list_items_vendor_id_fkey"
+      columns: ["vendor_id"]
+isOneToOne: false
+      referencedRelation: "v_live_now"
+      referencedColumns: ["vendor_id"]
+    },{
+      foreignKeyName: "list_items_vendor_id_fkey"
+      columns: ["vendor_id"]
+isOneToOne: false
+      referencedRelation: "vendors"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"lists": {
+                  Row: {
+                    "city_id": string | null,"created_at": string,"id": string,"is_public": boolean,"owner_id": string,"share_token": string,"title": string,"updated_at": string,"view_count": number
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "city_id"?: string | null,"created_at"?: string,"id"?: string,"is_public"?: boolean,"owner_id"?: string,"share_token"?: string,"title": string,"updated_at"?: string,"view_count"?: number
+                  }
+                  Update: {
+                    "city_id"?: string | null,"created_at"?: string,"id"?: string,"is_public"?: boolean,"owner_id"?: string,"share_token"?: string,"title"?: string,"updated_at"?: string,"view_count"?: number
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "lists_city_id_fkey"
+      columns: ["city_id"]
+isOneToOne: false
+      referencedRelation: "cities"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "lists_owner_id_fkey"
+      columns: ["owner_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "lists_owner_id_fkey"
+      columns: ["owner_id"]
+isOneToOne: false
+      referencedRelation: "v_public_profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"moderation_items": {
                   Row: {
                     "assigned_to": string | null,"closed_at": string | null,"created_at": string,"entity_id": string,"entity_type": string,"id": string,"opened_at": string,"outcome": string | null,"priority": number,"source": Database["public"]['Enums']["moderation_source"],"status": Database["public"]['Enums']["moderation_status"],"updated_at": string
@@ -590,6 +742,120 @@ isOneToOne: false
       columns: ["home_city_id"]
 isOneToOne: false
       referencedRelation: "cities"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"qa_answers": {
+                  Row: {
+                    "author_id": string | null,"body": string,"created_at": string,"deleted_at": string | null,"id": string,"is_official": boolean,"is_vendor_answer": boolean,"moderation_decision": Database["public"]['Enums']["moderation_decision"] | null,"moderation_score": Json | null,"question_id": string,"report_count": number,"status": Database["public"]['Enums']["post_status"],"updated_at": string,"vote_count": number
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "author_id"?: string | null,"body": string,"created_at"?: string,"deleted_at"?: string | null,"id"?: string,"is_official"?: boolean,"is_vendor_answer"?: boolean,"moderation_decision"?: Database["public"]['Enums']["moderation_decision"] | null,"moderation_score"?: Json | null,"question_id": string,"report_count"?: number,"status"?: Database["public"]['Enums']["post_status"],"updated_at"?: string,"vote_count"?: number
+                  }
+                  Update: {
+                    "author_id"?: string | null,"body"?: string,"created_at"?: string,"deleted_at"?: string | null,"id"?: string,"is_official"?: boolean,"is_vendor_answer"?: boolean,"moderation_decision"?: Database["public"]['Enums']["moderation_decision"] | null,"moderation_score"?: Json | null,"question_id"?: string,"report_count"?: number,"status"?: Database["public"]['Enums']["post_status"],"updated_at"?: string,"vote_count"?: number
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "qa_answers_author_id_fkey"
+      columns: ["author_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "qa_answers_author_id_fkey"
+      columns: ["author_id"]
+isOneToOne: false
+      referencedRelation: "v_public_profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "qa_answers_question_id_fkey"
+      columns: ["question_id"]
+isOneToOne: false
+      referencedRelation: "qa_questions"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"qa_questions": {
+                  Row: {
+                    "accepted_answer_id": string | null,"answer_count": number,"author_id": string | null,"body": string | null,"city_id": string,"created_at": string,"deleted_at": string | null,"id": string,"is_pinned": boolean,"moderation_decision": Database["public"]['Enums']["moderation_decision"] | null,"moderation_score": Json | null,"report_count": number,"status": Database["public"]['Enums']["post_status"],"title": string,"updated_at": string,"vendor_id": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "accepted_answer_id"?: string | null,"answer_count"?: number,"author_id"?: string | null,"body"?: string | null,"city_id": string,"created_at"?: string,"deleted_at"?: string | null,"id"?: string,"is_pinned"?: boolean,"moderation_decision"?: Database["public"]['Enums']["moderation_decision"] | null,"moderation_score"?: Json | null,"report_count"?: number,"status"?: Database["public"]['Enums']["post_status"],"title": string,"updated_at"?: string,"vendor_id"?: string | null
+                  }
+                  Update: {
+                    "accepted_answer_id"?: string | null,"answer_count"?: number,"author_id"?: string | null,"body"?: string | null,"city_id"?: string,"created_at"?: string,"deleted_at"?: string | null,"id"?: string,"is_pinned"?: boolean,"moderation_decision"?: Database["public"]['Enums']["moderation_decision"] | null,"moderation_score"?: Json | null,"report_count"?: number,"status"?: Database["public"]['Enums']["post_status"],"title"?: string,"updated_at"?: string,"vendor_id"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "qa_questions_accepted_fk"
+      columns: ["accepted_answer_id"]
+isOneToOne: false
+      referencedRelation: "qa_answers"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "qa_questions_author_id_fkey"
+      columns: ["author_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "qa_questions_author_id_fkey"
+      columns: ["author_id"]
+isOneToOne: false
+      referencedRelation: "v_public_profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "qa_questions_city_id_fkey"
+      columns: ["city_id"]
+isOneToOne: false
+      referencedRelation: "cities"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "qa_questions_vendor_id_fkey"
+      columns: ["vendor_id"]
+isOneToOne: false
+      referencedRelation: "v_live_now"
+      referencedColumns: ["vendor_id"]
+    },{
+      foreignKeyName: "qa_questions_vendor_id_fkey"
+      columns: ["vendor_id"]
+isOneToOne: false
+      referencedRelation: "vendors"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"qa_votes": {
+                  Row: {
+                    "answer_id": string,"created_at": string,"voter_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "answer_id": string,"created_at"?: string,"voter_id"?: string
+                  }
+                  Update: {
+                    "answer_id"?: string,"created_at"?: string,"voter_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "qa_votes_answer_id_fkey"
+      columns: ["answer_id"]
+isOneToOne: false
+      referencedRelation: "qa_answers"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "qa_votes_voter_id_fkey"
+      columns: ["voter_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "qa_votes_voter_id_fkey"
+      columns: ["voter_id"]
+isOneToOne: false
+      referencedRelation: "v_public_profiles"
       referencedColumns: ["id"]
     }
                   ]
@@ -919,13 +1185,123 @@ isOneToOne: false
                 }
           }
           Functions: {
-            "admin_list_cron_jobs":
+            "admin_backup_rows":
+{ Args: { "p_limit"?: number,"p_offset"?: number,"p_schema": string,"p_table": string }; Returns: Json[]
+                           },
+"admin_backup_tables":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "est_rows": number,"schema_name": string,"table_name": string
+            }[]
+                           },
+"admin_create_agent_key":
+{ Args: { "p_created_by": string,"p_expires_at": string,"p_ip_allowlist": (unknown)[],"p_key_hash": string,"p_key_prefix": string,"p_name": string,"p_scopes": (string)[] }; Returns: string
+                           },
+"admin_create_issue_report":
+{ Args: { "p_area_id"?: string,"p_category": Database["public"]['Enums']["issue_category"],"p_city_id"?: string,"p_description": string,"p_lat"?: number,"p_lng"?: number,"p_reporter_email"?: string,"p_reporter_id"?: string }; Returns: string
+                           },
+"admin_create_verification_request":
+{ Args: { "p_business_doc_path"?: string,"p_id_doc_path"?: string,"p_note"?: string,"p_social_proof_url"?: string,"p_submitted_by": string,"p_vendor_id": string }; Returns: string
+                           },
+"admin_daily_counts":
+{ Args: { "p_days"?: number }; Returns: {
+              "checkins": number,"day": string,"official_updates": number,"posts": number,"pulses": number,"signups": number,"vendors": number
+            }[]
+                           },
+"admin_decide_verification_request":
+{ Args: { "p_id": string,"p_reason"?: string,"p_reviewer": string,"p_status": Database["public"]['Enums']["verification_status"] }; Returns: {
+              "submitted_by": string,"vendor_id": string
+            }[]
+                           },
+"admin_event_duplicates":
+{ Args: { "p_limit"?: number }; Returns: {
+              "a_id": string,"a_slug": string,"a_title": string,"b_id": string,"b_slug": string,"b_title": string,"day": string,"similarity": number
+            }[]
+                           },
+"admin_force_logout":
+{ Args: { "p_profile_id": string }; Returns: number
+                           },
+"admin_increment_list_view":
+{ Args: { "p_token": string }; Returns: undefined
+                           },
+"admin_list_activity":
+{ Args: { "p_city_id"?: string,"p_kind_prefix"?: string,"p_limit"?: number,"p_profile_id"?: string,"p_vendor_id"?: string }; Returns: {
+              "at": string,"city_id": string,"city_name": string,"id": number,"kind": string,"meta": Json,"profile_id": string,"username": string,"vendor_id": string,"vendor_name": string
+            }[]
+                           },
+"admin_list_agent_keys":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "created_at": string,"created_by_username": string,"expires_at": string,"id": string,"ip_allowlist": (string)[],"key_prefix": string,"last_used_at": string,"name": string,"revoked_at": string,"scopes": (string)[]
+            }[]
+                           },
+"admin_list_audit":
+{ Args: { "p_action_prefix"?: string,"p_actor_id"?: string,"p_before_id"?: number,"p_entity_id"?: string,"p_entity_type"?: string,"p_limit"?: number }; Returns: {
+              "action": string,"actor_id": string,"actor_role": string,"after": Json,"at": string,"before": Json,"entity_id": string,"entity_type": string,"id": number,"ip": unknown,"reason": string,"user_agent": string
+            }[]
+                           },
+"admin_list_cron_jobs":
 { Args: Record<PropertyKey, never>; Returns: {
               "active": boolean,"command": string,"jobname": string,"schedule": string
             }[]
                            },
+"admin_list_issue_reports":
+{ Args: { "p_limit"?: number,"p_status"?: Database["public"]['Enums']["issue_status"] }; Returns: {
+              "area_name": string,"category": Database["public"]['Enums']["issue_category"],"city_name": string,"created_at": string,"description": string,"handled_by_username": string,"has_location": boolean,"id": string,"internal_note": string,"reporter_email": string,"reporter_username": string,"status": Database["public"]['Enums']["issue_status"]
+            }[]
+                           },
+"admin_list_users":
+{ Args: { "p_desc"?: boolean,"p_include_email"?: boolean,"p_include_ip"?: boolean,"p_limit"?: number,"p_offset"?: number,"p_q"?: string,"p_role"?: Database["public"]['Enums']["user_role"],"p_shadowbanned"?: boolean,"p_sort"?: string,"p_status"?: Database["public"]['Enums']["profile_status"] }; Returns: {
+              "created_at": string,"deleted_at": string,"display_name": string,"email": string,"email_verified": boolean,"id": string,"is_shadowbanned": boolean,"last_ip": string,"last_seen_at": string,"points": number,"post_count": number,"role": Database["public"]['Enums']["user_role"],"signup_ip": string,"status": Database["public"]['Enums']["profile_status"],"total": number,"trust_score": number,"username": string
+            }[]
+                           },
+"admin_list_vendors":
+{ Args: { "p_area_id"?: string,"p_category_id"?: string,"p_city_id"?: string,"p_claim"?: Database["public"]['Enums']["claim_status"],"p_desc"?: boolean,"p_limit"?: number,"p_never_posted"?: boolean,"p_no_photos"?: boolean,"p_no_prices"?: boolean,"p_offset"?: number,"p_q"?: string,"p_sort"?: string,"p_status"?: Database["public"]['Enums']["vendor_status"],"p_verified"?: boolean }; Returns: {
+              "area": string,"category": string,"city": string,"claim_status": Database["public"]['Enums']["claim_status"],"completeness": number,"created_at": string,"has_photos": boolean,"has_prices": boolean,"id": string,"is_seed": boolean,"last_activity_at": string,"name": string,"never_posted": boolean,"official_updates_7d": number,"open_reports": number,"owner_username": string,"posts_7d": number,"slug": string,"status": Database["public"]['Enums']["vendor_status"],"total": number,"verified": boolean
+            }[]
+                           },
+"admin_list_verification_requests":
+{ Args: { "p_status"?: Database["public"]['Enums']["verification_status"] }; Returns: {
+              "business_doc_path": string,"created_at": string,"docs_purged_at": string,"id": string,"id_doc_path": string,"is_claim": boolean,"note": string,"rejection_reason": string,"reviewed_at": string,"social_proof_url": string,"status": Database["public"]['Enums']["verification_status"],"submitted_by": string,"submitter_username": string,"vendor_claim_status": Database["public"]['Enums']["claim_status"],"vendor_id": string,"vendor_name": string,"vendor_slug": string
+            }[]
+                           },
+"admin_log_assistant":
+{ Args: { "p_answer": string,"p_city_id": string,"p_latency_ms": number,"p_model": string,"p_outcome": string,"p_profile_id": string,"p_question": string,"p_venues_linked": (string)[],"p_venues_offered": number }; Returns: undefined
+                           },
+"admin_moderation_stats":
+{ Args: Record<PropertyKey, never>; Returns: Json
+                           },
+"admin_platform_summary":
+{ Args: Record<PropertyKey, never>; Returns: Json
+                           },
+"admin_points_today":
+{ Args: { "p_profile_id": string }; Returns: number
+                           },
 "admin_record_profile_meta":
 { Args: { "p_ip"?: unknown,"p_is_signup"?: boolean,"p_profile_id": string,"p_user_agent"?: string }; Returns: undefined
+                           },
+"admin_refresh_crowd_forecast":
+{ Args: { "p_now"?: string }; Returns: number
+                           },
+"admin_refresh_crowd_snapshots":
+{ Args: { "p_now"?: string }; Returns: number
+                           },
+"admin_refresh_leaderboards":
+{ Args: Record<PropertyKey, never>; Returns: undefined
+                           },
+"admin_revoke_agent_key":
+{ Args: { "p_id": string }; Returns: boolean
+                           },
+"admin_update_issue_report":
+{ Args: { "p_handled_by": string,"p_id": string,"p_internal_note"?: string,"p_status": Database["public"]['Enums']["issue_status"] }; Returns: undefined
+                           },
+"admin_user_network":
+{ Args: { "p_profile_id": string }; Returns: {
+              "accounts_sharing_ip": number,"device_hash": string,"last_ip": string,"signup_ip": string,"signup_ua": string
+            }[]
+                           },
+"admin_verify_agent_key":
+{ Args: { "p_ip": unknown,"p_key_hash": string }; Returns: {
+              "created_by": string,"expired": boolean,"id": string,"ip_allowed": boolean,"name": string,"revoked": boolean,"scopes": (string)[]
+            }[]
                            },
 "admin_write_audit":
 { Args: { "p_action": string,"p_actor_id"?: string,"p_actor_role"?: string,"p_after"?: Json,"p_before"?: Json,"p_entity_id": string,"p_entity_type": string,"p_ip"?: unknown,"p_reason"?: string,"p_user_agent"?: string }; Returns: number
@@ -943,6 +1319,9 @@ isOneToOne: false
 { Args: Record<PropertyKey, never>; Returns: {
               "avatar_url": string,"badges": (string)[],"bio": string,"created_at": string,"display_name": string,"email_verified_at": string,"home_city_id": string,"id": string,"is_diaspora": boolean,"location_consent": boolean,"points": number,"post_count": number,"role": Database["public"]['Enums']["user_role"],"status": Database["public"]['Enums']["profile_status"],"status_reason": string,"status_until": string,"username": string
             }[]
+                           },
+"get_shared_list":
+{ Args: { "p_token": string }; Returns: Json
                            },
 "has_staff_role":
 { Args: { "min_role"?: Database["public"]['Enums']["user_role"] }; Returns: boolean
@@ -971,6 +1350,11 @@ isOneToOne: false
                            } |
 { Args: { "r": Omit<Database["public"]['Tables']["vendors"]['Row'], Database["public"]['Tables']["vendors"]['ComputedFields']> }; Returns: { error: true } & "Could not choose the best candidate function between: public.lng(r => cities), public.lng(r => areas), public.lng(r => vendors), public.lng(r => events). Try renaming the parameters or the function itself in the database so function overloading can be resolved"
                            },
+"my_verification_requests":
+{ Args: { "p_vendor_id": string }; Returns: {
+              "created_at": string,"id": string,"rejection_reason": string,"reviewed_at": string,"status": Database["public"]['Enums']["verification_status"]
+            }[]
+                           },
 "search_directory":
 { Args: { "p_city_id"?: string,"p_limit"?: number,"p_q": string }; Returns: {
               "city_id": string,"id": string,"kind": string,"score": number,"slug": string,"subtitle": string,"title": string
@@ -981,7 +1365,7 @@ isOneToOne: false
                            }
           }
           Enums: {
-            "category_group": "nightlife"|"food_drink"|"daytime"|"culture"|"events"|"stay_adjacent","claim_status": "unclaimed"|"claimed","crowd_confidence": "low"|"medium"|"high","event_category": "concert"|"festival"|"party"|"beach_party"|"boat_cruise"|"comedy"|"art"|"food"|"sport"|"conference"|"community"|"other","event_status": "draft"|"pending_review"|"published"|"cancelled"|"rejected","guide_status": "draft"|"review"|"published"|"archived","guide_type": "city_guide"|"area_guide"|"daytime"|"toolkit"|"blog"|"safety_page","hold_reason": "none"|"media_new_account"|"media_low_trust"|"video","issue_category": "safety"|"scam"|"harassment"|"infrastructure"|"vendor_conduct"|"other","issue_status": "new"|"triaged"|"escalated"|"closed","media_kind": "image"|"video","moderation_decision": "auto_pass"|"auto_flag"|"auto_block"|"human_pass"|"human_remove","moderation_source": "auto_flag"|"auto_block"|"hold"|"user_report"|"vendor_dispute"|"random_sample","moderation_status": "open"|"in_review"|"done","post_kind": "checkin"|"pulse"|"update"|"official","post_status": "pending"|"published"|"hidden"|"removed","price_band": "free"|"budget"|"mid"|"premium"|"luxury","profile_status": "active"|"warned"|"suspended"|"banned","report_entity": "post"|"vendor"|"event"|"profile","report_reason": "fake"|"spam"|"abuse"|"dangerous"|"wrong_venue"|"rival_sabotage"|"copyright"|"other","report_status": "open"|"reviewing"|"resolved_removed"|"resolved_kept"|"dismissed","safety_section": "emergency_numbers"|"hospitals"|"police_stations"|"embassies"|"travel_advice"|"area_notes"|"scam_awareness","sanction_kind": "warning"|"shadowban"|"suspension"|"ban"|"vendor_posting_ban","task_priority": "low"|"normal"|"high"|"urgent","task_status": "todo"|"doing"|"done","user_role": "user"|"vendor_member"|"moderator"|"admin"|"super_admin","vendor_member_role": "owner"|"manager"|"staff","vendor_status": "draft"|"pending_review"|"published"|"suspended"|"rejected","verification_status": "pending"|"approved"|"rejected"
+            "category_group": "nightlife"|"food_drink"|"daytime"|"culture"|"events"|"stay_adjacent","claim_status": "unclaimed"|"claimed","crowd_confidence": "low"|"medium"|"high","event_category": "concert"|"festival"|"party"|"beach_party"|"boat_cruise"|"comedy"|"art"|"food"|"sport"|"conference"|"community"|"other","event_status": "draft"|"pending_review"|"published"|"cancelled"|"rejected","guide_status": "draft"|"review"|"published"|"archived","guide_type": "city_guide"|"area_guide"|"daytime"|"toolkit"|"blog"|"safety_page","hold_reason": "none"|"media_new_account"|"media_low_trust"|"video","issue_category": "safety"|"scam"|"harassment"|"infrastructure"|"vendor_conduct"|"other","issue_status": "new"|"triaged"|"escalated"|"closed","media_kind": "image"|"video","moderation_decision": "auto_pass"|"auto_flag"|"auto_block"|"human_pass"|"human_remove","moderation_source": "auto_flag"|"auto_block"|"hold"|"user_report"|"vendor_dispute"|"random_sample","moderation_status": "open"|"in_review"|"done","post_kind": "checkin"|"pulse"|"update"|"official","post_status": "pending"|"published"|"hidden"|"removed","price_band": "free"|"budget"|"mid"|"premium"|"luxury","profile_status": "active"|"warned"|"suspended"|"banned","report_entity": "post"|"vendor"|"event"|"profile"|"qa_question"|"qa_answer","report_reason": "fake"|"spam"|"abuse"|"dangerous"|"wrong_venue"|"rival_sabotage"|"copyright"|"other","report_status": "open"|"reviewing"|"resolved_removed"|"resolved_kept"|"dismissed","safety_section": "emergency_numbers"|"hospitals"|"police_stations"|"embassies"|"travel_advice"|"area_notes"|"scam_awareness","sanction_kind": "warning"|"shadowban"|"suspension"|"ban"|"vendor_posting_ban","task_priority": "low"|"normal"|"high"|"urgent","task_status": "todo"|"doing"|"done","user_role": "user"|"vendor_member"|"moderator"|"admin"|"super_admin","vendor_member_role": "owner"|"manager"|"staff","vendor_status": "draft"|"pending_review"|"published"|"suspended"|"rejected","verification_status": "pending"|"approved"|"rejected"
           }
           CompositeTypes: {
             [_ in never]: never
@@ -1097,7 +1481,7 @@ export type CompositeTypes<
 export const Constants = {
   "public": {
           Enums: {
-            "category_group": ["nightlife", "food_drink", "daytime", "culture", "events", "stay_adjacent"],"claim_status": ["unclaimed", "claimed"],"crowd_confidence": ["low", "medium", "high"],"event_category": ["concert", "festival", "party", "beach_party", "boat_cruise", "comedy", "art", "food", "sport", "conference", "community", "other"],"event_status": ["draft", "pending_review", "published", "cancelled", "rejected"],"guide_status": ["draft", "review", "published", "archived"],"guide_type": ["city_guide", "area_guide", "daytime", "toolkit", "blog", "safety_page"],"hold_reason": ["none", "media_new_account", "media_low_trust", "video"],"issue_category": ["safety", "scam", "harassment", "infrastructure", "vendor_conduct", "other"],"issue_status": ["new", "triaged", "escalated", "closed"],"media_kind": ["image", "video"],"moderation_decision": ["auto_pass", "auto_flag", "auto_block", "human_pass", "human_remove"],"moderation_source": ["auto_flag", "auto_block", "hold", "user_report", "vendor_dispute", "random_sample"],"moderation_status": ["open", "in_review", "done"],"post_kind": ["checkin", "pulse", "update", "official"],"post_status": ["pending", "published", "hidden", "removed"],"price_band": ["free", "budget", "mid", "premium", "luxury"],"profile_status": ["active", "warned", "suspended", "banned"],"report_entity": ["post", "vendor", "event", "profile"],"report_reason": ["fake", "spam", "abuse", "dangerous", "wrong_venue", "rival_sabotage", "copyright", "other"],"report_status": ["open", "reviewing", "resolved_removed", "resolved_kept", "dismissed"],"safety_section": ["emergency_numbers", "hospitals", "police_stations", "embassies", "travel_advice", "area_notes", "scam_awareness"],"sanction_kind": ["warning", "shadowban", "suspension", "ban", "vendor_posting_ban"],"task_priority": ["low", "normal", "high", "urgent"],"task_status": ["todo", "doing", "done"],"user_role": ["user", "vendor_member", "moderator", "admin", "super_admin"],"vendor_member_role": ["owner", "manager", "staff"],"vendor_status": ["draft", "pending_review", "published", "suspended", "rejected"],"verification_status": ["pending", "approved", "rejected"]
+            "category_group": ["nightlife", "food_drink", "daytime", "culture", "events", "stay_adjacent"],"claim_status": ["unclaimed", "claimed"],"crowd_confidence": ["low", "medium", "high"],"event_category": ["concert", "festival", "party", "beach_party", "boat_cruise", "comedy", "art", "food", "sport", "conference", "community", "other"],"event_status": ["draft", "pending_review", "published", "cancelled", "rejected"],"guide_status": ["draft", "review", "published", "archived"],"guide_type": ["city_guide", "area_guide", "daytime", "toolkit", "blog", "safety_page"],"hold_reason": ["none", "media_new_account", "media_low_trust", "video"],"issue_category": ["safety", "scam", "harassment", "infrastructure", "vendor_conduct", "other"],"issue_status": ["new", "triaged", "escalated", "closed"],"media_kind": ["image", "video"],"moderation_decision": ["auto_pass", "auto_flag", "auto_block", "human_pass", "human_remove"],"moderation_source": ["auto_flag", "auto_block", "hold", "user_report", "vendor_dispute", "random_sample"],"moderation_status": ["open", "in_review", "done"],"post_kind": ["checkin", "pulse", "update", "official"],"post_status": ["pending", "published", "hidden", "removed"],"price_band": ["free", "budget", "mid", "premium", "luxury"],"profile_status": ["active", "warned", "suspended", "banned"],"report_entity": ["post", "vendor", "event", "profile", "qa_question", "qa_answer"],"report_reason": ["fake", "spam", "abuse", "dangerous", "wrong_venue", "rival_sabotage", "copyright", "other"],"report_status": ["open", "reviewing", "resolved_removed", "resolved_kept", "dismissed"],"safety_section": ["emergency_numbers", "hospitals", "police_stations", "embassies", "travel_advice", "area_notes", "scam_awareness"],"sanction_kind": ["warning", "shadowban", "suspension", "ban", "vendor_posting_ban"],"task_priority": ["low", "normal", "high", "urgent"],"task_status": ["todo", "doing", "done"],"user_role": ["user", "vendor_member", "moderator", "admin", "super_admin"],"vendor_member_role": ["owner", "manager", "staff"],"vendor_status": ["draft", "pending_review", "published", "suspended", "rejected"],"verification_status": ["pending", "approved", "rejected"]
           }
         }
 } as const
